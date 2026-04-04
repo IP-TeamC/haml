@@ -4,6 +4,7 @@
 # sudo dnf install xorg-x11-fonts-75dpi xorg-x11-fonts-100dpi xorg-x11-fonts-Type1 xorg-x11-fonts-misc
 # xset fp rehash
 
+xhost +local:docker
 podman run --rm --replace -it --name xilinx-ise \
   -e DISPLAY=:0 \
   -v /tmp/.X11-unix:/tmp/.X11-unix \
