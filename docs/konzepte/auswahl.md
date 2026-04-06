@@ -5,6 +5,7 @@
 ## Supervised
 
 ### k-Nearest-Neighbor
+
 - ja, guter erster Kandidat
 - größtenteils voneinander unabhängige Berechnungen für verschiedene Datenpunkte
   - gut parallelisierbar
@@ -18,6 +19,7 @@
     - Addition, Subtraktion: trivial
 
 ### Entscheidungsbäume
+
 - eher nein, zu komplex/dynamisch
 - Algorithmus:
   - für jedes Feature den besten Split ermitteln (geringste Gini-Impurity = `1 - p_A^2 - p_B^2 - p`)
@@ -37,6 +39,7 @@
   - mit Generics zu vereinfachen, aber trotzdem eher unpassend
 
 ### Lineare Regression
+
 - ja, guter erster Kandidat
 - einheitliche Struktur (y = w1x1 + w2x2 + ... + wnxn + b)
 - Trainings-Algorithmus: Gradient Descent
@@ -44,25 +47,27 @@
   - alle/mehrere Features zeitgleich
   - mehrere Datenpunkte zeitgleich (Mini-Batching)
 - Pipelining möglich:
-  - Gewichtung/Multiplikation (w * x) -> Vorhersage/Addition (evtl. Aufteilung) -> Fehler-Berechnung -> Gewichtsanpassung
+  - Gewichtung/Multiplikation (w \* x) -> Vorhersage/Addition (evtl. Aufteilung) -> Fehler-Berechnung -> Gewichtsanpassung
 - Streaming möglich
   - gleichbleibender Datenfluss, keine Branches
 - Arithmetik passend
   - nur Addition und Multiplikation mit Fixed-Point
 
 ### Logistische Regression
+
 - ja, aber später
 - entspricht größtenteils Linearer Regression
 - aber: Arithmetik nur teilweise passend
   - Exponentialfunktion und Division in Sigmoid (1/(1+e^(-x)))
     - Lookup-Table (Werte speichern)
     - evtl. Linearisierung in Abschnitten
-    ![Sigmoid Linear](sigmoid-linear.png)
+      ![Sigmoid Linear](sigmoid-linear.png)
     - entspricht dann lediglich Lookup + Multiplikation + Addition
   - Vermeidung von Logarithmus bei Loss-Funktion Binary Cross Entropy Loss
     - Gradient lediglich: `x * (p - y)`
 
 ### Polynomielle Regression
+
 - ja, aber später
 - entspricht größtenteilos Linearer Regression
 - aber: Potenzen mit hohen Exponenten evtl. problematisch, Lösungen:
@@ -71,11 +76,13 @@
     - alternativ Beschränkung der Berechnung (Overflow = Maximum)?
 
 ### Super Vector Machines
+
 - eher nein, zu komplex und eher ungeeignet für FPGA
 - hohe Komplexität
 - zu hoher Speicherbedarf
 
 ### Neuronale Netze
+
 - wahrscheinlich ja, aber später (hoher Aufwand)
 - Einschränkungen: nur mit Batching für Pipelining
 - evtl. hoher Speicherbedarf
@@ -88,9 +95,10 @@
 ## Optimization
 
 ### Simulated Annealing
+
 - eher ja, aber später mit Eischränkungen: Verbesserung evtl. eher gering
 - Problem: Zufallszahlen für Nachbar-Lösungen und Bewertung von Verschlechterungen
-  - z.B. LFSR?
+  - z.B. LFSR? -> implementiert, funktioniert
 - schlechte Parallelisierbarkeit
   - mehrere Prozesse parallel und besten wählen (fraglich, ob sinnvolle Art der Parallelisierung: Ziel?)
   - evtl. Parallelisierung der Evaluations-Berechnung (nur sinnvoll, wenn komplex und parallelisierbar)
@@ -100,6 +108,7 @@
 - Streaming/Pipelining schwierig/eingeschränkt
 
 ### Genetische Algorithmen
+
 - ja, aber später mit Einschärnkungen
 - Probleme:
   - Zufallszahlen (wieder LFSR?)
@@ -108,16 +117,18 @@
 - sehr gute Parallelisierung
   - parallele Anpassung der Population (Mutation, Crossover)
   - parallele Berechnung der Fitness-Funktion
-- 
+-
 
 ### Swarm Optimization
+
 - ja, guter erster komplexer Kandidat
 - sehr gut parallelisierbar
- - Partikel parallel berechnen
+- Partikel parallel berechnen
 - Pipelining über mehrere Berechnungsschritte
 - evtl. Streaming über zu berechnende Partikel
 
 ## Reihenfolge
+
 1. lineare Regression
 2. k-Nearest-Neighbor, logistische Regression, polynomielle Regression
 3. Swarm Optimization
@@ -125,5 +136,6 @@
 5. Simulated Annealing
 
 ## Ausschluss
+
 - Entscheidungsbäume
 - Support Vector Machines
