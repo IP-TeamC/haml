@@ -1,3 +1,5 @@
+<strong><i>[Auswahl Algorithmen](auswahl.md)</i></strong> - [Basis-Ideen/Voraussetzungen](basis-ideen.md)
+
 # Auswahl Algorithmen
 
 ## Supervised

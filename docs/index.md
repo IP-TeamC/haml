@@ -6,10 +6,10 @@ hero:
   name: "HAML Docs"
   text: "Hardware-Acceleration auf FPGA"
   tagline: "Entwickelt im Rahmen eines Integrationsprojekt an der Fachhochschule für die Wirtschaft Hannover."
-  # actions:
-  #   - theme: brand
-  #     text: Markdown Examples
-  #     link: /markdown-examples
+  actions:
+    - theme: brand
+      text: Konzepte
+      link: /konzepte/basis-ideen
   #   - theme: alt
   #     text: API Examples
   #     link: /api-examples

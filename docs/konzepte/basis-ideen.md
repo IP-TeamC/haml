@@ -1,3 +1,5 @@
+[Auswahl Algorithmen](auswahl.md) - <strong><i>[Basis-Ideen/Voraussetzungen](basis-ideen.md)</i></strong>
+
 # Basis-Ideen/Voraussetzungen
 
 ## Parallelität
@@ -10,7 +12,7 @@
 - Pipelining auch von Operationen innerhalb Phase
 
 ## Streaming
-- kontinuierliche Verarbeitung von Daten ohne Speicherzugriffe
+- kontinuierliche Verarbeitung von Daten, möglichst ohne Speicherzugriffe
 - -> in Pipeline weiter-/durchschieben
 - -> kontinuierlicher Stream
 
@@ -85,7 +87,7 @@ Fixed-Point:
 | 28 | 134 217 727 |
 | 32 | 2 147 483 647 |
 
-RNG:
+PRNG:
 - LFSR
   - primitives Polynomen für maximale Periodenlänge
   - LFSR kombinieren: unterschiedliche Polynome/Seeds, Bit-Mixing
