@@ -24,7 +24,7 @@ Ausschlüsse:
 - negative Zahlen/2er-Komplement bei Multiplikation?
 
 Festlegungen:
-- Fixed-Point (Format? Q16.8, Q32.16, Q20.12)
+- Fixed-Point (Format? Q16.8, Q32.16, Q20.12, Generic je nach Problem)
 - 2er-Komplement/Signed
 - 3 Operationen: Addition, Subtraktion, Multiplikation
 - komplexe Funktionen mit Lookup-Table (evtl. auch für Wurzeln, falls notwendig)?
@@ -57,6 +57,7 @@ Fixed-Point:
 - 36 Bit gesamt:
   - Q26.10 mit 134 217 727 + 3,0
   - Q24.12 mit 8 388 607 + 3,6
+- besser: Generic je nach Problem
 
 | Fraction-Bits | Genauigkeit (Nachkommastellen) [`Bits * log10(2)`] |
 | -- | -- |
@@ -67,6 +68,12 @@ Fixed-Point:
 | 16 | 4,8 |
 | 18 | 5,4 |
 | 20 | 6,0 |
+| 22 | 6,6 |
+| 24 | 7,2 |
+| 26 | 7,8 |
+| 28 | 8,4 |
+| 30 | 9,0 |
+| 32 | 9,6 |
 
 | Integer-Bits | Maximum [`2^(Bits-1) - 1`] |
 | -- | -- |
@@ -77,3 +84,10 @@ Fixed-Point:
 | 26 | 33 554 431 |
 | 28 | 134 217 727 |
 | 32 | 2 147 483 647 |
+
+RNG:
+- LFSR
+  - primitives Polynomen für maximale Periodenlänge
+  - LFSR kombinieren: unterschiedliche Polynome/Seeds, Bit-Mixing
+  - Whitening
+- Xorshift

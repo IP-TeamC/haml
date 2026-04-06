@@ -12,4 +12,12 @@ podman run --rm --replace -it --name xilinx-ise \
   -v /opt/Xilinx:/opt/Xilinx \
   -v ~/xise-projects:/projects \
   -v ~/.Xilinx:/root/.Xilinx \
+  --entrypoint "/opt/Xilinx/14.7/ISE_DS/run.sh" \
   xilinx-ise:14.7-legacy
+
+# Entrypoint auskommentieren für Installation
+# /opt/Xilinx/14.7/ISE_DS/run.sh enthält:
+### #!/bin/bash
+### cd /opt/Xilinx/14.7/ISE_DS
+### . ./settings64.sh
+### ./ISE/bin/lin64/ise
