@@ -1,4 +1,4 @@
-<strong><i>[Auswahl Algorithmen](auswahl.md)</i></strong> - [Basis-Ideen/Voraussetzungen](basis-ideen.md)
+[Basis-Ideen/Voraussetzungen](basis-ideen.md) - <strong><i>[Auswahl Algorithmen](auswahl.md)</i></strong>
 
 # Auswahl Algorithmen
 
