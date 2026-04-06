@@ -39,13 +39,14 @@ Addition/Subtraktion:
 
 Multiplikation:
 - Overflow!
-- über Integer-Multiplikation mit Shift für Unsigned
+- über Integer-Multiplikation mit Shift und Cut
 - Bsp. für Q5.3: 11011,011 * 10101,101 = 10 0100 1111,1111 11
   - wird zu <ins>10 010</ins>0 1111,111~~1 11~~ (Overflow und Verlust von Genauigkeit)
   - Verlust von Genauigkeit akzeptabel
   - Overflow problematisch wie Carry/Overflow bei Addition/Subtraktion
   - einfach ignorieren oder Meldung: Berechnung fehlerhaft?
-    - Meldung parallel und weiter rechnen
+    - Meldung parallel und weiter rechnen?
+    - sonst einfach ignorieren
 - Umgang mit 2er-Komplement/Signed
   - von IEEE Library in VHDL unterstützt
   - Problem: Erkennung Overflow (Unterschied positiv/negativ)
@@ -59,7 +60,8 @@ Fixed-Point:
 - 36 Bit gesamt:
   - Q26.10 mit 134 217 727 + 3,0
   - Q24.12 mit 8 388 607 + 3,6
-- besser: Generic je nach Problem
+- besser: Generic je nach Problem bzw. Fraction-Size als Parameter
+ - Notiz: implementiert (nur Multiplikation anders), funktioniert
 
 | Fraction-Bits | Genauigkeit (Nachkommastellen) [`Bits * log10(2)`] |
 | -- | -- |
