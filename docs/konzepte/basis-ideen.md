@@ -105,3 +105,10 @@ PRNG:
   - Whitening
   - Notiz: LFSR implementiert, funktioniert
 - Xorshift
+
+## Agentenbasiert
+
+- Teil-Problem muss groß genug sein
+- Verteilung von Teil-Problemen an Agenten (einzelne FPGAs)
+  - z.B. Teil-Population zur Evolution
+  - Cluster

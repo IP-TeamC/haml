@@ -17,6 +17,7 @@
     - Wurzel: Verzicht, da nur Vergleich!
     - Quadrat: entspricht Multiplikation mit sich selbst, möglich
     - Addition, Subtraktion: trivial
+- agentenbasiert möglich
 
 ### Entscheidungsbäume
 
@@ -37,6 +38,7 @@
       - schlechte Parallelisierung
   - Rekursion (Streaming?)
   - mit Generics zu vereinfachen, aber trotzdem eher unpassend
+- agentenbasiert nicht möglich
 
 ### Lineare Regression
 
@@ -52,6 +54,8 @@
   - gleichbleibender Datenfluss, keine Branches
 - Arithmetik passend
   - nur Addition und Multiplikation mit Fixed-Point
+- agentenbasiert begrenzt möglich, eher nein
+  - Aufteilung/Teil-Problem zu klein: z.B. Berechnung für einen Datenpunkt (oder Batch)
 
 ### Logistische Regression
 
@@ -65,6 +69,8 @@
     - entspricht dann lediglich Lookup + Multiplikation + Addition
   - Vermeidung von Logarithmus bei Loss-Funktion Binary Cross Entropy Loss
     - Gradient lediglich: `x * (p - y)`
+- agentenbasiert begrenzt möglich, eher nein
+  - Aufteilung/Teil-Problem zu klein: z.B. Berechnung für einen Datenpunkt (oder Batch)
 
 ### Polynomielle Regression
 
@@ -74,6 +80,8 @@
   - Pipelining (Multiplikation je Stage), sonst evtl. langsam
   - Beschränkung der Eingaben und Grad des Polynoms (Maximum bei Fixed-Point)
     - alternativ Beschränkung der Berechnung (Overflow = Maximum)?
+- agentenbasiert begrenzt möglich, eher nein
+  - Aufteilung/Teil-Problem zu klein: z.B. Berechnung für einen Datenpunkt (oder Batch)
 
 ### Super Vector Machines
 
@@ -91,6 +99,8 @@
 - gutes Potenziel für Parallelisierung, Pipelining, Stream
 - erster Schritt: Implementierung eines konkreten Anwendungsfalls wie binäre Klassifikation mit BCE + ReLU/Sigmoid
 - noch genauer zu untersuchen
+- agentenbasiert begrenzt möglich, eher nein
+  - Aufteilung/Teil-Problem zu klein: z.B. Berechnung für einen Datenpunkt (oder Batch)
 
 ## Optimization
 
@@ -106,6 +116,7 @@
     - bei Wahl von bestem: Einschränkung der Idee von Simulated Annealing: Verschlechterung wird unwahrscheinlicher -> eher lokales Maximum statt globales finden
     - alternativ: parallel berechnete Nachbarn als Fallback verwenden, wenn abgelehnt (z.B. feste Evaluierungs-Reihenfolge) -> nächste Iteration muss nicht abgewartet werden (sofort bei Ablehnung)
 - Streaming/Pipelining schwierig/eingeschränkt
+- mehrere Prozesse gleichzeitig starten und besten wählen (fraglich wie bei Parallelisierung)
 
 ### Genetische Algorithmen
 
@@ -117,7 +128,8 @@
 - sehr gute Parallelisierung
   - parallele Anpassung der Population (Mutation, Crossover)
   - parallele Berechnung der Fitness-Funktion
--
+- agentenbasiert sehr gut möglich
+  - z.B. Teil-Populationen
 
 ### Swarm Optimization
 
@@ -126,14 +138,18 @@
 - Partikel parallel berechnen
 - Pipelining über mehrere Berechnungsschritte
 - evtl. Streaming über zu berechnende Partikel
+- agentenbasiert evtl. auch möglich
+  - mehrere Start-Prozesse parallel und besten auswählen
+  - Teil-Schwärme mit Synchronisation des global besten Ergebnisses
 
 ## Reihenfolge
 
 1. lineare Regression
 2. k-Nearest-Neighbor, logistische Regression, polynomielle Regression
 3. Swarm Optimization
-4. Neuronale Netze, Genetische Algorithmen
-5. Simulated Annealing
+4. Genetische Algorithmen
+5. Neuronale Netze
+6. Simulated Annealing
 
 ## Ausschluss
 
