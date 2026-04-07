@@ -2,13 +2,14 @@ LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
 
-use work.math.ALL;
-use work.util.ALL;
+library common;
+use common.math.ALL;
+use common.util.ALL;
 
 ENTITY math_tb IS
 END math_tb;
 
-ARCHITECTURE behavior OF math_tb IS
+ARCHITECTURE rtl OF math_tb IS
 BEGIN
 
     test_fp_mul: process

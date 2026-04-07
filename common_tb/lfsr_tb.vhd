@@ -2,6 +2,9 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+library common;
+use common.prng.lfsr;
+
 entity lfsr_tb is
 end entity;
 
@@ -13,7 +16,7 @@ architecture Galois of lfsr_tb is
 
     -- Inputs
     signal clk : std_logic := '0';
-    signal reset : std_logic := '1';
+    signal rst : std_logic := '1';
     signal generator : std_logic_vector(degree downto 0);
     signal seed : std_logic_vector(degree-1 downto 0);
     
@@ -22,13 +25,13 @@ architecture Galois of lfsr_tb is
 
 begin
 
-    lfsr: work.prng.lfsr
+    uut: lfsr
         generic map (
             degree => degree
         )
         port map (
             clk   => clk,
-            reset => reset,
+            rst => rst,
             generator => generator,
             seed => seed,
             rand => rand
@@ -42,12 +45,14 @@ begin
 
     process
     begin
-        reset <= '1';
         generator <= "100011101";
         seed <= "11001101";
+        wait for clk_period/2;
+
+        rst <= '1';
         wait for clk_period;
 
-        reset <= '0';
+        rst <= '0';
         wait for clk_period;
         assert rand = "10000111";
 

@@ -8,7 +8,7 @@ entity lfsr is
     );
     port (
         clk   : in std_logic;
-        reset : in std_logic;
+        rst : in std_logic;
         -- MSB links x^degree, LSB rechts (1)
         generator : std_logic_vector(degree downto 0);
         -- Schieben in Richtung MSB
@@ -26,7 +26,7 @@ begin
     process(clk)
     begin
         if rising_edge(clk) then
-            case reset is
+            case rst is
                 when '1' => q <= seed;
                 when others => q <= qn;
             end case;
