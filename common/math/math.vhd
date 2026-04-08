@@ -4,6 +4,8 @@ use ieee.numeric_std.all;
 
 package math is
 
+    type t_signed_vec is array (natural range <>) of signed;
+
     function fp_mul(
         a : in signed;
         b : in signed;
