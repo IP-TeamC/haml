@@ -9,7 +9,7 @@ entity reg is
     port (
         clk : in std_logic;
         rst : in std_logic;
-        store : in std_logic;
+        we : in std_logic;
         data : in std_logic_vector(size-1 downto 0);
         state : out std_logic_vector(size-1 downto 0)
     );
@@ -23,7 +23,7 @@ begin
         if rising_edge(clk) then
             if rst = '1' then
                 state <= (others => '0');
-            elsif store = '1' then
+            elsif we = '1' then
                 state <= data;
             end if;
         end if;

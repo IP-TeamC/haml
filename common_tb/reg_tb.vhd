@@ -17,7 +17,7 @@ architecture rtl of reg_tb is
     -- Inputs
     signal clk : std_logic := '1';
     signal rst : std_logic := '1';
-    signal store : std_logic := '0';
+    signal we : std_logic := '0';
     signal data : std_logic_vector(size-1 downto 0);
     
     -- Outputs
@@ -32,7 +32,7 @@ begin
         port map (
             clk   => clk,
             rst => rst,
-            store => store,
+            we => we,
             data => data,
             state => state
         );
@@ -53,7 +53,7 @@ begin
         wait for clk_period;
         assert state = "00000000";
 
-        store <= '1';
+        we <= '1';
         data <= "11111111";
         assert state = "00000000";
         wait for clk_period;
@@ -70,7 +70,7 @@ begin
         wait for clk_period;
         assert state = "00000000";
 
-        store <= '0';
+        we <= '0';
         wait for clk_period;
         assert state = "00000000";
 
