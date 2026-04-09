@@ -5,6 +5,7 @@ use ieee.numeric_std.all;
 use work.util.all;
 
 entity ram is
+
         generic (
             adr_size : natural;
             data_size : natural
@@ -16,11 +17,16 @@ entity ram is
             di : in std_logic_vector(data_size-1 downto 0);
             do : out std_logic_vector(data_size-1 downto 0)
         );
+
+        constant rows : natural := 2**adr_size;
+    
 end entity;
 
 architecture rtl of ram is
-    type ram_type is array ((2**adr_size)-1 downto 0) of std_logic_vector(data_size-1 downto 0);
+
+    type ram_type is array (rows-1 downto 0) of std_logic_vector(data_size-1 downto 0);
     signal memory : ram_type;
+
 begin
 
     process(clk)

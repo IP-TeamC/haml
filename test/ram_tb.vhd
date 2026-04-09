@@ -8,9 +8,10 @@ use work.util.all;
 entity ram_tb is
 
     -- Constants
-    signal clk_period : time := 1 ns;
-    signal adr_size : natural := 8;
-    signal data_size : natural := 8;
+    constant clk_period : time := 1 ns;
+    constant adr_size : natural := 8;
+    constant data_size : natural := 8;
+    constant rows : natural := 2**adr_size;
 
     -- Inputs
     signal clk : std_logic := '1';
@@ -53,7 +54,7 @@ begin
     begin
         
         we <= '1';
-        for i in 0 to (2**adr_size)-1 loop
+        for i in 0 to rows-1 loop
             a_vec := std_logic_vector(to_unsigned(i, adr_size));
             d_vec := std_logic_vector(resize(to_unsigned(i, adr_size), data_size));
             adr <= a_vec;
@@ -62,7 +63,7 @@ begin
         end loop;
         
         we <= '0';
-        for i in 0 to (2**adr_size)-1 loop
+        for i in 0 to rows-1 loop
             a_vec := std_logic_vector(to_unsigned(i, adr_size));
             d_vec := std_logic_vector(resize(to_unsigned(i, adr_size), data_size));
             adr <= a_vec;
