@@ -21,3 +21,7 @@
 - zuerst Speicherung zu klassifizierender Datenpunkt
 - Eingang Datenpunkt (später mit Flag: neu)
 - TODO
+
+## MVP
+
+- Datenpunkte in

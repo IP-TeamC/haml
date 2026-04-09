@@ -2,9 +2,8 @@ LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
 
-library common;
-use common.math.ALL;
-use common.util.ALL;
+use work.math.ALL;
+use work.util.ALL;
 
 ENTITY math_tb IS
 END math_tb;

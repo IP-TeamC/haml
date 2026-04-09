@@ -2,9 +2,9 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library common;
-use common.mem.ram;
-use common.util.all;
+--library common;
+use work.mem.ram;
+use work.util.all;
 
 entity ram_tb is
 

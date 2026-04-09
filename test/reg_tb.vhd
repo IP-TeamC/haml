@@ -2,8 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library common;
-use common.mem.reg;
+use work.mem.reg;
 
 entity reg_tb is
 end entity;

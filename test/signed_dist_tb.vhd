@@ -2,9 +2,8 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library common;
-use common.math.all;
-use common.signed_dist;
+use work.math.all;
+use work.signed_dist;
 
 entity signed_dist_tb is
 
@@ -18,8 +17,8 @@ entity signed_dist_tb is
     signal clk : std_logic := '1';
     signal start : std_logic := '0';
 
-    signal a : t_signed_vec(0 to n-1)(fp_size-1 downto 0);
-    signal b : t_signed_vec(0 to n-1)(fp_size-1 downto 0);
+    signal a : std_logic_vector((n*fp_size)-1 downto 0);
+    signal b : std_logic_vector((n*fp_size)-1 downto 0);
 
     -- Outputs
     signal dist_sq : signed(fp_size-1 downto 0);
@@ -58,16 +57,12 @@ begin
         wait for clk_period;
 
         start <= '1';
-        a <= (
-                signed(std_logic_vector(to_unsigned(123, fp_size-fp_frac) & to_unsigned(4, fp_frac))),
-                signed(std_logic_vector(to_unsigned(456, fp_size-fp_frac) & to_unsigned(2, fp_frac))),
-                signed(std_logic_vector(to_unsigned(789, fp_size-fp_frac) & to_unsigned(3, fp_frac)))
-            );
-        b <= (
-                signed(std_logic_vector(to_unsigned(124, fp_size-fp_frac) & to_unsigned(4, fp_frac))),
-                signed(std_logic_vector(to_unsigned(456, fp_size-fp_frac) & to_unsigned(2, fp_frac))),
-                signed(std_logic_vector(to_unsigned(789, fp_size-fp_frac) & to_unsigned(3, fp_frac)))
-            );
+        a <= std_logic_vector(to_unsigned(123, fp_size-fp_frac) & to_unsigned(4, fp_frac))
+            & std_logic_vector(to_unsigned(456, fp_size-fp_frac) & to_unsigned(2, fp_frac))
+            & std_logic_vector(to_unsigned(789, fp_size-fp_frac) & to_unsigned(3, fp_frac));
+        b <= std_logic_vector(to_unsigned(124, fp_size-fp_frac) & to_unsigned(4, fp_frac))
+            & std_logic_vector(to_unsigned(456, fp_size-fp_frac) & to_unsigned(2, fp_frac))
+            & std_logic_vector(to_unsigned(789, fp_size-fp_frac) & to_unsigned(3, fp_frac));
         wait for clk_period;
         start <= '0';
         assert done = '0';
@@ -81,16 +76,12 @@ begin
         assert done = '0';
         assert dist_sq = to_signed(8, fp_size);
 
-        a <= (
-                signed(std_logic_vector(to_unsigned(123, fp_size-fp_frac) & to_unsigned(4, fp_frac))),
-                signed(std_logic_vector(to_unsigned(456, fp_size-fp_frac) & to_unsigned(2, fp_frac))),
-                signed(std_logic_vector(to_unsigned(789, fp_size-fp_frac) & to_unsigned(3, fp_frac)))
-            );
-        b <= (
-                signed(std_logic_vector(to_unsigned(125, fp_size-fp_frac) & to_unsigned(4, fp_frac))),
-                signed(std_logic_vector(to_unsigned(459, fp_size-fp_frac) & to_unsigned(2, fp_frac))),
-                signed(std_logic_vector(to_unsigned(793, fp_size-fp_frac) & to_unsigned(3, fp_frac)))
-            );
+        a <= std_logic_vector(to_unsigned(123, fp_size-fp_frac) & to_unsigned(4, fp_frac))
+            & std_logic_vector(to_unsigned(456, fp_size-fp_frac) & to_unsigned(2, fp_frac))
+            & std_logic_vector(to_unsigned(789, fp_size-fp_frac) & to_unsigned(3, fp_frac));
+        b <= std_logic_vector(to_unsigned(125, fp_size-fp_frac) & to_unsigned(4, fp_frac))
+            & std_logic_vector(to_unsigned(459, fp_size-fp_frac) & to_unsigned(2, fp_frac))
+            & std_logic_vector(to_unsigned(793, fp_size-fp_frac) & to_unsigned(3, fp_frac));
         wait for clk_period;
         assert done = '0';
         assert dist_sq = to_signed(8, fp_size);

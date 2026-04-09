@@ -1,6 +1,5 @@
+standard = "93"
 preferred_case = "lower"
 
-[libraries]
-common.files = ['common/*/*.vhd']
-common_tb.files = ['common_tb/*.vhd']
-knnc.files = ['knnc/*.vhd']
+[libraries.defaultlib]
+files = ['src/*/*.vhd', 'test/*.vhd']
