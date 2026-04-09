@@ -4,7 +4,7 @@ use ieee.numeric_std.all;
 
 entity lfsr is
     generic (
-        degree : natural := 32
+        degree : natural := 32 -- für post-translate sim gleich wie tb
     );
     port (
         clk   : in std_logic;
@@ -17,7 +17,7 @@ entity lfsr is
     );
 end entity;
 
-architecture Galois of lfsr is
+architecture rtl of lfsr is
     signal q : std_logic_vector(degree-1 downto 0);
     signal qn : std_logic_vector(degree-1 downto 0);
 begin

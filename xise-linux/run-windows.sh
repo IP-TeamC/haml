@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # WSL: für Ubuntu
-# sudo apt install x11-xserver-utils
+# sudo apt install x11-xserver-utils xfonts-75dpi xfonts-100dpi xfonts-base xfonts-misc
+# xset fp rehash
 
 xhost +local:docker
 podman run --rm --replace -it --name xilinx-ise \

@@ -2,7 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-use work.mem.reg;
+use work.reg;
 
 entity reg_tb is
 end entity;
@@ -24,7 +24,7 @@ architecture rtl of reg_tb is
 
 begin
 
-    uut: reg
+    uut: entity reg
         generic map (
             size => size
         )

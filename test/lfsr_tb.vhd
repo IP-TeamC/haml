@@ -2,15 +2,15 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-use work.prng.lfsr;
+use work.lfsr;
 
 entity lfsr_tb is
 end entity;
 
-architecture Galois of lfsr_tb is
+architecture rtl of lfsr_tb is
 
     -- Constants
-    constant clk_period : time := 10 ns;
+    constant clk_period : time := 10 ns; -- erhöhen für post-translate sim
     constant degree : natural := 8;
 
     -- Inputs
@@ -24,7 +24,8 @@ architecture Galois of lfsr_tb is
 
 begin
 
-    uut: lfsr
+    uut: entity lfsr
+        -- generic auskommentieren für post-translate sim
         generic map (
             degree => degree
         )

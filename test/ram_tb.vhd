@@ -2,8 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
---library common;
-use work.mem.ram;
+use work.ram;
 use work.util.all;
 
 entity ram_tb is
@@ -28,7 +27,7 @@ architecture rtl of ram_tb is
 
 begin
 
-    uut: ram
+    uut: entity ram
         generic map (
             adr_size => adr_size,
             data_size => data_size
