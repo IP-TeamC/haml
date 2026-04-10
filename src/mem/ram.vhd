@@ -24,7 +24,7 @@ end entity;
 
 architecture rtl of ram is
 
-    type ram_type is array (rows-1 downto 0) of std_logic_vector(data_size-1 downto 0);
+    type ram_type is array (0 to rows-1) of std_logic_vector(data_size-1 downto 0);
     signal memory : ram_type;
 
 begin
