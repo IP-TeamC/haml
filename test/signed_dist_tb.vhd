@@ -8,10 +8,10 @@ use work.signed_dist;
 entity signed_dist_tb is
 
     -- Constants
-    signal clk_period : time := 1 ns;
-    signal n : natural := 3;
-    signal fp_size : natural := 13;
-    signal fp_frac : natural := 3;
+    constant clk_period : time := 1 ns;
+    constant n : natural := 3;
+    constant fp_size : natural := 13;
+    constant fp_frac : natural := 3;
 
     -- Inputs
     signal clk : std_logic := '1';
@@ -54,7 +54,8 @@ begin
     process
     begin
         
-        wait for clk_period;
+        start <= '0';
+        wait for clk_period*5;
 
         start <= '1';
         a <= std_logic_vector(to_unsigned(123, fp_size-fp_frac) & to_unsigned(4, fp_frac))
@@ -65,6 +66,8 @@ begin
             & std_logic_vector(to_unsigned(789, fp_size-fp_frac) & to_unsigned(3, fp_frac));
         wait for clk_period;
         start <= '0';
+        assert done = '0';
+        wait for clk_period;
         assert done = '0';
         wait for clk_period;
         assert done = '1';
@@ -90,6 +93,8 @@ begin
         assert done = '0';
         wait for clk_period;
         start <= '0';
+        assert done = '0';
+        wait for clk_period;
         assert done = '0';
         wait for clk_period;
         assert done = '1';

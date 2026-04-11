@@ -3,7 +3,6 @@ USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
 
 use work.math.ALL;
-use work.util.ALL;
 
 ENTITY math_tb IS
 END math_tb;

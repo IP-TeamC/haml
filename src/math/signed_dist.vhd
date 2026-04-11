@@ -2,6 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+use work.adder_tree;
 use work.math.all;
 
 entity signed_dist is
@@ -22,26 +23,36 @@ entity signed_dist is
     );
 end entity;
 
--- Pipeline: Difference Squared -> Addition
+-- Pipeline: quadr. Differenz -> Addition (Adder Tree mit mehreren Stages)
 architecture rtl of signed_dist is
 
     signal started : std_logic;
     signal diff_sq : std_logic_vector((n*fp_size)-1 downto 0);
     signal diff_sq_next : std_logic_vector((n*fp_size)-1 downto 0);
 
-    signal dist_sq_next : signed(fp_size-1 downto 0);
-
 begin
+
+    adder: entity adder_tree
+        generic map (
+            n => n,
+            size => fp_size
+        )
+        port map (
+            clk => clk,
+            start => started,
+            values => diff_sq,
+            sum => dist_sq,
+            done => done
+        );
 
     process (clk)
     begin
         if rising_edge(clk) then
-            started <= start;
             if start = '1' then
                 diff_sq <= diff_sq_next;
             end if;
-            dist_sq <= dist_sq_next;
-            done <= started;
+            -- startet Adder-Tree nach Differenzbildung
+            started <= start;
         end if;
     end process;
 
@@ -53,16 +64,5 @@ begin
                 fp_frac
             ));
     end generate;
-
-    -- TODO: Tree Adder
-    process(diff_sq)
-        variable dist_sq_acc : signed(fp_size-1 downto 0);
-    begin
-        dist_sq_acc := signed(diff_sq(fp_size-1 downto 0));
-        for i in 1 to n-1 loop
-            dist_sq_acc := dist_sq_acc + flat_signed(diff_sq, fp_size, i);
-        end loop;
-        dist_sq_next <= dist_sq_acc;
-    end process;
 
 end architecture;
