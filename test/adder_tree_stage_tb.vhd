@@ -17,6 +17,7 @@ entity adder_tree_stage_tb is
 
     -- Inputs
     signal clk : std_logic := '1';
+    signal rst : std_logic := '1';
     signal start4 : std_logic := '0';
     signal start5 : std_logic := '0';
     signal start6 : std_logic := '0';
@@ -45,6 +46,7 @@ begin
         )
         port map (
             clk => clk,
+            rst => rst,
             start => start4,
             values => values4,
             sum => sum4,
@@ -57,6 +59,7 @@ begin
         )
         port map (
             clk => clk,
+            rst => rst,
             start => start5,
             values => values5,
             sum => sum5,
@@ -69,6 +72,7 @@ begin
         )
         port map (
             clk => clk,
+            rst => rst,
             start => start6,
             values => values6,
             sum => sum6,
@@ -84,8 +88,16 @@ begin
     process
     begin
         
+        start4 <= '0';
+        start5 <= '0';
+        start6 <= '0';
+        rst <= '1';
         wait for clk_period;
-
+        rst <= '0';
+        assert done4 = '0';
+        assert done5 = '0';
+        assert done6 = '0';
+        
         start4 <= '1';
         values4 <= "00001011" & "00001111" & "00001001" & "00010110";
         wait for clk_period;

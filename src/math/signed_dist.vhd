@@ -13,6 +13,7 @@ entity signed_dist is
     );
     port (
         clk : in std_logic;
+        rst : in std_logic;
         start : in std_logic;
 
         a : in std_logic_vector((n*fp_size)-1 downto 0);
@@ -39,6 +40,7 @@ begin
         )
         port map (
             clk => clk,
+            rst => rst,
             start => started,
             values => diff_sq,
             sum => dist_sq,
@@ -51,8 +53,13 @@ begin
             if start = '1' then
                 diff_sq <= diff_sq_next;
             end if;
-            -- startet Adder-Tree nach Differenzbildung
-            started <= start;
+            
+            if rst = '1' then
+                started <= '0';
+            else
+                -- startet Adder-Tree nach Differenzbildung
+                started <= start;
+            end if;
         end if;
     end process;
 

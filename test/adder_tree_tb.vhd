@@ -17,6 +17,7 @@ entity adder_tree_tb is
 
     -- Inputs
     signal clk : std_logic := '1';
+    signal rst : std_logic := '1';
     signal start4 : std_logic := '0';
     signal start5 : std_logic := '0';
     signal start6 : std_logic := '0';
@@ -49,6 +50,7 @@ begin
         )
         port map (
             clk => clk,
+            rst => rst,
             start => start4,
             values => values4,
             sum => sum4,
@@ -61,6 +63,7 @@ begin
         )
         port map (
             clk => clk,
+            rst => rst,
             start => start5,
             values => values5,
             sum => sum5,
@@ -73,6 +76,7 @@ begin
         )
         port map (
             clk => clk,
+            rst => rst,
             start => start6,
             values => values6,
             sum => sum6,
@@ -85,6 +89,7 @@ begin
         )
         port map (
             clk => clk,
+            rst => rst,
             start => start8,
             values => values8,
             sum => sum8,
@@ -101,12 +106,23 @@ begin
     process
     begin
         
+        start4 <= '0';
+        start5 <= '0';
+        start6 <= '0';
+        start8 <= '0';
+        rst <= '1';
         wait for clk_period;
+        rst <= '0';
+        assert done4 = '0';
+        assert done5 = '0';
+        assert done6 = '0';
+        assert done8 = '0';
 
         start4 <= '1';
         values4 <= "00001011" & "00001111" & "00001001" & "00010110";
         wait for clk_period;
         values4 <= "00010010" & "00010011" & "00001000" & "00000111";
+        assert done4 = '0';
         wait for clk_period;
         values4 <= "00000001" & "00000100" & "00010000" & "01000000";
         assert done4 = '1';
@@ -127,9 +143,12 @@ begin
 
         start5 <= '1';
         values5 <= "00001011" & "00001111" & "00001001" & "00010110" & "00100010";
+        assert done5 = '0';
         wait for clk_period;
         start5 <= '0';
+        assert done5 = '0';
         wait for clk_period;
+        assert done5 = '0';
         wait for clk_period;
         assert done5 = '1';
         assert sum5 = "01011011";
@@ -138,9 +157,12 @@ begin
 
         start6 <= '1';
         values6 <= "00001011" & "00001111" & "00001001" & "00010110" & "00100010" & "11110010";
+        assert done6 = '0';
         wait for clk_period;
         start6 <= '0';
+        assert done6 = '0';
         wait for clk_period;
+        assert done6 = '0';
         wait for clk_period;
         assert done6 = '1';
         assert sum6 = "01001101";
@@ -149,10 +171,13 @@ begin
 
         start8 <= '1';
         values8 <= "00001011" & "00001111" & "00001001" & "00010110" & "00001011" & "00001111" & "00001001" & "00010110";
+        assert done8 = '0';
         wait for clk_period;
         start8 <= '0';
         values8 <= (others => '0');
+        assert done8 = '0';
         wait for clk_period;
+        assert done8 = '0';
         wait for clk_period;
         assert done8 = '1';
         assert sum8 = "01110010";

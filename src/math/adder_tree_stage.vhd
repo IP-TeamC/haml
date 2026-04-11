@@ -12,6 +12,7 @@ entity adder_tree_stage is
     );
     port (
         clk : in std_logic;
+        rst : in std_logic;
         start : in std_logic;
 
         values : in std_logic_vector(n*size-1 downto 0);
@@ -32,7 +33,12 @@ begin
             if start = '1' then
                 sum <= sum_next;
             end if;
-            done <= start;
+            
+            if rst = '1' then
+                done <= '0';
+            else
+                done <= start;
+            end if;
         end if;
     end process;
 

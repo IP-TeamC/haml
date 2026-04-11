@@ -10,6 +10,7 @@ entity adder_tree is
     );
     port (
         clk : in std_logic;
+        rst : in std_logic;
         start : in std_logic;
 
         values : in std_logic_vector(n*size-1 downto 0);
@@ -79,6 +80,7 @@ begin
         )
          port map(
             clk => clk,
+            rst => rst,
             start => stages_start(i),
             values => stages_values(stages_config(i).values_upper downto stages_config(i).values_lower),
             sum => stages_values(stages_config(i).sum_upper downto stages_config(i).sum_lower),

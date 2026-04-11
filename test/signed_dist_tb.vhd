@@ -15,6 +15,7 @@ entity signed_dist_tb is
 
     -- Inputs
     signal clk : std_logic := '1';
+    signal rst : std_logic := '1';
     signal start : std_logic := '0';
 
     signal a : std_logic_vector((n*fp_size)-1 downto 0);
@@ -38,6 +39,7 @@ begin
         )
         port map (
             clk => clk,
+            rst => rst,
             start => start,
             a => a,
             b => b,
@@ -55,7 +57,10 @@ begin
     begin
         
         start <= '0';
-        wait for clk_period*5;
+        rst <= '1';
+        wait for clk_period;
+        rst <= '0';
+        assert done = '0';
 
         start <= '1';
         a <= std_logic_vector(to_unsigned(123, fp_size-fp_frac) & to_unsigned(4, fp_frac))
