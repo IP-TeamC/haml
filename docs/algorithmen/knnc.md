@@ -24,4 +24,10 @@
 
 ## MVP
 
-- Datenpunkte in
+Voraussetzung: Datensatz in RAM geladen
+
+1. neuen, zu klassifizierenden Datenpunkt übermitteln
+2. für jeden vorhandenen Datenpunkt
+   1. Datenpunkt lesen
+   2. Distanzberechnung
+   3. Einsortieren

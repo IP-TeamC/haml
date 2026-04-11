@@ -2,6 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+use work.signed_dist;
 use work.math.all;
 
 entity classifier is
@@ -18,12 +19,15 @@ entity classifier is
     port (
         clk : in std_logic;
         rst : in std_logic;
-
         start : in std_logic;
 
-        -- Feature 1 (fp_size), Feature 2 (fp_size), ..., Feature n (fp_size), Class ([...] class_size)
-        ram_adr : in std_logic_vector(adr_size-1 downto 0);
-        ram_data : out std_logic_vector(fp_size-1 downto 0);
+        -- Option 1 (Alternative): Feature 1 (fp_size), Feature 2 (fp_size), ..., Feature n (fp_size), Class ([...] class_size) in aufeinanderfolgenden Zeilen
+        -- Option 2 (Wahl): Feature 1 (fp_size) + Feature 2 (fp_size) + ... + Feature n (fp_size) + Class (class_size) in einer Zeile
+        ram_adr : out std_logic_vector(adr_size-1 downto 0);
+        ram_data : in std_logic_vector(feature_num*fp_size+class_size-1 downto 0);
+
+        start_adr : in std_logic_vector(adr_size-1 downto 0);
+        end_adr : in std_logic_vector(adr_size-1 downto 0); -- zu klassifizierender Datenpunkt ist end_adr+1
 
         done : out std_logic;
         class : out std_logic_vector(class_size-1 downto 0)
@@ -33,52 +37,60 @@ end entity;
 
 architecture rtl of classifier is
 
-    subtype t_fp is signed(fp_size-1 downto 0);
-    type t_features is array (0 to feature_num-1) of t_fp;
+    subtype t_features is std_logic_vector(feature_num*fp_size-1 downto 0);
     subtype t_class is std_logic_vector(class_size-1 downto 0);
-    type state is (idle, read_dp, calc);
 
+    signal started : std_logic;
+    signal read_cmp : std_logic;
     signal cmp_features : t_features;
-    signal dp_features : t_features;
-    signal dp_class : t_class;
 
-    signal diff_sq : t_features;
-    signal diff_sq_next : t_features; 
-
-    signal lowest_dist : t_fp;
-    signal lowest_class : t_class;
+    signal cur_features : t_features;
+    signal cur_class : t_class;
+    signal cur_adr : std_logic_vector(adr_size-1 downto 0);
 
 begin
+
+    -- distance: entity signed_dist
+    --     generic map (
+    --         n => feature_num,
+    --         fp_size => fp_size,
+    --         fp_frac => fp_frac
+    --     )
+    --     port map (
+    --         clk => clk,
+    --         rst => rst,
+    --         start => read_cmp,
+    --         a => cmp_features,
+    --         b => cur_features,
+    --         dist_sq => dist_sq,
+    --         done => done
+    --     );
+
+    ram_adr <= cur_adr when started = '1'
+        else std_logic_vector(unsigned(end_adr)+1) ;
+    cur_features <= ram_data(feature_num*fp_size+class_size-1 downto class_size);
+    cur_class <= ram_data(class_size-1 downto 0);
 
     process (clk)
     begin
         if rising_edge(clk) then
             if rst = '1' then
-                -- ?
-            else
-                diff_sq <= diff_sq_next;
+                started <= '0';
+                read_cmp <= '0';
+            elsif started = '1' then
+                if read_cmp = '1' then
+                    -- todo
+                else
+                    cmp_features <= cur_features;
+                    read_cmp <= '1';
+                end if;
+            elsif start = '1' then
+                cur_adr <= start_adr;
+                started <= start;
             end if;
         end if;
     end process;
 
-    gen_diff: for i in cmp_features'range generate
-    begin
-        diff_sq_next(i) <= fp_mul(
-                cmp_features(i) - dp_features(i),
-                cmp_features(i) - dp_features(i),
-                cmp_features(i)'length
-            );
-    end generate;
 
-    process(diff_sq, lowest_dist)
-        variable dist_acc : signed(fp_size-1 downto 0);
-    begin
-        dist_acc := diff_sq(0);
-        for i in 1 to diff_sq'length-1 loop
-            dist_acc := dist_acc + diff_sq(i);
-        end loop;
-        --lowest_dist <= dist_acc when dist_acc < lowest_dist
-        --    else lowest_dist;
-    end process;
 
 end architecture;
