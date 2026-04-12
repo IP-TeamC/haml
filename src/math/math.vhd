@@ -10,10 +10,32 @@ package math is
         frac_size : natural
     ) return signed;
 
+    function flat_vec(
+        vec : std_logic_vector;
+        size : natural;
+        i : natural
+    ) return std_logic_vector;
+
+    function flat_vec_sub(
+        vec : std_logic_vector;
+        size : natural;
+        i : natural;
+        upper : natural;
+        lower : natural
+    ) return std_logic_vector;
+
     function flat_signed(
         vec : std_logic_vector;
         size : natural;
         i : natural
+    ) return signed;
+
+    function flat_signed_sub(
+        vec : std_logic_vector;
+        size : natural;
+        i : natural;
+        upper : natural;
+        lower : natural
     ) return signed;
 
     function flat_upper(
@@ -41,13 +63,46 @@ package body math is
         return res(a'length+frac_size-1 downto frac_size);
     end function;
 
+    function flat_vec(
+        vec : std_logic_vector;
+        size : natural;
+        i : natural
+    ) return std_logic_vector is
+    begin
+        return vec((i+1)*size-1 downto i*size);
+    end function;
+
+    function flat_vec_sub(
+        vec : std_logic_vector;
+        size : natural;
+        i : natural;
+        upper : natural;
+        lower : natural
+    ) return std_logic_vector is
+        variable unflattened : std_logic_vector(size-1 downto 0);
+    begin
+        unflattened := vec((i+1)*size-1 downto i*size);
+        return unflattened(upper downto lower);
+    end function;
+
     function flat_signed(
         vec : std_logic_vector;
         size : natural;
         i : natural
     ) return signed is
     begin
-        return signed(vec((i+1)*size-1 downto i*size));
+        return signed(flat_vec(vec, size, i));
+    end function;
+
+    function flat_signed_sub(
+        vec : std_logic_vector;
+        size : natural;
+        i : natural;
+        upper : natural;
+        lower : natural
+    ) return signed is
+    begin
+        return signed(flat_vec_sub(vec, size, i, upper, lower));
     end function;
 
     function flat_upper(
