@@ -16,7 +16,7 @@ package math is
         i : natural
     ) return std_logic_vector;
 
-    function flat_vec_sub(
+    function flat_vec_slice(
         vec : std_logic_vector;
         size : natural;
         i : natural;
@@ -30,13 +30,27 @@ package math is
         i : natural
     ) return signed;
 
-    function flat_signed_sub(
+    function flat_signed_slice(
         vec : std_logic_vector;
         size : natural;
         i : natural;
         upper : natural;
         lower : natural
     ) return signed;
+
+    function flat_unsigned(
+        vec : std_logic_vector;
+        size : natural;
+        i : natural
+    ) return unsigned;
+
+    function flat_unsigned_slice(
+        vec : std_logic_vector;
+        size : natural;
+        i : natural;
+        upper : natural;
+        lower : natural
+    ) return unsigned;
 
     function flat_upper(
         size : natural;
@@ -72,7 +86,7 @@ package body math is
         return vec((i+1)*size-1 downto i*size);
     end function;
 
-    function flat_vec_sub(
+    function flat_vec_slice(
         vec : std_logic_vector;
         size : natural;
         i : natural;
@@ -94,7 +108,7 @@ package body math is
         return signed(flat_vec(vec, size, i));
     end function;
 
-    function flat_signed_sub(
+    function flat_signed_slice(
         vec : std_logic_vector;
         size : natural;
         i : natural;
@@ -102,7 +116,27 @@ package body math is
         lower : natural
     ) return signed is
     begin
-        return signed(flat_vec_sub(vec, size, i, upper, lower));
+        return signed(flat_vec_slice(vec, size, i, upper, lower));
+    end function;
+
+    function flat_unsigned(
+        vec : std_logic_vector;
+        size : natural;
+        i : natural
+    ) return unsigned is
+    begin
+        return unsigned(flat_vec(vec, size, i));
+    end function;
+
+    function flat_unsigned_slice(
+        vec : std_logic_vector;
+        size : natural;
+        i : natural;
+        upper : natural;
+        lower : natural
+    ) return unsigned is
+    begin
+        return unsigned(flat_vec_slice(vec, size, i, upper, lower));
     end function;
 
     function flat_upper(

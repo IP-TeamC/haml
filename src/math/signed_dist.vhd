@@ -9,7 +9,8 @@ entity signed_dist is
     generic (
         n : natural;
         fp_size : natural;
-        fp_frac : natural := 0
+        fp_frac : natural := 0;
+        data_size : natural := 0
     );
     port (
         clk : in std_logic;
@@ -18,9 +19,11 @@ entity signed_dist is
 
         a : in std_logic_vector((n*fp_size)-1 downto 0);
         b : in std_logic_vector((n*fp_size)-1 downto 0);
+        di : in std_logic_vector(data_size-1 downto 0);
 
         dist_sq : out signed(fp_size-1 downto 0);
-        done : out std_logic
+        done : out std_logic;
+        do : out std_logic_vector(data_size-1 downto 0)
     );
 end entity;
 
@@ -30,13 +33,15 @@ architecture rtl of signed_dist is
     signal started : std_logic;
     signal diff_sq : std_logic_vector((n*fp_size)-1 downto 0);
     signal diff_sq_next : std_logic_vector((n*fp_size)-1 downto 0);
+    signal di_delayed : std_logic_vector(data_size-1 downto 0);
 
 begin
 
     adder: entity adder_tree
         generic map (
             n => n,
-            size => fp_size
+            size => fp_size,
+            data_size => data_size
         )
         port map (
             clk => clk,
@@ -44,7 +49,9 @@ begin
             start => started,
             values => diff_sq,
             sum => dist_sq,
-            done => done
+            done => done,
+            di => di_delayed,
+            do => do
         );
 
     process (clk)
@@ -52,6 +59,7 @@ begin
         if rising_edge(clk) then
             if start = '1' then
                 diff_sq <= diff_sq_next;
+                di_delayed <= di;
             end if;
             
             if rst = '1' then

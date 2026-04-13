@@ -8,7 +8,8 @@ use work.math.all;
 entity adder_tree_stage is
     generic (
         n : natural;
-        size : natural
+        size : natural;
+        data_size : natural := 0
     );
     port (
         clk : in std_logic;
@@ -18,7 +19,10 @@ entity adder_tree_stage is
         values : in std_logic_vector(n*size-1 downto 0);
         sum : out std_logic_vector(natural(ceil(real(n)/2.0))*size-1 downto 0);
 
-        done : out std_logic
+        done : out std_logic;
+
+        di : in std_logic_vector(data_size-1 downto 0);
+        do : out std_logic_vector(data_size-1 downto 0)
     );
 end entity;
 
@@ -39,6 +43,8 @@ begin
             else
                 done <= start;
             end if;
+
+            do <= di;
         end if;
     end process;
 

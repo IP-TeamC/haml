@@ -6,7 +6,8 @@ use ieee.math_real.all;
 entity adder_tree is
     generic (
         n : natural;
-        size : natural
+        size : natural;
+        data_size : natural := 0
     );
     port (
         clk : in std_logic;
@@ -16,7 +17,10 @@ entity adder_tree is
         values : in std_logic_vector(n*size-1 downto 0);
         sum : out signed(size-1 downto 0);
 
-        done : out std_logic
+        done : out std_logic;
+
+        di : in std_logic_vector(data_size-1 downto 0);
+        do : out std_logic_vector(data_size-1 downto 0)
     );
 end entity;
 
@@ -64,19 +68,25 @@ architecture rtl of adder_tree is
     signal stages_values : std_logic_vector(stages_config(stages_num-1).sum_upper downto 0);
     signal stages_start : std_logic_vector(stages_num downto 0);
 
+    type t_stages_data is array (0 to stages_num) of std_logic_vector(data_size-1 downto 0);
+    signal stages_data : t_stages_data;
+
 begin
 
     stages_values(n*size-1 downto 0) <= values;
     stages_start(0) <= start;
+    stages_data(0) <= di;
 
     sum <= signed(stages_values(stages_config(stages_num-1).sum_upper downto stages_config(stages_num-1).sum_upper-size+1));
     done <= stages_start(stages_num);
+    do <= stages_data(stages_num);
 
     stages_add: for i in 0 to stages_num-1 generate
         stage: entity work.adder_tree_stage
          generic map(
             n => stages_config(i).n,
-            size => size
+            size => size,
+            data_size => data_size
         )
          port map(
             clk => clk,
@@ -84,7 +94,9 @@ begin
             start => stages_start(i),
             values => stages_values(stages_config(i).values_upper downto stages_config(i).values_lower),
             sum => stages_values(stages_config(i).sum_upper downto stages_config(i).sum_lower),
-            done => stages_start(i+1)
+            done => stages_start(i+1),
+            di => stages_data(i),
+            do => stages_data(i+1)
         );
     end generate;
 

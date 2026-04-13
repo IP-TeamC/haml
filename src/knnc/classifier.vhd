@@ -2,8 +2,10 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-use work.signed_dist;
 use work.math.all;
+use work.signed_dist;
+use work.ktop;
+use work.kselect;
 
 entity classifier is
 
@@ -47,29 +49,79 @@ architecture rtl of classifier is
     signal cur_features : t_features;
     signal cur_class : t_class;
     signal cur_adr : std_logic_vector(adr_size-1 downto 0);
+    signal next_adr : std_logic_vector(adr_size-1 downto 0);
+
+    signal dist : signed(fp_size-1 downto 0);
+    signal top_dist : std_logic_vector(k*fp_size-1 downto 0);
+    signal top_class : std_logic_vector(k*class_size-1 downto 0);
+
+    signal dist_done : std_logic;
+    signal cmp_done : std_logic;
+    signal selector_done_prev : std_logic;
+    signal selector_done_next : std_logic;
+
+    signal dist_class : std_logic_vector(class_size-1 downto 0);
+    signal selected_class : std_logic_vector(class_size-1 downto 0);
+
+    signal component_rst : std_logic;
 
 begin
 
-    -- distance: entity signed_dist
-    --     generic map (
-    --         n => feature_num,
-    --         fp_size => fp_size,
-    --         fp_frac => fp_frac
-    --     )
-    --     port map (
-    --         clk => clk,
-    --         rst => rst,
-    --         start => read_cmp,
-    --         a => cmp_features,
-    --         b => cur_features,
-    --         dist_sq => dist_sq,
-    --         done => done
-    --     );
+    distance: entity signed_dist
+        generic map (
+            n => feature_num,
+            fp_size => fp_size,
+            fp_frac => fp_frac,
+            data_size => class_size
+        )
+        port map (
+            clk => clk,
+            rst => component_rst,
+            start => read_cmp,
+            a => cmp_features,
+            b => cur_features,
+            dist_sq => dist,
+            done => dist_done,
+            di => cur_class,
+            do => dist_class
+        );
+    comparator: entity ktop
+        generic map(
+            k => k,
+            dist_size => fp_size,
+            class_size => class_size
+        )
+        port map(
+            clk => clk,
+            rst => component_rst,
+            start => dist_done,
+            dist => std_logic_vector(dist),
+            class => dist_class,
+            top_dist => top_dist,
+            top_class => top_class,
+            done => cmp_done
+        );
+    selector: entity work.kselect
+        generic map(
+            k => k,
+            class_size => class_size
+        )
+        port map(
+            clk => clk,
+            rst => component_rst,
+            start => cmp_done,
+            top_class => top_class,
+            class => selected_class,
+            done => selector_done_next
+        );
 
     ram_adr <= cur_adr when started = '1'
         else std_logic_vector(unsigned(end_adr)+1) ;
     cur_features <= ram_data(feature_num*fp_size+class_size-1 downto class_size);
     cur_class <= ram_data(class_size-1 downto 0);
+    next_adr <= std_logic_vector(unsigned(cur_adr) + 1);
+    done <= not selector_done_next and selector_done_prev;
+    component_rst <= rst or (start and not started);
 
     process (clk)
     begin
@@ -78,19 +130,24 @@ begin
                 started <= '0';
                 read_cmp <= '0';
             elsif started = '1' then
-                if read_cmp = '1' then
-                    -- todo
-                else
+                if read_cmp = '0' then
                     cmp_features <= cur_features;
                     read_cmp <= '1';
+                elsif unsigned(cur_adr) = unsigned(end_adr)+1 then
+                    started <= '0';
+                    read_cmp <= '0';
                 end if;
+                cur_adr <= next_adr;
             elsif start = '1' then
                 cur_adr <= start_adr;
                 started <= start;
             end if;
+
+            if selector_done_next = '1' then
+                class <= selected_class;
+            end if;
+            selector_done_prev <= selector_done_next;
         end if;
     end process;
-
-
 
 end architecture;

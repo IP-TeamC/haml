@@ -25,6 +25,7 @@ entity ktop_tb is
     -- Outputs
     signal top_dist : std_logic_vector(k*dist_size-1 downto 0);
     signal top_class : std_logic_vector(k*class_size-1 downto 0);
+    signal done : std_logic;
 end entity;
 
 architecture rtl of ktop_tb is
@@ -44,7 +45,8 @@ begin
             dist => dist,
             class => class,
             top_dist => top_dist,
-            top_class => top_class
+            top_class => top_class,
+            done => done
         );
 
     clk_process: process

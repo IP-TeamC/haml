@@ -12,6 +12,7 @@ entity signed_dist_tb is
     constant n : natural := 3;
     constant fp_size : natural := 13;
     constant fp_frac : natural := 3;
+    constant data_size : natural := 2;
 
     -- Inputs
     signal clk : std_logic := '1';
@@ -20,10 +21,12 @@ entity signed_dist_tb is
 
     signal a : std_logic_vector((n*fp_size)-1 downto 0);
     signal b : std_logic_vector((n*fp_size)-1 downto 0);
+    signal di : std_logic_vector(data_size-1 downto 0);
 
     -- Outputs
     signal dist_sq : signed(fp_size-1 downto 0);
     signal done : std_logic;
+    signal do : std_logic_vector(data_size-1 downto 0);
 
 end entity;
 
@@ -35,7 +38,8 @@ begin
         generic map (
             n => n,
             fp_size => fp_size,
-            fp_frac => fp_frac
+            fp_frac => fp_frac,
+            data_size => data_size
         )
         port map (
             clk => clk,
@@ -44,7 +48,9 @@ begin
             a => a,
             b => b,
             dist_sq => dist_sq,
-            done => done
+            done => done,
+            di => di,
+            do => do
         );
 
     clk_process: process
@@ -69,7 +75,9 @@ begin
         b <= std_logic_vector(to_unsigned(124, fp_size-fp_frac) & to_unsigned(4, fp_frac))
             & std_logic_vector(to_unsigned(456, fp_size-fp_frac) & to_unsigned(2, fp_frac))
             & std_logic_vector(to_unsigned(789, fp_size-fp_frac) & to_unsigned(3, fp_frac));
+        di <= "01";
         wait for clk_period;
+        di <= "00";
         start <= '0';
         assert done = '0';
         wait for clk_period;
@@ -77,12 +85,15 @@ begin
         wait for clk_period;
         assert done = '1';
         assert dist_sq = to_signed(8, fp_size);
+        assert do = "01";
         wait for clk_period;
         assert done = '0';
         assert dist_sq = to_signed(8, fp_size);
+        assert do = "01";
         wait for clk_period;
         assert done = '0';
         assert dist_sq = to_signed(8, fp_size);
+        assert do = "01";
 
         a <= std_logic_vector(to_unsigned(123, fp_size-fp_frac) & to_unsigned(4, fp_frac))
             & std_logic_vector(to_unsigned(456, fp_size-fp_frac) & to_unsigned(2, fp_frac))
@@ -90,20 +101,24 @@ begin
         b <= std_logic_vector(to_unsigned(125, fp_size-fp_frac) & to_unsigned(4, fp_frac))
             & std_logic_vector(to_unsigned(459, fp_size-fp_frac) & to_unsigned(2, fp_frac))
             & std_logic_vector(to_unsigned(793, fp_size-fp_frac) & to_unsigned(3, fp_frac));
+        di <= "11";
         wait for clk_period;
         assert done = '0';
         assert dist_sq = to_signed(8, fp_size);
+        assert do = "01";
         wait for clk_period;
         start <= '1';
         assert done = '0';
         wait for clk_period;
         start <= '0';
+        di <= "00";
         assert done = '0';
         wait for clk_period;
         assert done = '0';
         wait for clk_period;
         assert done = '1';
         assert dist_sq = to_signed(232, fp_size);
+        assert do = "11";
         wait for clk_period;
         assert done = '0';
 
