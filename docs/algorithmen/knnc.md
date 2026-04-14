@@ -24,7 +24,10 @@
 
 ## MVP
 
-Voraussetzung: Datensatz in RAM geladen
+TODO: Kommunikation mit CPU
+
+- Idee Kommunikation: Testbench, die Signale verbindet? Start-Daten und CPU in Testbench simulieren?
+  Voraussetzung: Datensatz in RAM geladen
 
 1. neuen, zu klassifizierenden Datenpunkt übermitteln
 2. für jeden vorhandenen Datenpunkt

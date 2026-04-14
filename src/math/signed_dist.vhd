@@ -27,13 +27,18 @@ entity signed_dist is
     );
 end entity;
 
--- Pipeline: quadr. Differenz -> Addition (Adder Tree mit mehreren Stages)
+-- Pipeline: Differenz -> Quadrat -> Addition (Adder Tree mit mehreren Stages)
 architecture rtl of signed_dist is
 
-    signal started : std_logic;
+    signal diff : std_logic_vector((n*fp_size)-1 downto 0);
+    signal diff_next : std_logic_vector((n*fp_size)-1 downto 0);
+    signal done_diff : std_logic;
+    signal di_delayed_diff : std_logic_vector(data_size-1 downto 0);
+
     signal diff_sq : std_logic_vector((n*fp_size)-1 downto 0);
     signal diff_sq_next : std_logic_vector((n*fp_size)-1 downto 0);
-    signal di_delayed : std_logic_vector(data_size-1 downto 0);
+    signal done_diff_sq : std_logic;
+    signal di_delayed_diff_sq : std_logic_vector(data_size-1 downto 0);
 
 begin
 
@@ -46,36 +51,47 @@ begin
         port map (
             clk => clk,
             rst => rst,
-            start => started,
+            start => done_diff_sq,
             values => diff_sq,
             sum => dist_sq,
             done => done,
-            di => di_delayed,
+            di => di_delayed_diff_sq,
             do => do
         );
 
     process (clk)
     begin
         if rising_edge(clk) then
-            if start = '1' then
-                diff_sq <= diff_sq_next;
-                di_delayed <= di;
-            end if;
-            
             if rst = '1' then
-                started <= '0';
+                done_diff <= '0';
+                done_diff_sq <= '0';
             else
-                -- startet Adder-Tree nach Differenzbildung
-                started <= start;
+                if start = '1' then
+                    diff <= diff_next;
+                    di_delayed_diff <= di;
+                end if;
+
+                if done_diff = '1' then
+                    diff_sq <= diff_sq_next;
+                    di_delayed_diff_sq <= di_delayed_diff;
+                end if;
+
+                done_diff <= start;
+                done_diff_sq <= done_diff;
             end if;
         end if;
     end process;
 
     gen_diff: for i in 0 to n-1 generate
     begin
+        diff_next(flat_upper(fp_size, i) downto flat_lower(fp_size, i)) <= std_logic_vector(flat_signed(a, fp_size, i) - flat_signed(b, fp_size, i));
+    end generate;
+
+    gen_diff_sq: for i in 0 to n-1 generate
+    begin
         diff_sq_next(flat_upper(fp_size, i) downto flat_lower(fp_size, i)) <= std_logic_vector(fp_mul(
-                flat_signed(a, fp_size, i) - flat_signed(b, fp_size, i),
-                flat_signed(a, fp_size, i) - flat_signed(b, fp_size, i),
+                flat_signed(diff, fp_size, i),
+                flat_signed(diff, fp_size, i),
                 fp_frac
             ));
     end generate;

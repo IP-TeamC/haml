@@ -11,8 +11,8 @@ entity classifier is
 
     generic (
         k : natural := 3;
-        fp_size : natural := 36;
-        fp_frac : natural := 10;
+        fp_size : natural := 18;
+        fp_frac : natural := 4;
         class_size : natural := 1;
         feature_num : natural := 7;
         adr_size : natural := 8

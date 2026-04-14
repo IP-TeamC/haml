@@ -49,9 +49,17 @@ begin
     end process;
 
     pair_add: for i in 0 to sum_num-1 generate
-        sum_next(flat_upper(size, i) downto flat_lower(size, i)) <=
-            std_logic_vector(flat_signed(values, size, 2*i)) when i = sum_num-1 and n mod 2 = 1
-            else std_logic_vector(flat_signed(values, size, 2*i) + flat_signed(values, size, 2*i+1));
+
+        uneven_and_limit: if n mod 2 = 1 and i = sum_num-1 generate
+            sum_next(flat_upper(size, i) downto flat_lower(size, i)) <=
+                std_logic_vector(flat_signed(values, size, 2*i));
+        end generate;
+
+        even_or_nolimit: if n mod 2 = 0 or i /= sum_num-1 generate
+            sum_next(flat_upper(size, i) downto flat_lower(size, i)) <=
+                std_logic_vector(flat_signed(values, size, 2*i) + flat_signed(values, size, (2*i)+1));
+        end generate;
+
     end generate;
 
 end architecture;

@@ -83,6 +83,8 @@ begin
         wait for clk_period;
         assert done = '0';
         wait for clk_period;
+        assert done = '0';
+        wait for clk_period;
         assert done = '1';
         assert dist_sq = to_signed(8, fp_size);
         assert do = "01";
@@ -112,6 +114,8 @@ begin
         wait for clk_period;
         start <= '0';
         di <= "00";
+        assert done = '0';
+        wait for clk_period;
         assert done = '0';
         wait for clk_period;
         assert done = '0';
