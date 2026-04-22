@@ -1,4 +1,4 @@
-# Genetische Algorithmen
+# Genetische Algorithmen (alt)
 
 ## Umsetzbarkeit
 
@@ -10,7 +10,6 @@
 - sehr gute Parallelisierung
   - parallele Anpassung der Population (Mutation, Crossover)
   - parallele Berechnung der Fitness-Funktion
-  - Einschränkung: RAM
 - agentenbasiert sehr gut möglich
   - z.B. Teil-Populationen
 
