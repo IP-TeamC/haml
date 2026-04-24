@@ -36,7 +36,11 @@ entity knnc_bq is
     signal done : std_logic;
     signal class : std_logic_vector(class_size-1 downto 0);
 
-    -- RAM-Arbitrierung
+end entity;
+
+architecture rtl of knnc_bq is
+
+    -- RAM-Splitter für Init/Simulation
     signal init_done : boolean := false;
     signal ram_we_init : std_logic := '0';
     signal ram_we_sim : std_logic := '0';
@@ -47,9 +51,6 @@ entity knnc_bq is
     signal ram_adr_init : std_logic_vector(ram_adr'range) := (others => '0');
     signal ram_adr_sim : std_logic_vector(ram_adr'range) := (others => '0');
 
-end entity;
-
-architecture rtl of knnc_bq is
 begin
 
     knnc: entity work.knnc
@@ -65,13 +66,13 @@ begin
             clk => clk,
             rst => rst,
             start => start,
-            done => done,
-            class => class,
             mark_end_adr => mark_end_adr,
             ram_we => ram_we,
             ram_adr => ram_adr,
             ram_data => ram_data,
-            ram_part => ram_part
+            ram_part => ram_part,
+            done => done,
+            class => class
         );
 
     clk_process: process
@@ -80,10 +81,10 @@ begin
         wait for clk_period/2;
     end process;
 
-    ram_we <= ram_we_init or ram_we_sim;
-    ram_adr <= ram_adr_init when init_done = false else ram_adr_sim;
-    ram_part <= ram_part_init when init_done = false else ram_part_sim;
-    ram_data <= ram_data_init when init_done = false else ram_data_sim;
+    ram_we <= ram_we_sim or ram_we_init;
+    ram_adr <= ram_adr_sim when init_done else ram_adr_init;
+    ram_part <= ram_part_sim when init_done else ram_part_init;
+    ram_data <= ram_data_sim when init_done else ram_data_init;
 
     init_process: process
     begin
@@ -100,7 +101,7 @@ begin
     end process;
 
     process
-        variable i : integer := 1999;
+        variable i : integer := 1975;
         variable correct : natural := 0;
         variable wrong : natural := 0;
     begin
@@ -120,21 +121,21 @@ begin
 
         wait until done = '1';
 
-        report std_logic'image(class(0));
-        report std_logic'image(dataset(i, 0)(0));
         if class(0) = dataset(i, 0)(0) then
-            report "correct";
+            report "correct (pred/exp): " & std_logic'image(class(0)) & " " & std_logic'image(dataset(i, 0)(0));
             correct := correct + 1;
         else
-            report "wrong";
+            report "wrong (pred/exp): " & std_logic'image(class(0)) & " " & std_logic'image(dataset(i, 0)(0));
             wrong := wrong + 1;
         end if;
 
-        if to_integer(unsigned(work.bq_dataset.END_ADR)) = i or i = 2025 then
+        if i = dataset'high or i mod 10 = 0 then
             report "Total: " & integer'image(correct + wrong);
             report "Correct: " & integer'image(correct);
             report "Wrong: " & integer'image(wrong);
-            assert false report "End";
+            if i = dataset'high then
+                assert false report "End";
+            end if;
         end if;
         i := i + 1;
 

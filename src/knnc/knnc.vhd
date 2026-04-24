@@ -20,15 +20,15 @@ entity knnc is
         clk : in std_logic;
         rst : in std_logic;
         start : in std_logic;
-        done : out std_logic;
-        class : out std_logic_vector(class_size-1 downto 0);
-
 
         mark_end_adr : in std_logic;
         ram_we : in std_logic;
         ram_adr : in std_logic_vector(adr_size-1 downto 0);
         ram_data : in std_logic_vector(fp_size-1 downto 0);
-        ram_part : in std_logic_vector(natural(ceil(log2(real(feature_num+1))))-1 downto 0) -- 0 => Class, 1 => Feature 1, ...
+        ram_part : in std_logic_vector(natural(ceil(log2(real(feature_num+1))))-1 downto 0); -- 0 => Class, 1 => Feature 1, ...
+
+        done : out std_logic;
+        class : out std_logic_vector(class_size-1 downto 0)
     );
 
 end entity;
