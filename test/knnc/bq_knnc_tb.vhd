@@ -7,7 +7,7 @@ use work.util.all;
 use work.math.all;
 use work.classifier;
 use work.ram;
-use work.bq_dataset.all;
+use work.bq_dataset_tb.all;
 
 entity knnc_bq is
 
@@ -18,7 +18,7 @@ entity knnc_bq is
     constant fp_frac : natural := 20;
     constant class_size : natural := 1;
     constant feature_num : natural := 7;
-    constant adr_size : natural := work.bq_dataset.ADR_SIZE;
+    constant adr_size : natural := work.bq_dataset_tb.ADR_SIZE;
     constant part_size : natural := 3;
     constant start_dp : natural := 1990;
     constant end_dp : natural := 2010;

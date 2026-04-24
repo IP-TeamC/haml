@@ -2,4 +2,4 @@ standard = "93"
 preferred_case = "lower"
 
 [libraries.defaultlib]
-files = ['src/*/*.vhd', 'test/*.vhd']
+files = ['src/*/*.vhd', 'test/*/*.vhd']

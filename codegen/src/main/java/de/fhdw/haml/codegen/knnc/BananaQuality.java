@@ -18,7 +18,7 @@ public class BananaQuality {
             use ieee.std_logic_1164.all;
             use ieee.numeric_std.all;
             
-            package bq_dataset is
+            package bq_dataset_tb is
             
                 constant ADR_SIZE : natural := 13;
                 constant PART_SIZE : natural := %d;
@@ -50,7 +50,7 @@ public class BananaQuality {
             
             end package;
             
-            package body bq_dataset is
+            package body bq_dataset_tb is
             
                 procedure write_dataset_to_ram (
                     signal we : out std_logic;
@@ -130,7 +130,7 @@ public class BananaQuality {
                 dataSet.inputSize,
                 entries
         );
-        Files.writeString(Path.of("../test/bq_dataset.vhd"), file, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE);
+        Files.writeString(Path.of("../test/knnc/bq_dataset_tb.vhd"), file, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE);
     }
 
 }
