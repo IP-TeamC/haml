@@ -16,4 +16,8 @@ public class Binary {
         return fpBinary.substring(fpBinary.length() - fpSize);
     }
 
+    public static String toBinaryPad(int value, int pad) {
+        return ("%" + pad + "s").formatted(Integer.toBinaryString(value)).replace(' ', '0');
+    }
+
 }

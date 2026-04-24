@@ -27,8 +27,6 @@ entity classifier is
         -- Option 2 (Wahl): Feature 1 (fp_size) + Feature 2 (fp_size) + ... + Feature n (fp_size) + Class (class_size) in einer Zeile
         ram_adr : out std_logic_vector(adr_size-1 downto 0);
         ram_data : in std_logic_vector(feature_num*fp_size+class_size-1 downto 0);
-
-        start_adr : in std_logic_vector(adr_size-1 downto 0);
         end_adr : in std_logic_vector(adr_size-1 downto 0); -- zu klassifizierender Datenpunkt ist end_adr+1
 
         done : out std_logic;
@@ -139,7 +137,7 @@ begin
                 end if;
                 cur_adr <= next_adr;
             elsif start = '1' then
-                cur_adr <= start_adr;
+                cur_adr <= (others => '0');
                 started <= start;
             end if;
 
