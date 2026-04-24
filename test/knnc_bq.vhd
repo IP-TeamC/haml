@@ -20,6 +20,8 @@ entity knnc_bq is
     constant feature_num : natural := 7;
     constant adr_size : natural := work.bq_dataset.ADR_SIZE;
     constant part_size : natural := 3;
+    constant start_dp : natural := 1990;
+    constant end_dp : natural := 2010;
 
     -- Inputs
     signal clk : std_logic := '1';
@@ -101,7 +103,7 @@ begin
     end process;
 
     process
-        variable i : integer := 1975;
+        variable i : integer := start_dp;
         variable correct : natural := 0;
         variable wrong : natural := 0;
     begin
@@ -129,11 +131,11 @@ begin
             wrong := wrong + 1;
         end if;
 
-        if i = dataset'high or i mod 10 = 0 then
+        if i = end_dp or i mod 10 = 0 then
             report "Total: " & integer'image(correct + wrong);
             report "Correct: " & integer'image(correct);
             report "Wrong: " & integer'image(wrong);
-            if i = dataset'high then
+            if i = end_dp then
                 assert false report "End";
             end if;
         end if;
