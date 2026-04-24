@@ -25,7 +25,7 @@ entity classifier_tb is
     signal start : std_logic := '0';
 
     signal ram_data : std_logic_vector(feature_num*fp_size+class_size-1 downto 0);
-    signal end_adr : std_logic_vector(adr_size-1 downto 0);
+    signal dp_adr : std_logic_vector(adr_size-1 downto 0);
 
     -- Outputs
     signal ram_adr : std_logic_vector(adr_size-1 downto 0);
@@ -62,7 +62,7 @@ begin
             start => start,
             ram_adr => read_adr,
             ram_data => ram_data,
-            end_adr => end_adr,
+            dp_adr => dp_adr,
             done => done,
             class => class
         );
@@ -121,9 +121,11 @@ begin
         we <= '0';
 
         start <= '1';
-        end_adr <= "0101";
+        dp_adr <= "0110";
         wait for clk_period;
         start <= '0';
+        assert done = '0';
+        wait for clk_period;
         assert done = '0';
         wait for clk_period;
         assert done = '0';
@@ -162,6 +164,8 @@ begin
         start <= '1';
         wait for clk_period;
         start <= '0';
+        assert done = '0';
+        wait for clk_period;
         assert done = '0';
         wait for clk_period;
         assert done = '0';

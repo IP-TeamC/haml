@@ -84,9 +84,11 @@ public class BananaQuality {
                     we <= '1';
                     write_adr <= std_logic_vector(unsigned(END_ADR)+1);
                     for part in t_dataset'range(2) loop
-                        write_part <= std_logic_vector(to_unsigned(part, PART_SIZE));
-                        write_data <= dataset(i, part);
-                        wait for clk_period;
+                        if part /= 0 then
+                            write_part <= std_logic_vector(to_unsigned(part, PART_SIZE));
+                            write_data <= dataset(i, part);
+                            wait for clk_period;
+                        end if;
                     end loop;
                     we <= '0';
                 end procedure;

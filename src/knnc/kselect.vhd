@@ -12,7 +12,7 @@ entity kselect is
     );
     port (
         clk : in std_logic;
-        rst : in std_logic;
+        --rst : in std_logic;
         start : in std_logic;
 
         top_class : in std_logic_vector(k*class_size-1 downto 0);

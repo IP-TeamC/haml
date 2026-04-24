@@ -26,7 +26,7 @@ entity knnc_bq is
     signal rst : std_logic := '1';
     signal start : std_logic := '0';
 
-    signal mark_end_adr : std_logic;
+    signal mark_end : std_logic;
     signal ram_we : std_logic := '0';
     signal ram_adr : std_logic_vector(adr_size-1 downto 0);
     signal ram_part : std_logic_vector(part_size-1 downto 0);
@@ -66,7 +66,7 @@ begin
             clk => clk,
             rst => rst,
             start => start,
-            mark_end_adr => mark_end_adr,
+            mark_end => mark_end,
             ram_we => ram_we,
             ram_adr => ram_adr,
             ram_data => ram_data,
@@ -91,9 +91,9 @@ begin
         init_done <= false;
 
         -- Dataset erzeugen
-        mark_end_adr <= '1';
+        mark_end <= '1';
         write_dataset_to_ram(ram_we_init, ram_adr_init, ram_part_init, ram_data_init, clk_period);
-        mark_end_adr <= '0';
+        mark_end <= '0';
 
         report "written dataset";
         init_done <= true;

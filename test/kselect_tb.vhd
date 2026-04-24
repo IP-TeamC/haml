@@ -36,7 +36,7 @@ begin
         )
         port map (
             clk => clk,
-            rst => rst,
+            --rst => rst,
             start => start,
             top_class => top_class,
             class => class,

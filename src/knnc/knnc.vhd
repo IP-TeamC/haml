@@ -21,7 +21,7 @@ entity knnc is
         rst : in std_logic;
         start : in std_logic;
 
-        mark_end_adr : in std_logic;
+        mark_end : in std_logic;
         ram_we : in std_logic;
         ram_adr : in std_logic_vector(adr_size-1 downto 0);
         ram_data : in std_logic_vector(fp_size-1 downto 0);
@@ -41,7 +41,7 @@ architecture rtl of knnc is
     signal i_ram_adr : t_ram_adr; -- RAM-Adresse (Read vom Classifier oder Write von außen)
     signal i_ram_data : t_ram_data; -- Zusammengesetzter RAM
     signal i_read_adr : t_ram_adr; -- Lese-Adresse vom Classifier
-    signal i_end_adr : t_ram_adr; -- Gespeicherte End-Adresse (zu klassifizieren)
+    signal i_dp_adr : t_ram_adr; -- Gespeicherte Datenpunkt-Adresse (zu klassifizieren)
 
 begin
 
@@ -60,7 +60,7 @@ begin
             start => start,
             ram_adr => i_read_adr,
             ram_data => i_ram_data,
-            end_adr => i_end_adr,
+            dp_adr => i_dp_adr,
             done => done,
             class => class
         );
@@ -104,8 +104,8 @@ begin
     process(clk)
     begin
         if rising_edge(clk) then
-            if mark_end_adr = '1' then
-                i_end_adr <= ram_adr;
+            if mark_end = '1' then
+                i_dp_adr <= std_logic_vector(unsigned(ram_adr)+1);
             end if;
         end if;
     end process;

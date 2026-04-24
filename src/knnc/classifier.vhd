@@ -27,7 +27,7 @@ entity classifier is
         -- Option 2 (Wahl): Feature 1 (fp_size) + Feature 2 (fp_size) + ... + Feature n (fp_size) + Class (class_size) in einer Zeile
         ram_adr : out std_logic_vector(adr_size-1 downto 0);
         ram_data : in std_logic_vector(feature_num*fp_size+class_size-1 downto 0);
-        end_adr : in std_logic_vector(adr_size-1 downto 0); -- zu klassifizierender Datenpunkt ist end_adr+1
+        dp_adr : in std_logic_vector(adr_size-1 downto 0); -- Adresse des zu klassifizierenden Datenpunkts
 
         done : out std_logic;
         class : out std_logic_vector(class_size-1 downto 0)
@@ -50,7 +50,6 @@ architecture rtl of classifier is
     signal next_adr : std_logic_vector(adr_size-1 downto 0);
 
     signal dist : signed(fp_size-1 downto 0);
-    signal top_dist : std_logic_vector(k*fp_size-1 downto 0);
     signal top_class : std_logic_vector(k*class_size-1 downto 0);
 
     signal dist_done : std_logic;
@@ -62,6 +61,10 @@ architecture rtl of classifier is
     signal selected_class : std_logic_vector(class_size-1 downto 0);
 
     signal component_rst : std_logic;
+
+    signal cache_features : t_features;
+    signal cache_class : t_class;
+    signal cache_read_cmp : std_logic;
 
 begin
 
@@ -75,12 +78,12 @@ begin
         port map (
             clk => clk,
             rst => component_rst,
-            start => read_cmp,
+            start => cache_read_cmp,
             a => cmp_features,
-            b => cur_features,
+            b => cache_features,
             dist_sq => dist,
             done => dist_done,
-            di => cur_class,
+            di => cache_class,
             do => dist_class
         );
     comparator: entity ktop
@@ -95,7 +98,7 @@ begin
             start => dist_done,
             dist => std_logic_vector(dist),
             class => dist_class,
-            top_dist => top_dist,
+            top_dist => open,
             top_class => top_class,
             done => cmp_done
         );
@@ -106,39 +109,43 @@ begin
         )
         port map(
             clk => clk,
-            rst => component_rst,
+            --rst => component_rst,
             start => cmp_done,
             top_class => top_class,
             class => selected_class,
             done => selector_done_next
         );
 
-    ram_adr <= cur_adr when started = '1'
-        else std_logic_vector(unsigned(end_adr)+1) ;
+    ram_adr <= cur_adr when started = '1' else dp_adr;
     cur_features <= ram_data(feature_num*fp_size+class_size-1 downto class_size);
     cur_class <= ram_data(class_size-1 downto 0);
-    next_adr <= std_logic_vector(unsigned(cur_adr) + 1);
+    next_adr <= std_logic_vector(unsigned(cur_adr)+1);
     done <= not selector_done_next and selector_done_prev;
     component_rst <= rst or (start and not started);
 
     process (clk)
     begin
         if rising_edge(clk) then
+            cache_features <= cur_features;
+            cache_class <= cur_class;
+            cache_read_cmp <= read_cmp;
+
             if rst = '1' then
                 started <= '0';
                 read_cmp <= '0';
+                cache_read_cmp <= '0';
             elsif started = '1' then
                 if read_cmp = '0' then
                     cmp_features <= cur_features;
                     read_cmp <= '1';
-                elsif unsigned(cur_adr) = unsigned(end_adr)+1 then
+                elsif cur_adr = dp_adr then
                     started <= '0';
                     read_cmp <= '0';
                 end if;
                 cur_adr <= next_adr;
             elsif start = '1' then
                 cur_adr <= (others => '0');
-                started <= start;
+                started <= '1';
             end if;
 
             if selector_done_next = '1' then
