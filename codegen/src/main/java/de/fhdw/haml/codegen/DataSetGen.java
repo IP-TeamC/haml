@@ -23,7 +23,6 @@ public class DataSetGen {
                 constant PART_SIZE : natural := %d;
                 constant DATA_SIZE : natural := %d;
             
-            
                 constant START_ADR : std_logic_vector(ADR_SIZE-1 downto 0) := (others => '0');
                 constant END_ADR : std_logic_vector(ADR_SIZE-1 downto 0) := "%s";
             
