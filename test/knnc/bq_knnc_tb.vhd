@@ -7,21 +7,22 @@ use work.util.all;
 use work.math.all;
 use work.classifier;
 use work.ram;
-use work.bq_dataset_tb.all;
+use work.bq_train_dataset_tb;
+use work.bq_test_dataset_tb;
 
 entity bq_knnc_tb is
 
     -- Constants
     constant clk_period : time := 7 ns;
     constant k : natural := 3;
-    constant fp_size : natural := work.bq_dataset_tb.FP_SIZE;
-    constant fp_frac : natural := work.bq_dataset_tb.FP_FRAC;
+    constant fp_size : natural := bq_train_dataset_tb.FP_SIZE;
+    constant fp_frac : natural := bq_train_dataset_tb.FP_FRAC;
     constant class_size : natural := 1;
     constant feature_num : natural := 7;
-    constant adr_size : natural := work.bq_dataset_tb.ADR_SIZE;
+    constant adr_size : natural := bq_train_dataset_tb.ADR_SIZE;
     constant part_size : natural := 3;
-    constant start_dp : natural := 1990;
-    constant end_dp : natural := 2010;
+    constant start_dp : natural := 0;
+    constant end_dp : natural := bq_test_dataset_tb.dataset'high;
 
     -- Inputs
     signal clk : std_logic := '1';
@@ -94,7 +95,7 @@ begin
 
         -- Dataset erzeugen
         mark_end <= '1';
-        write_dataset_to_ram(ram_we_init, ram_adr_init, ram_part_init, ram_data_init, clk_period);
+        bq_train_dataset_tb.write_dataset_to_ram(ram_we_init, ram_adr_init, ram_part_init, ram_data_init, clk_period);
         mark_end <= '0';
 
         report "written dataset";
@@ -111,7 +112,7 @@ begin
             wait until init_done = true;
         end if;
 
-        write_datapoint_to_ram(ram_we_sim, ram_adr_sim, ram_part_sim, ram_data_sim, clk_period, i);
+        bq_test_dataset_tb.write_datapoint_to_ram(ram_we_sim, ram_adr_sim, ram_part_sim, ram_data_sim, bq_train_dataset_tb.END_ADR, clk_period, i);
 
         start <= '0';
         rst <= '1';
@@ -123,15 +124,15 @@ begin
 
         wait until done = '1';
 
-        if class(0) = dataset(i, 0)(0) then
-            report "correct (pred/exp): " & std_logic'image(class(0)) & " " & std_logic'image(dataset(i, 0)(0));
+        if class(0) = bq_test_dataset_tb.dataset(i, 0)(0) then
+            report "correct (pred/exp): " & std_logic'image(class(0)) & " " & std_logic'image(bq_test_dataset_tb.dataset(i, 0)(0));
             correct := correct + 1;
         else
-            report "wrong (pred/exp): " & std_logic'image(class(0)) & " " & std_logic'image(dataset(i, 0)(0));
+            report "wrong (pred/exp): " & std_logic'image(class(0)) & " " & std_logic'image(bq_test_dataset_tb.dataset(i, 0)(0));
             wrong := wrong + 1;
         end if;
 
-        if i = end_dp or i mod 10 = 0 then
+        if i = end_dp or i mod 10 = 9 then
             report "Total: " & integer'image(correct + wrong);
             report "Correct: " & integer'image(correct);
             report "Wrong: " & integer'image(wrong);
