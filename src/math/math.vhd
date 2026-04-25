@@ -62,6 +62,11 @@ package math is
         i : natural
     ) return natural;
 
+    function calc_signed_dist_sq_size(
+        fp_size : natural;
+        extend : boolean
+    ) return natural;
+
 end package;
 
 package body math is
@@ -153,6 +158,18 @@ package body math is
     ) return natural is
     begin
         return i*size;
+    end function;
+
+    function calc_signed_dist_sq_size(
+        fp_size : natural;
+        extend : boolean
+    ) return natural is
+    begin
+        if extend then
+            return 2 * fp_size;
+        else
+            return fp_size;
+        end if;
     end function;
 
 end package body;

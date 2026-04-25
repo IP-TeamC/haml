@@ -150,6 +150,10 @@ begin
         wait for clk_period;
         assert done = '0';
         wait for clk_period;
+        assert done = '0';
+        wait for clk_period;
+        assert done = '0';
+        wait for clk_period;
         assert done = '1';
         assert class = "01";
         wait for clk_period;
@@ -164,6 +168,10 @@ begin
         start <= '1';
         wait for clk_period;
         start <= '0';
+        assert done = '0';
+        wait for clk_period;
+        assert done = '0';
+        wait for clk_period;
         assert done = '0';
         wait for clk_period;
         assert done = '0';

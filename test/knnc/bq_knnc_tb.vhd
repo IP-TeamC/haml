@@ -9,7 +9,7 @@ use work.classifier;
 use work.ram;
 use work.bq_dataset_tb.all;
 
-entity knnc_bq is
+entity bq_knnc_tb is
 
     -- Constants
     constant clk_period : time := 7 ns;
@@ -40,7 +40,7 @@ entity knnc_bq is
 
 end entity;
 
-architecture rtl of knnc_bq is
+architecture rtl of bq_knnc_tb is
 
     -- RAM-Splitter für Init/Simulation
     signal init_done : boolean := false;

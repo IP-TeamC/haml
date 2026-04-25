@@ -10,7 +10,8 @@ entity signed_dist is
         n : natural;
         fp_size : natural;
         fp_frac : natural := 0;
-        data_size : natural := 0
+        data_size : natural := 0;
+        extend : boolean := false
     );
     port (
         clk : in std_logic;
@@ -21,7 +22,7 @@ entity signed_dist is
         b : in std_logic_vector((n*fp_size)-1 downto 0);
         di : in std_logic_vector(data_size-1 downto 0);
 
-        dist_sq : out signed(fp_size-1 downto 0);
+        dist_sq : out signed(calc_signed_dist_sq_size(fp_size, extend)-1 downto 0);
         done : out std_logic;
         do : out std_logic_vector(data_size-1 downto 0)
     );
@@ -30,13 +31,13 @@ end entity;
 -- Pipeline: Differenz -> Quadrat -> Addition (Adder Tree mit mehreren Stages)
 architecture rtl of signed_dist is
 
-    signal diff : std_logic_vector((n*fp_size)-1 downto 0);
-    signal diff_next : std_logic_vector((n*fp_size)-1 downto 0);
+    signal diff : std_logic_vector(n*fp_size-1 downto 0);
+    signal diff_next : std_logic_vector(n*fp_size-1 downto 0);
     signal done_diff : std_logic;
     signal di_delayed_diff : std_logic_vector(data_size-1 downto 0);
 
-    signal diff_sq : std_logic_vector((n*fp_size)-1 downto 0);
-    signal diff_sq_next : std_logic_vector((n*fp_size)-1 downto 0);
+    signal diff_sq : std_logic_vector(n*calc_signed_dist_sq_size(fp_size, extend)-1 downto 0);
+    signal diff_sq_next : std_logic_vector(n*calc_signed_dist_sq_size(fp_size, extend)-1 downto 0);
     signal done_diff_sq : std_logic;
     signal di_delayed_diff_sq : std_logic_vector(data_size-1 downto 0);
 
@@ -45,7 +46,7 @@ begin
     adder: entity adder_tree
         generic map (
             n => n,
-            size => fp_size,
+            size => calc_signed_dist_sq_size(fp_size, extend),
             data_size => data_size
         )
         port map (
@@ -89,11 +90,19 @@ begin
 
     gen_diff_sq: for i in 0 to n-1 generate
     begin
-        diff_sq_next(flat_upper(fp_size, i) downto flat_lower(fp_size, i)) <= std_logic_vector(fp_mul(
+
+        gen_diff_sq_extend: if extend = true generate
+            diff_sq_next(flat_upper(2*fp_size, i) downto flat_lower(2*fp_size, i)) <= std_logic_vector(flat_signed(diff, fp_size, i) * flat_signed(diff, fp_size, i));
+        end generate;
+
+        gen_diff_sq_noextend: if extend = false generate
+            diff_sq_next(flat_upper(fp_size, i) downto flat_lower(fp_size, i)) <= std_logic_vector(fp_mul(
                 flat_signed(diff, fp_size, i),
                 flat_signed(diff, fp_size, i),
                 fp_frac
             ));
+        end generate;
+        
     end generate;
 
 end architecture;

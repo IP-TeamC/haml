@@ -49,7 +49,7 @@ architecture rtl of classifier is
     signal cur_adr : std_logic_vector(adr_size-1 downto 0);
     signal next_adr : std_logic_vector(adr_size-1 downto 0);
 
-    signal dist : signed(fp_size-1 downto 0);
+    signal dist : signed(2*fp_size-1 downto 0);
     signal top_class : std_logic_vector(k*class_size-1 downto 0);
 
     signal dist_done : std_logic;
@@ -73,7 +73,8 @@ begin
             n => feature_num,
             fp_size => fp_size,
             fp_frac => fp_frac,
-            data_size => class_size
+            data_size => class_size,
+            extend => true
         )
         port map (
             clk => clk,
@@ -89,7 +90,7 @@ begin
     comparator: entity ktop
         generic map(
             k => k,
-            dist_size => fp_size,
+            dist_size => 2*fp_size,
             class_size => class_size
         )
         port map(
