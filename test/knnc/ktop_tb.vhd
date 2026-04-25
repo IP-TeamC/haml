@@ -13,18 +13,18 @@ entity ktop_tb is
     constant clk_period : time := 1 ns;
     constant k : natural := 3;
     constant dist_size : natural := 8;
-    constant class_size : natural := 2;
+    constant data_size : natural := 2;
 
     -- Inputs
     signal clk : std_logic := '1';
     signal rst : std_logic := '1';
     signal start : std_logic := '0';
     signal dist : std_logic_vector(dist_size-1 downto 0);
-    signal class : std_logic_vector(class_size-1 downto 0);
+    signal data : std_logic_vector(data_size-1 downto 0);
 
     -- Outputs
     signal top_dist : std_logic_vector(k*dist_size-1 downto 0);
-    signal top_class : std_logic_vector(k*class_size-1 downto 0);
+    signal top_data : std_logic_vector(k*data_size-1 downto 0);
     signal done : std_logic;
 end entity;
 
@@ -36,16 +36,16 @@ begin
         generic map (
             k => k,
             dist_size => dist_size,
-            class_size => class_size
+            data_size => data_size
         )
         port map (
             clk => clk,
             rst => rst,
             start => start,
             dist => dist,
-            class => class,
+            data => data,
             top_dist => top_dist,
-            top_class => top_class,
+            top_data => top_data,
             done => done
         );
 
@@ -65,7 +65,7 @@ begin
         
         start <= '1';
         dist <= "00101111";
-        class <= "01";
+        data <= "01";
         wait for clk_period;
         assert done = '0';
         wait for clk_period;
@@ -74,13 +74,13 @@ begin
         wait for clk_period;
         assert done = '1';
         assert top_dist(dist_size-1 downto 0) = "00101111";
-        assert top_class(class_size-1 downto 0) = "01";
+        assert top_data(data_size-1 downto 0) = "01";
         wait for clk_period;
         assert done = '1';
         assert top_dist(2*dist_size-1 downto 0) = "00101111" & "00101111";
-        assert top_class(2*class_size-1 downto 0) = "0101";
+        assert top_data(2*data_size-1 downto 0) = "0101";
         dist <= "00001010";
-        class <= "10";
+        data <= "10";
         start <= '1';
         wait for clk_period;
         start <= '0';
@@ -90,9 +90,9 @@ begin
         wait for clk_period;
         assert done = '1';
         assert top_dist = "00101111" & "00101111" & "00001010";
-        assert top_class = "01" & "01" & "10";
+        assert top_data = "01" & "01" & "10";
         dist <= "01001000";
-        class <= "11";
+        data <= "11";
         start <= '1';
         wait for clk_period;
         start <= '0';
@@ -102,9 +102,9 @@ begin
         wait for clk_period;
         assert done = '1';
         assert top_dist = "00101111" & "00101111" & "00001010";
-        assert top_class = "01" & "01" & "10";
+        assert top_data = "01" & "01" & "10";
         dist <= "00000000";
-        class <= "00";
+        data <= "00";
         start <= '1';
         wait for clk_period;
         start <= '0';
@@ -114,14 +114,14 @@ begin
         wait for clk_period;
         assert done = '1';
         assert top_dist = "00101111" & "00001010" & "00000000";
-        assert top_class = "01" & "10" & "00";
+        assert top_data = "01" & "10" & "00";
         start <= '0';
         wait for clk_period;
         assert top_dist = "00101111" & "00001010" & "00000000";
-        assert top_class = "01" & "10" & "00";
+        assert top_data = "01" & "10" & "00";
         wait for clk_period;
         assert top_dist = "00101111" & "00001010" & "00000000";
-        assert top_class = "01" & "10" & "00";
+        assert top_data = "01" & "10" & "00";
         start <= '1';
         wait for clk_period;
         start <= '0';
@@ -131,7 +131,7 @@ begin
         wait for clk_period;
         assert done = '1';
         assert top_dist = "00001010" & "00000000" & "00000000";
-        assert top_class = "10" & "00" & "00";
+        assert top_data = "10" & "00" & "00";
 
         wait;
     end process;

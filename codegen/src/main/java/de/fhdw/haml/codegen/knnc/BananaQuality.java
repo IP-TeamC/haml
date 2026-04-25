@@ -11,8 +11,8 @@ import java.nio.file.StandardOpenOption;
 
 public class BananaQuality {
 
-    private static final int FP_SIZE = 32;
-    private static final int FP_FRAC = 20;
+    private static final int FP_SIZE = 18;
+    private static final int FP_FRAC = 12;
     private static final String FILE_TEMPLATE = """
             library ieee;
             use ieee.std_logic_1164.all;
@@ -20,9 +20,13 @@ public class BananaQuality {
             
             package bq_dataset_tb is
             
+                constant FP_SIZE : natural := %d;
+                constant FP_FRAC : natural := %d;
                 constant ADR_SIZE : natural := 13;
                 constant PART_SIZE : natural := %d;
                 constant DATA_SIZE : natural := %d;
+            
+            
                 constant START_ADR : std_logic_vector(ADR_SIZE-1 downto 0) := (others => '0');
                 constant END_ADR : std_logic_vector(ADR_SIZE-1 downto 0) := "%s";
             
@@ -123,6 +127,8 @@ public class BananaQuality {
             }
         }
         String file = FILE_TEMPLATE.formatted(
+                FP_SIZE,
+                FP_FRAC,
                 (int) Math.ceil(Math.log(dataSet.inputSize)/Math.log(2)),
                 FP_SIZE,
                 Binary.toBinaryPad(dataSet.size - 1, 13),

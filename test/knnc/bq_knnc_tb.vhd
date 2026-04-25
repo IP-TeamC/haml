@@ -14,8 +14,8 @@ entity bq_knnc_tb is
     -- Constants
     constant clk_period : time := 7 ns;
     constant k : natural := 3;
-    constant fp_size : natural := 32;
-    constant fp_frac : natural := 20;
+    constant fp_size : natural := work.bq_dataset_tb.FP_SIZE;
+    constant fp_frac : natural := work.bq_dataset_tb.FP_FRAC;
     constant class_size : natural := 1;
     constant feature_num : natural := 7;
     constant adr_size : natural := work.bq_dataset_tb.ADR_SIZE;

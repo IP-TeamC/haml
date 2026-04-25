@@ -91,16 +91,16 @@ begin
         generic map(
             k => k,
             dist_size => 2*fp_size,
-            class_size => class_size
+            data_size => class_size
         )
         port map(
             clk => clk,
             rst => component_rst,
             start => dist_done,
             dist => std_logic_vector(dist),
-            class => dist_class,
+            data => dist_class,
             top_dist => open,
-            top_class => top_class,
+            top_data => top_class,
             done => cmp_done
         );
     selector: entity work.kselect

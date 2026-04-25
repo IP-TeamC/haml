@@ -10,7 +10,7 @@ entity knnc is
     generic (
         k : natural := 3;
         fp_size : natural := 18;
-        fp_frac : natural := 4;
+        fp_frac : natural := 12;
         class_size : natural := 1; -- Constraint: class_size <= fp_size
         feature_num : natural := 7;
         adr_size : natural := 11 -- Maximum für XC3S500E (12 max. mit 1600 und Goal Timing Performance)
