@@ -65,7 +65,7 @@ public class BananaQuality {
                 ) is
                 begin
                     we <= '1';
-                    for adr in t_dataset'range loop
+                    for adr in 0 to to_integer(unsigned(END_ADR)) loop
                         write_adr <= std_logic_vector(to_unsigned(adr, ADR_SIZE));
                         for part in t_dataset'range(2) loop
                             write_part <= std_logic_vector(to_unsigned(part, PART_SIZE));

@@ -46,7 +46,9 @@ begin
                     class_counter(i) := (others => '0');
                 end loop;
                 for i in 0 to k-1 loop
-                    class_counter(to_integer(flat_unsigned(top_class, class_size, i))) := class_counter(to_integer(flat_unsigned(top_class, class_size, i))) + 1;
+                    if top_class(top_class'high) /= 'U' then -- verhindert nicht notwendige Warnungen im Simulator
+                        class_counter(to_integer(flat_unsigned(top_class, class_size, i))) := class_counter(to_integer(flat_unsigned(top_class, class_size, i))) + 1;
+                    end if;
                 end loop;
                 for i in t_class_counter'range loop
                     if class_counter(i) > best_count then
