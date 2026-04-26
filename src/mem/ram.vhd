@@ -4,19 +4,19 @@ use ieee.numeric_std.all;
 
 entity ram is
 
-        generic (
-            adr_size : natural;
-            data_size : natural
-        );
-        port (
-            clk : in std_logic;
-            we : in std_logic;
-            adr : in std_logic_vector(adr_size-1 downto 0);
-            di : in std_logic_vector(data_size-1 downto 0);
-            do : out std_logic_vector(data_size-1 downto 0)
-        );
+    generic (
+        adr_size : natural;
+        data_size : natural
+    );
+    port (
+        clk : in std_logic;
+        we : in std_logic;
+        adr : in std_logic_vector(adr_size-1 downto 0);
+        di : in std_logic_vector(data_size-1 downto 0);
+        do : out std_logic_vector(data_size-1 downto 0)
+    );
 
-        constant rows : natural := 2**adr_size;
+    constant rows : natural := 2**adr_size;
     
 end entity;
 
