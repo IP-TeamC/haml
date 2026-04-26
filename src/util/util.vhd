@@ -29,7 +29,7 @@ package body util is
         variable str_i : integer := 1;
     begin
         for i in vec'range loop
-        case vec(i) is
+            case vec(i) is
                 when '0' => str(str_i) := '0';
                 when '1' => str(str_i) := '1';
                 when 'U' => str(str_i) := 'U';
