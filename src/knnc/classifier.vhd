@@ -49,7 +49,7 @@ architecture rtl of classifier is
     signal cur_adr : std_logic_vector(adr_size-1 downto 0);
     signal next_adr : std_logic_vector(adr_size-1 downto 0);
 
-    signal dist : signed(2*fp_size-1 downto 0);
+    signal dist : std_logic_vector(2*fp_size-1 downto 0);
     signal top_class : std_logic_vector(k*class_size-1 downto 0);
 
     signal dist_done : std_logic;

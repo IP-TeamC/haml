@@ -15,7 +15,7 @@ entity adder_tree is
         start : in std_logic;
 
         values : in std_logic_vector(n*size-1 downto 0);
-        sum : out signed(size-1 downto 0);
+        sum : out std_logic_vector(size-1 downto 0);
 
         done : out std_logic;
 
@@ -77,7 +77,7 @@ begin
     stages_start(0) <= start;
     stages_data(0) <= di;
 
-    sum <= signed(stages_values(stages_config(stages_num-1).sum_upper downto stages_config(stages_num-1).sum_upper-size+1));
+    sum <= stages_values(stages_config(stages_num-1).sum_upper downto stages_config(stages_num-1).sum_upper-size+1);
     done <= stages_start(stages_num);
     do <= stages_data(stages_num);
 

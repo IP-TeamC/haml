@@ -22,7 +22,7 @@ entity signed_dist is
         b : in std_logic_vector((n*fp_size)-1 downto 0);
         di : in std_logic_vector(data_size-1 downto 0);
 
-        dist_sq : out signed(calc_signed_dist_sq_size(fp_size, extend)-1 downto 0);
+        dist_sq : out std_logic_vector(calc_signed_dist_sq_size(fp_size, extend)-1 downto 0);
         done : out std_logic;
         do : out std_logic_vector(data_size-1 downto 0)
     );

@@ -30,8 +30,7 @@ end entity;
 
 architecture rtl of ktop_stage is
 
-    constant max_signed : std_logic_vector(dist_size-1 downto 0)
-        := std_logic_vector((to_signed(1, dist_size) ror 1) - 1);
+    constant max : std_logic_vector(dist_size-1 downto 0) := (others => '1');
 
 begin
 
@@ -40,10 +39,10 @@ begin
         if rising_edge(clk) then
             done <= start;
             if rst = '1' then
-                dist_keep <= max_signed;
+                dist_keep <= max;
                 done <= '0';
             elsif start = '1' then
-                if signed(dist_new) < signed(dist_cur) then
+                if unsigned(dist_new) < unsigned(dist_cur) then
                     dist_move <= dist_cur;
                     data_move <= data_cur;
 

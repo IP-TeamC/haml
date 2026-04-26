@@ -24,7 +24,7 @@ entity signed_dist_tb is
     signal di : std_logic_vector(data_size-1 downto 0);
 
     -- Outputs
-    signal dist_sq : signed(fp_size-1 downto 0);
+    signal dist_sq : std_logic_vector(fp_size-1 downto 0);
     signal done : std_logic;
     signal do : std_logic_vector(data_size-1 downto 0);
 
@@ -86,15 +86,15 @@ begin
         assert done = '0';
         wait for clk_period;
         assert done = '1';
-        assert dist_sq = to_signed(8, fp_size);
+        assert dist_sq = std_logic_vector(to_signed(8, fp_size));
         assert do = "01";
         wait for clk_period;
         assert done = '0';
-        assert dist_sq = to_signed(8, fp_size);
+        assert dist_sq = std_logic_vector(to_signed(8, fp_size));
         assert do = "01";
         wait for clk_period;
         assert done = '0';
-        assert dist_sq = to_signed(8, fp_size);
+        assert dist_sq = std_logic_vector(to_signed(8, fp_size));
         assert do = "01";
 
         a <= std_logic_vector(to_unsigned(123, fp_size-fp_frac) & to_unsigned(4, fp_frac))
@@ -106,7 +106,7 @@ begin
         di <= "11";
         wait for clk_period;
         assert done = '0';
-        assert dist_sq = to_signed(8, fp_size);
+        assert dist_sq = std_logic_vector(to_signed(8, fp_size));
         assert do = "01";
         wait for clk_period;
         start <= '1';
@@ -121,7 +121,7 @@ begin
         assert done = '0';
         wait for clk_period;
         assert done = '1';
-        assert dist_sq = to_signed(232, fp_size);
+        assert dist_sq = std_logic_vector(to_signed(232, fp_size));
         assert do = "11";
         wait for clk_period;
         assert done = '0';

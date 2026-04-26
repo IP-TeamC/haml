@@ -30,10 +30,10 @@ entity adder_tree_tb is
     signal di4 : std_logic_vector(data_size4-1 downto 0);
 
     -- Outputs
-    signal sum4 : signed(size-1 downto 0);
-    signal sum5 : signed(size-1 downto 0);
-    signal sum6 : signed(size-1 downto 0);
-    signal sum8 : signed(size-1 downto 0);
+    signal sum4 : std_logic_vector(size-1 downto 0);
+    signal sum5 : std_logic_vector(size-1 downto 0);
+    signal sum6 : std_logic_vector(size-1 downto 0);
+    signal sum8 : std_logic_vector(size-1 downto 0);
     signal done4 : std_logic;
     signal done5 : std_logic;
     signal done6 : std_logic;
