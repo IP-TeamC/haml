@@ -3,6 +3,7 @@ docs/.vitepress/dist
 docs/.vitepress/cache
 xise-linux/Xilinx_ISE_DS_14.7_1015_1-*
 xise-linux/base_installer
+xise-linux/base
 xise-linux/Xilinx.lic
 
 # intermediate build files
