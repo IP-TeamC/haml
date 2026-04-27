@@ -73,3 +73,16 @@
 - Parallelisierung
   - Population auf mehrere RAM-Blöcke aufteilen
   - je RAM ein "Agent"
+
+- verschiedene Probleme:
+  - unterschiedliche Fitnessfunktionen (gleiche Entity, andere Architektur)
+    - sehr problem-spezifisch
+    - Idee: "Interface"
+  - unterschiedliche Crossover-/Mutations-Methoden (gleiche Entity, andere Architektur)
+    - Problem-Kategorien: Permutation, "unabhängige" Features
+    - Berücksichtigung von Constraints
+    - Idee: "Interface"
+  - TSP: jede Stadt ein Gen (enthält Position) oder jede Position ein Gen (enthält Stadt)
+  - Knapsack: jedes Item ein Gen (enthält Anzahl)
+  - Sudoku: jedes Feld ein Gen (enthält Zahl)
+  - math. Funktion: jeder Koeffizient ein Gen (enthält FP)
