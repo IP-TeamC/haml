@@ -1,0 +1,5 @@
+- Demonstration k-Nearest-Neighbors Classifier für Bananen
+- k-Nearest-Neighbors Implementierung
+- Vergleich scikit-learn / haml auf Spartan-3E (TODO aufschreiben)
+- binäre Kodierung von Population/Individuen
+- Beschreibung unterschiedlicher Probleme
