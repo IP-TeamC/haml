@@ -93,6 +93,8 @@ begin
                 else
                     fit <= (others => '1');
                 end if;
+
+                report "Fitness: " & integer'image(to_integer(unsigned(adder_sum)));
             end if;
 
             if rst = '1' then
