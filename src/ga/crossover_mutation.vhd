@@ -30,7 +30,6 @@ entity crossover_mutation is
 end entity;
 
 architecture rtl of crossover_mutation is
-    constant cx_size : natural := natural(ceil(log2(real(chr_size))));
 
     -- Prüft, ob ein Bit mutiert werde soll
     function should_mutate(
