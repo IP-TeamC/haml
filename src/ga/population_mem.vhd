@@ -29,8 +29,10 @@ architecture rtl of population_mem is
     constant idx_size : natural := natural(ceil(log2(real(pop_size))));
     constant row_size : natural := chr_size + fp_size;
 
+    signal ram_di : std_logic_vector(chr_size + fp_size - 1 downto 0);
     signal ram_do : std_logic_vector(row_size-1 downto 0);
 begin
+    ram_di <= wr_chr & wr_fit;
 
     mem: entity work.dual_ram
         generic map(
@@ -45,7 +47,7 @@ begin
 
             we_b => wr_en,
             adr_b => wr_idx,
-            di_b => wr_chr & wr_fit
+            di_b => ram_di
         );
 
     rd_chr <= ram_do(row_size-1 downto fp_size);
