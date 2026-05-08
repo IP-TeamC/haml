@@ -30,7 +30,6 @@ entity crossover_mutation is
 end entity;
 
 architecture rtl of crossover_mutation is
-
     -- Prüft, ob ein Bit mutiert werde soll
     function should_mutate(
         rnd : std_logic_vector; -- Zufallsvektor
@@ -56,6 +55,7 @@ begin
         variable cx : natural range 0 to chr_size-1;
         variable ba : std_logic;
         variable bb : std_logic;
+        variable cx_raw : natural;
     begin
         if rising_edge(clk) then
             if rst = '1' then
@@ -63,7 +63,13 @@ begin
             else
                 done <= start;
                 if start = '1' then
-                    cx := to_integer(unsigned(rnd_cx)) mod chr_size;
+                    cx_raw := to_integer(unsigned(rnd_cx));
+                    if cx_raw >= chr_size then
+                        cx := chr_size - 1;
+                    else
+                        cx := cx_raw;
+                    end if;
+
                     for i in 0 to chr_size-1 loop
                         -- Crossover
                         if i < cx then

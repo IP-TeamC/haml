@@ -19,7 +19,7 @@ entity ga_top is
         rst : in std_logic;
         start : in std_logic;
 
-        -- Initialisierungsschnittstelle (evtl. später als weiteren Zustand im Controller? Schwierig beim Sudoku mit Zufallszahlen und BCD)
+        -- Initialisierungsschnittstelle (evtl. spter als weiteren Zustand im Controller? Schwierig beim Sudoku mit Zufallszahlen und BCD)
         init_mode : in std_logic;
 
         init_we : in std_logic;
@@ -133,7 +133,7 @@ begin
             const_size => chr_size,
             fp_size => fp_size,
             fp_frac => 0,
-            data_size => 0
+            data_size => 1
         )
         port map(
             clk => clk,
@@ -141,14 +141,14 @@ begin
             start => fit_start,
             chr => fit_chr,
             const => const,
-            di => (others => '0'),
+            di => "0",
             do => open,
             fit => fit_val,
             done => fit_done
         );
 
     -- Selektion
-    -- rnd[rnd_sel_bits-1 : 0] reserviert für Kandidatenindizes
+    -- rnd[rnd_sel_bits-1 : 0] reserviert fr Kandidatenindizes
     sel: entity work.selection_unit
         generic map(
             fp_size => fp_size,
