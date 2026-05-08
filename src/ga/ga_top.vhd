@@ -19,18 +19,11 @@ entity ga_top is
         rst : in std_logic;
         start : in std_logic;
 
-        -- Initialisierungsschnittstelle (evtl. spter als weiteren Zustand im Controller? Schwierig beim Sudoku mit Zufallszahlen und BCD)
-        init_mode : in std_logic;
-
-        init_we : in std_logic;
-        init_idx : in std_logic_vector(natural(ceil(log2(real(pop_size))))-1 downto 0);
-        init_chr : in std_logic_vector(chr_size-1 downto 0);
-        init_fit : in std_logic_vector(fp_size-1 downto 0);
-
         -- Problemkonstante (immutable)
         const : in std_logic_vector(chr_size-1 downto 0);
 
         -- Ergebnis
+        -- best_chr : out std_logic;
         best_chr : out std_logic_vector(chr_size-1 downto 0);
         best_fit : out std_logic_vector(fp_size-1 downto 0);
         done : out std_logic
@@ -50,12 +43,6 @@ architecture rtl of ga_top is
     constant rnd_padded : natural := lfsr_n * 32;
 
     signal rnd : std_logic_vector(rnd_padded-1 downto 0);
-
-    -- Mux-Ausgang: Init <> Controller
-    signal mux_wr_en  : std_logic;
-    signal mux_wr_idx : std_logic_vector(idx_size-1 downto 0);
-    signal mux_wr_chr : std_logic_vector(chr_size-1 downto 0);
-    signal mux_wr_fit : std_logic_vector(fp_size-1 downto 0);
 
     -- population_mem 
     signal rd_idx : std_logic_vector(idx_size-1 downto 0);
@@ -90,12 +77,28 @@ architecture rtl of ga_top is
     signal cx_child_b : std_logic_vector(chr_size-1 downto 0);
     signal cx_done : std_logic;
 
+    -- signal l_done : std_logic;
+    -- signal l_best_chr : std_logic_vector(chr_size-1 downto 0);
+
+    -- signal s_best_chr : std_logic_vector(chr_size-1 downto 0);
+
 begin
 
-    mux_wr_en  <= init_we  when init_mode = '1' else wr_en;
-    mux_wr_idx <= init_idx when init_mode = '1' else wr_idx;
-    mux_wr_chr <= init_chr when init_mode = '1' else wr_chr;
-    mux_wr_fit <= init_fit when init_mode = '1' else wr_fit;
+    -- best_chr <= s_best_chr(chr_size-1);
+    
+    -- process(clk)
+    -- begin
+    --     if rising_edge(clk) then
+    -- 
+    --         s_best_chr(chr_size-1 downto 1) <= s_best_chr(chr_size-2 downto 0);
+    --         
+    --         if l_done = '1' then
+    --             s_best_chr <= l_best_chr;
+    --         end if;
+    -- 
+    -- 
+    --     end if;
+    -- end process;
 
     -- Zufallsgenerator
     rng: entity work.rng_bank
@@ -120,10 +123,10 @@ begin
             clk => clk,
             rd_idx => rd_idx,
             rd_chr => rd_chr,
-            wr_en  => mux_wr_en,
-            wr_idx => mux_wr_idx,
-            wr_chr => mux_wr_chr,
-            wr_fit => mux_wr_fit
+            wr_en => wr_en,
+            wr_idx => wr_idx,
+            wr_chr => wr_chr,
+            wr_fit => wr_fit
         );
 
     -- Fitness
@@ -202,6 +205,7 @@ begin
             clk => clk,
             rst => rst,
             start => start,
+            const => const,
             -- population_mem
             rd_idx => rd_idx,
             rd_chr => rd_chr,
@@ -231,9 +235,12 @@ begin
             cx_child_b => cx_child_b,
             cx_done => cx_done,
             -- Ergebnis
+            -- best_chr => l_best_chr,
             best_chr => best_chr,
             best_fit => best_fit,
+            -- done => l_done
             done => done
         );
+    -- done <= l_done;
 
 end architecture;

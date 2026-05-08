@@ -16,6 +16,8 @@ entity ga_controller is
         rst : in std_logic;
         start : in std_logic;
 
+        const : in std_logic_vector(chr_size-1 downto 0);
+
         -- population_mem
         rd_idx : out std_logic_vector(natural(ceil(log2(real(pop_size))))-1 downto 0);
         rd_chr : in std_logic_vector(chr_size-1 downto 0);
@@ -63,6 +65,9 @@ architecture rtl of ga_controller is
 
     type t_state is (
         S_IDLE,
+
+        -- Initialisierung
+        S_INIT_POP,
 
         -- Evaluation
         S_EVAL_READ,
@@ -123,7 +128,6 @@ begin
             sel_start <= '0';
             sel_fit_we <= '0';
             cx_start <= '0';
-            done <= '0';
 
             rd_idx <= (others => '0');
             wr_idx <= (others => '0');
@@ -135,6 +139,8 @@ begin
                 sel_ctr <= (others => '0');
                 gen_ctr <= (others => '0');
                 best_fit_r <= (others => '1');
+                done <= '0';
+
             else
                 case state is
 
@@ -145,7 +151,22 @@ begin
                             eval_ctr <= (others => '0');
                             gen_ctr <= (others => '0');
                             best_fit_r <= (others => '1');
+                            state <= S_INIT_POP;
+                            done <= '0';
+                        end if;
+
+                    -- INIT
+                    -- Problem laden
+                    when S_INIT_POP =>
+                        wr_en  <= '1';
+                        wr_idx <= std_logic_vector(repr_ctr);
+                        wr_chr <= const;
+                        wr_fit <= (others => '1');
+                        if repr_ctr = pop_size-1 then
+                            repr_ctr <= (others => '0');
                             state <= S_EVAL_READ;
+                        else
+                            repr_ctr <= repr_ctr + 1;
                         end if;
 
                     -- EVALUATION

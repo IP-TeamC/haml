@@ -17,6 +17,12 @@ package ga_pkg is
         human_sudoku : t_human_sudoku
     ) return std_logic_vector;
 
+    function deserialize_sudoku(
+        chr : std_logic_vector(chr_size-1 downto 0)
+    ) return t_human_sudoku;
+
+    procedure print_sudoku(sol : t_human_sudoku);
+
     function col_conflicts(
         l_chr : std_logic_vector(chr_size-1 downto 0);
         col : integer range 0 to susi-1
@@ -42,6 +48,38 @@ end package;
 
 package body ga_pkg is
 
+    procedure print_sudoku(sol : t_human_sudoku) is
+        variable row_str : string(1 to 27);
+    begin
+            report "+---------+---------+---------+";
+
+        for row in 1 to 9 loop
+
+            row_str := (others => ' ');
+
+            for col in 1 to 9 loop
+                if sol(row, col) = 0 then
+                    row_str(col*3-2) := '.';
+                else
+                    row_str(col*3-2) :=
+                        character'val(sol(row,col) + character'pos('0'));
+                end if;
+            end loop;
+
+            report "| " & row_str(1 to 7)
+                & " | " & row_str(10 to 16)
+                & " | " & row_str(19 to 25) & " |";
+
+            if row = 3 or row = 6 then
+                report "+---------+---------+---------+";
+            end if;
+
+        end loop;
+
+            report "+---------+---------+---------+";
+    end procedure;
+
+
     function serialize_sudoku(
         human_sudoku : t_human_sudoku
     ) return std_logic_vector is
@@ -59,13 +97,34 @@ package body ga_pkg is
         return serialized;
     end function;
 
+    function deserialize_sudoku(
+        chr : std_logic_vector(chr_size-1 downto 0)
+    ) return t_human_sudoku is
+        variable result : t_human_sudoku;
+        variable val : integer range 0 to susi;
+    begin
+        for row in 0 to susi-1 loop
+            for col in 0 to susi-1 loop
+                val := to_integer(unsigned(chr(
+                    blsi*(col + susi*row + 1)-1 downto blsi*(col + susi*row)
+                )));
+                if val = susi then
+                    result(row+1, col+1) := 0; 
+                else
+                    result(row+1, col+1) := val + 1;
+                end if;
+            end loop;
+        end loop;
+        return result;
+    end function;
+
     function col_conflicts(
         l_chr : std_logic_vector(chr_size-1 downto 0);
         col : integer range 0 to susi-1
     ) return unsigned is
         variable mask : std_logic_vector(susi-1 downto 0);
         variable conflicts : unsigned(blsi-1 downto 0);
-        variable val : integer range 0 to susi-1;
+        variable val : integer range 0 to susi;
     begin
         mask := (others => '0');
         conflicts := (others => '0');
@@ -74,10 +133,12 @@ package body ga_pkg is
                 blsi*(col+susi*row+1)-1 downto blsi*(col+susi*row)
             )));
 
-            if mask(val) = '1' then
-                conflicts := conflicts + 1;
+            if val < susi then
+                if mask(val) = '1' then
+                    conflicts := conflicts + 1;
+                end if;
+                mask(val) := '1';
             end if;
-            mask(val) := '1';
         end loop;
         return conflicts;
     end function;
@@ -88,7 +149,7 @@ package body ga_pkg is
     ) return unsigned is
         variable mask : std_logic_vector(susi-1 downto 0);
         variable conflicts : unsigned(blsi-1 downto 0);
-        variable val : integer range 0 to susi-1;
+        variable val : integer range 0 to susi;
     begin
         mask := (others => '0');
         conflicts := (others => '0');
@@ -97,10 +158,12 @@ package body ga_pkg is
                 blsi*(col+susi*row+1)-1 downto blsi*(col+susi*row)
             )));
 
-            if mask(val) = '1' then
-                conflicts := conflicts + 1;
+            if val < susi then
+                if mask(val) = '1' then
+                    conflicts := conflicts + 1;
+                end if;
+                mask(val) := '1';
             end if;
-            mask(val) := '1';
         end loop;
         return conflicts;
     end function;
@@ -112,7 +175,7 @@ package body ga_pkg is
     ) return unsigned is
         variable mask : std_logic_vector(susi-1 downto 0);
         variable conflicts : unsigned(blsi-1 downto 0);
-        variable val : integer range 0 to susi-1;
+        variable val : integer range 0 to susi;
     begin
         mask := (others => '0');
         conflicts := (others => '0');
@@ -122,10 +185,12 @@ package body ga_pkg is
                     blsi*(susiro*(bc+susi*br)+co+susi*ro+1)-1 downto blsi*(susiro*(bc+susi*br)+co+susi*ro)
                 )));
 
-                if mask(val) = '1' then
-                    conflicts := conflicts + 1;
+                if val < susi then
+                    if mask(val) = '1' then
+                        conflicts := conflicts + 1;
+                    end if;
+                    mask(val) := '1';
                 end if;
-                mask(val) := '1';
             end loop;
         end loop;
         return conflicts;
@@ -136,14 +201,14 @@ package body ga_pkg is
         k_chr : std_logic_vector(chr_size-1 downto 0)
     ) return std_logic is
         variable valid : std_logic;
-        variable l_val : integer range 0 to susi-1;
+        variable l_val : integer range 0 to susi;
         variable k_val : integer range 0 to susi;
     begin
         valid := '1';
         for i in 0 to chr_size/blsi-1 loop
             l_val := to_integer(unsigned(l_chr(blsi*(i+1)-1 downto blsi*i)));
             k_val := to_integer(unsigned(k_chr(blsi*(i+1)-1 downto blsi*i)));
-            if k_val /= 9 and l_val /= k_val then
+            if k_val /= susi and l_val /= k_val then
                 valid := '0';
             end if;
         end loop;
