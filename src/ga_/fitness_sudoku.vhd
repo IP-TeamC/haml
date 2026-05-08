@@ -87,14 +87,15 @@ begin
             end if;
 
             if adder_done = '1' then
-                do <= adder_do(data_size-1 downto 0);
+                if data_size > 0 then
+                    do <= adder_do(data_size-1 downto 0);
+                end if;
                 if adder_do(data_size) = '1' then
                     fit <= adder_sum;
+                    report "[fitness] fit=" & integer'image(to_integer(unsigned(adder_sum))) & " (valid)" severity note;
                 else
                     fit <= (others => '1');
                 end if;
-
-                report "Fitness: " & integer'image(to_integer(unsigned(adder_sum)));
             end if;
 
             if rst = '1' then

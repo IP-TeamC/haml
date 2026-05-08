@@ -179,6 +179,7 @@ begin
                         if unsigned(last_fit) < unsigned(best_fit_r) then
                             best_fit_r <= last_fit;
                             best_chr_r <= last_chr;
+                            report "[ctrl] Neues Bestes: idx=" & integer'image(to_integer(eval_ctr)) & " fit=" & integer'image(to_integer(unsigned(last_fit))) severity note;
                         end if;
                         -- Alle Individuen bewertet?
                         if eval_ctr = pop_size-1 then
@@ -192,10 +193,15 @@ begin
                     -- Abbruchbedingungen prüfen
                     when S_CHECK =>
                         if best_fit_r = (best_fit_r'range => '0') then
+                            report "[ctrl] LÖSUNG GEFUNDEN nach " & integer'image(to_integer(gen_ctr)) & " Generationen!" severity note;
                             state <= S_DONE;
                         elsif gen_ctr = max_gen then
+                            report "[ctrl] Generationslimit erreicht (" & integer'image(max_gen) & "), bestes fit=" & integer'image(to_integer(unsigned(best_fit_r))) severity warning;
                             state <= S_DONE;
                         else
+                            if to_integer(gen_ctr) mod 1 = 0 then
+                                report "[ctrl] Generation " & integer'image(to_integer(gen_ctr)) & " best_fit=" & integer'image(to_integer(unsigned(best_fit_r))) severity note;
+                            end if;
                             gen_ctr <= gen_ctr + 1;
                             repr_ctr <= to_unsigned(1, idx_size);
                             sel_ctr <= (others => '0');
@@ -308,6 +314,7 @@ begin
                     -- DONE
                     -- best_chr/best_fit liegen am Ausgang an
                     when S_DONE =>
+                        report "[ctrl] GA beendet. best_fit=" & integer'image(to_integer(unsigned(best_fit_r))) severity note;
                         done  <= '1';
                         state <= S_IDLE;
 

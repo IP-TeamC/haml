@@ -53,17 +53,6 @@ begin
         candidates(i) <= rnd(idx_size*(i+1)-1 downto idx_size*i);
     end generate;
 
-    -- Fitnesswerte einschreiben
-    process(clk)
-    begin
-        if rising_edge(clk) then
-            if fit_we = '1' then
-                fitness(to_integer(unsigned(fit_idx))) <= fit_in;
-            end if;
-        end if;
-    end process;
-
-    -- Tournament-FSM
     process(clk)
     begin
         if rising_edge(clk) then
@@ -71,7 +60,21 @@ begin
                 state <= S_IDLE;
                 done <= '0';
                 ctr <= 0;
+
+                best_fit_a <= (others => '1');
+                best_fit_b <= (others => '1');
+                winner_a  <= (others => '0');
+                winner_b  <= (others => '0');
+
+                for i in 0 to k*2-1 loop
+                    fitness(i) <= (others => '1');
+                end loop;
+
             else
+                if fit_we = '1' then
+                    fitness(to_integer(unsigned(fit_idx))) <= fit_in;
+                end if;
+
                 done <= '0';
                 case state is
 
@@ -81,6 +84,13 @@ begin
                             best_fit_b <= (others => '1');
                             ctr <= 0;
                             state <= S_TOURNAMENT;
+
+                            report "[sel] Tournament gestartet, Kandidaten: "
+                                & integer'image(to_integer(unsigned(candidates(0))))
+                                & " " & integer'image(to_integer(unsigned(candidates(1))))
+                                & " " & integer'image(to_integer(unsigned(candidates(2))))
+                                & " " & integer'image(to_integer(unsigned(candidates(3))))
+                                severity note;
                         end if;
 
                     when S_TOURNAMENT =>
@@ -106,6 +116,12 @@ begin
                         idx_b <= winner_b;
                         done <= '1';
                         state <= S_IDLE;
+
+                        report "[sel] Gewinner: A=idx" & integer'image(to_integer(unsigned(winner_a)))
+                            & "(fit=" & integer'image(to_integer(unsigned(best_fit_a))) & ")"
+                            & " B=idx" & integer'image(to_integer(unsigned(winner_b)))
+                            & "(fit=" & integer'image(to_integer(unsigned(best_fit_b))) & ")"
+                            severity note;
 
                     when others =>
                         state <= S_IDLE;
