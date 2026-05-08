@@ -19,7 +19,15 @@ entity ga_top is
         rst : in std_logic;
         start : in std_logic;
 
-        -- Problemkonstante
+        -- Initialisierungsschnittstelle (evtl. später als weiteren Zustand im Controller? Schwierig beim Sudoku mit Zufallszahlen und BCD)
+        init_mode : in std_logic;
+
+        init_we : in std_logic;
+        init_idx : in std_logic_vector(natural(ceil(log2(real(pop_size))))-1 downto 0);
+        init_chr : in std_logic_vector(chr_size-1 downto 0);
+        init_fit : in std_logic_vector(fp_size-1 downto 0);
+
+        -- Problemkonstante (immutable)
         const : in std_logic_vector(chr_size-1 downto 0);
 
         -- Ergebnis
@@ -42,6 +50,12 @@ architecture rtl of ga_top is
     constant rnd_padded : natural := lfsr_n * 32;
 
     signal rnd : std_logic_vector(rnd_padded-1 downto 0);
+
+    -- Mux-Ausgang: Init <> Controller
+    signal mux_wr_en  : std_logic;
+    signal mux_wr_idx : std_logic_vector(idx_size-1 downto 0);
+    signal mux_wr_chr : std_logic_vector(chr_size-1 downto 0);
+    signal mux_wr_fit : std_logic_vector(fp_size-1 downto 0);
 
     -- population_mem 
     signal rd_idx : std_logic_vector(idx_size-1 downto 0);
@@ -77,6 +91,12 @@ architecture rtl of ga_top is
     signal cx_done : std_logic;
 
 begin
+
+    mux_wr_en  <= init_we  when init_mode = '1' else wr_en;
+    mux_wr_idx <= init_idx when init_mode = '1' else wr_idx;
+    mux_wr_chr <= init_chr when init_mode = '1' else wr_chr;
+    mux_wr_fit <= init_fit when init_mode = '1' else wr_fit;
+
     -- Zufallsgenerator
     rng: entity work.rng_bank
         generic map(
@@ -100,11 +120,10 @@ begin
             clk => clk,
             rd_idx => rd_idx,
             rd_chr => rd_chr,
-            rd_fit => rd_fit,
-            wr_en => wr_en,
-            wr_idx => wr_idx,
-            wr_chr => wr_chr,
-            wr_fit => wr_fit
+            wr_en  => mux_wr_en,
+            wr_idx => mux_wr_idx,
+            wr_chr => mux_wr_chr,
+            wr_fit => mux_wr_fit
         );
 
     -- Fitness
