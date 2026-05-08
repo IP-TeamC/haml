@@ -125,6 +125,9 @@ begin
             cx_start <= '0';
             done <= '0';
 
+            rd_idx <= (others => '0');
+            wr_idx <= (others => '0');
+
             if rst = '1' then
                 state <= S_IDLE;
                 eval_ctr <= (others => '0');
@@ -132,7 +135,6 @@ begin
                 sel_ctr <= (others => '0');
                 gen_ctr <= (others => '0');
                 best_fit_r <= (others => '1');
-
             else
                 case state is
 

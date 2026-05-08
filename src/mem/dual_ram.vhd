@@ -24,7 +24,7 @@ end entity;
 architecture rtl of dual_ram is
     constant rows : natural := 2**adr_size;
     type ram_type is array (0 to rows-1) of std_logic_vector(data_size-1 downto 0);
-    signal memory : ram_type;
+    signal memory : ram_type := (others => (others => '0'));
 begin
 
     process(clk)
@@ -33,8 +33,16 @@ begin
     begin
         if rising_edge(clk) then
 
-            a_int := to_integer(unsigned(adr_a));
-            b_int := to_integer(unsigned(adr_b));
+            if (is_x(adr_a)) then
+                a_int := 0;
+            else
+                a_int := to_integer(unsigned(adr_a));
+            end if;
+            if (is_x(adr_b)) then
+                b_int := 0;
+            else
+                b_int := to_integer(unsigned(adr_b));
+            end if;
 
             -- WRITE Port B
             if we_b = '1' then
