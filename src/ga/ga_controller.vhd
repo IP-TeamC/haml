@@ -9,7 +9,7 @@ entity ga_controller is
         fp_size : natural := 8; -- Fitnessbreite
         pop_size : natural := 64; -- Anzahl der Individuen
         k : natural := 4; -- Tournament Size
-        max_gen : natural := 10000 -- Maximale Generationen
+        max_gen : natural := 100 -- Maximale Generationen
     );
     port (
         clk : in std_logic;

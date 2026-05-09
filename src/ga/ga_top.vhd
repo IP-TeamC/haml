@@ -123,6 +123,7 @@ begin
             clk => clk,
             rd_idx => rd_idx,
             rd_chr => rd_chr,
+            rd_fit => rd_fit,
             wr_en => wr_en,
             wr_idx => wr_idx,
             wr_chr => wr_chr,
@@ -136,7 +137,7 @@ begin
             const_size => chr_size,
             fp_size => fp_size,
             fp_frac => 0,
-            data_size => 1
+            data_size => 0
         )
         port map(
             clk => clk,
@@ -144,7 +145,7 @@ begin
             start => fit_start,
             chr => fit_chr,
             const => const,
-            di => "0",
+            di => (others => '0'),
             do => open,
             fit => fit_val,
             done => fit_done

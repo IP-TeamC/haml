@@ -16,7 +16,7 @@ architecture rtl of ga_top_sudoku_tb is
     constant fp_size    : natural := 8;
     constant pop_size   : natural := 64;
 
-    signal clk      : std_logic := '0';
+    signal clk      : std_logic := '1';
     signal rst      : std_logic := '1';
     signal start    : std_logic := '0';
     signal const    : std_logic_vector(chr_size-1 downto 0) := (others => '0');
@@ -24,7 +24,6 @@ architecture rtl of ga_top_sudoku_tb is
     signal best_chr : std_logic_vector(chr_size-1 downto 0);
     signal best_fit : std_logic_vector(fp_size-1 downto 0);
     signal done     : std_logic;
-
 
 begin
 
@@ -59,7 +58,6 @@ begin
         variable hs_unsolved : t_human_sudoku;
         variable chr_const   : std_logic_vector(chr_size-1 downto 0);
         variable sol         : t_human_sudoku;
-        variable row_str     : string(1 to 27);
     begin
 
         -- Sudoku VOR dem Reset anlegen, damit es beim Start stabil ist
@@ -80,11 +78,9 @@ begin
 
         -- Reset
         rst   <= '1';
-        start <= '0';
         wait for 5 * clk_period;
-
         rst <= '0';
-        wait for 2 * clk_period;
+        assert done = '0';
 
         -- Start-Puls (1 Takt)
         start <= '1';

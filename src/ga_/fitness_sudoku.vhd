@@ -92,7 +92,7 @@ begin
                 end if;
                 if adder_do(data_size) = '1' then
                     fit <= adder_sum;
-                    report "[fitness] fit=" & integer'image(to_integer(unsigned(adder_sum))) & " (valid)" severity note;
+                    report "[fitness] fit=" & integer'image(to_integer(unsigned(adder_sum))) & " (conflicts)" severity note;
                 else
                     fit <= (others => '1');
                 end if;
