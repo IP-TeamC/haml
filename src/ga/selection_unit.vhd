@@ -36,6 +36,7 @@ architecture rtl of selection_unit is
     type t_fitness is array (0 to k*2-1) of std_logic_vector(fp_size-1 downto 0); -- k*2 Fitnesswerte
 
     signal candidates : t_candidates;
+    signal candidates_reg : t_candidates;
     signal fitness : t_fitness;
 
     type t_state is (S_IDLE, S_TOURNAMENT, S_DONE);
@@ -80,29 +81,37 @@ begin
 
                     when S_IDLE =>
                         if start = '1' then
+                            for i in 0 to k*2-1 loop
+                                candidates_reg(i) <= candidates(i);
+                            end loop;
+                           
                             best_fit_a <= (others => '1');
                             best_fit_b <= (others => '1');
+
+                            winner_a <= candidates(0);
+                            winner_b <= candidates(k);
+
                             ctr <= 0;
                             state <= S_TOURNAMENT;
 
-                            report "[sel] Tournament gestartet, Kandidaten: "
-                                & integer'image(to_integer(unsigned(candidates(0))))
-                                & " " & integer'image(to_integer(unsigned(candidates(1))))
-                                & " " & integer'image(to_integer(unsigned(candidates(2))))
-                                & " " & integer'image(to_integer(unsigned(candidates(3))))
-                                severity note;
+                            -- report "[sel] Tournament gestartet, Kandidaten: "
+                            --     & integer'image(to_integer(unsigned(candidates(0))))
+                            --     & " " & integer'image(to_integer(unsigned(candidates(1))))
+                            --     & " " & integer'image(to_integer(unsigned(candidates(2))))
+                            --     & " " & integer'image(to_integer(unsigned(candidates(3))))
+                            --     severity note;
                         end if;
 
                     when S_TOURNAMENT =>
                         -- Eltern A: Kandidaten 0 bis k-1
                         if unsigned(fitness(ctr)) < unsigned(best_fit_a) then
                             best_fit_a <= fitness(ctr);
-                            winner_a <= candidates(ctr);
+                            winner_a <= candidates_reg(ctr);
                         end if;
                         -- Eltern B: Kandidaten k bis 2k-1
                         if unsigned(fitness(ctr+k)) < unsigned(best_fit_b) then
                             best_fit_b <= fitness(ctr+k);
-                            winner_b <= candidates(ctr+k);
+                            winner_b <= candidates_reg(ctr+k);
                         end if;
 
                         if ctr = k-1 then
@@ -117,11 +126,11 @@ begin
                         done <= '1';
                         state <= S_IDLE;
 
-                        report "[sel] Gewinner: A=idx" & integer'image(to_integer(unsigned(winner_a)))
-                            & "(fit=" & integer'image(to_integer(unsigned(best_fit_a))) & ")"
-                            & " B=idx" & integer'image(to_integer(unsigned(winner_b)))
-                            & "(fit=" & integer'image(to_integer(unsigned(best_fit_b))) & ")"
-                            severity note;
+                        -- report "[sel] Gewinner: A=idx" & integer'image(to_integer(unsigned(winner_a)))
+                        --     & "(fit=" & integer'image(to_integer(unsigned(best_fit_a))) & ")"
+                        --     & " B=idx" & integer'image(to_integer(unsigned(winner_b)))
+                        --     & "(fit=" & integer'image(to_integer(unsigned(best_fit_b))) & ")"
+                        --     severity note;
 
                     when others =>
                         state <= S_IDLE;

@@ -12,6 +12,8 @@ entity crossover_mutation is
         clk : in std_logic;
         rst : in std_logic;
         start : in std_logic;
+
+        const_mask : in std_logic_vector(chr_size-1 downto 0);
         
         -- Eltern:
         chr_a : in std_logic_vector(chr_size-1 downto 0);
@@ -52,10 +54,10 @@ architecture rtl of crossover_mutation is
 
 begin
     process(clk)
-        variable cx : natural range 0 to chr_size-1;
-        variable ba : std_logic;
-        variable bb : std_logic;
+        variable cx     : natural range 0 to chr_size-1;
         variable cx_raw : natural;
+        variable ba     : std_logic;
+        variable bb     : std_logic;
     begin
         if rising_edge(clk) then
             if rst = '1' then
@@ -63,6 +65,7 @@ begin
             else
                 done <= start;
                 if start = '1' then
+                    -- Crossover-Punkt
                     cx_raw := to_integer(unsigned(rnd_cx));
                     if cx_raw >= chr_size then
                         cx := chr_size - 1;
@@ -71,23 +74,30 @@ begin
                     end if;
 
                     for i in 0 to chr_size-1 loop
-                        -- Crossover
-                        if i < cx then
-                            ba := chr_a(i);
-                            bb := chr_b(i);
+                        if const_mask(i) = '1' then
+                            -- Festes Bit: unveränderlich
+                            child_a(i) <= chr_a(i);
+                            child_b(i) <= chr_b(i);
                         else
-                            ba := chr_b(i);
-                            bb := chr_a(i);
-                        end if;
-                        -- Mutation
-                        if should_mutate(rnd_mut, i, mut_bits) then
-                            child_a(i) <= not ba;
-                            child_b(i) <= not bb;
-                        else
-                            child_a(i) <= ba;
-                            child_b(i) <= bb;
+                            -- Freies Feld: Crossover
+                            if i < cx then
+                                ba := chr_a(i);
+                                bb := chr_b(i);
+                            else
+                                ba := chr_b(i);
+                                bb := chr_a(i);
+                            end if;
+                            -- Mutation bit-weise innerhalb des Feldes
+                            if should_mutate(rnd_mut, i, mut_bits) then
+                                child_a(i) <= not ba;
+                                child_b(i) <= not bb;
+                            else
+                                child_a(i) <= ba;
+                                child_b(i) <= bb;
+                            end if;
                         end if;
                     end loop;
+
                 end if;
             end if;
         end if;

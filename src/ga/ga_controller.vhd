@@ -3,6 +3,8 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.math_real.all;
 
+use work.ga_pkg.all;
+
 entity ga_controller is
     generic (
         chr_size : natural := 324; -- Chromosombreite
@@ -200,7 +202,7 @@ begin
                         if unsigned(last_fit) < unsigned(best_fit_r) then
                             best_fit_r <= last_fit;
                             best_chr_r <= last_chr;
-                            report "[ctrl] Neues Bestes: idx=" & integer'image(to_integer(eval_ctr)) & " fit=" & integer'image(to_integer(unsigned(last_fit))) severity note;
+                            -- report "[ctrl] Neues Bestes: idx=" & integer'image(to_integer(eval_ctr)) & " fit=" & integer'image(to_integer(unsigned(last_fit))) severity note;
                         end if;
                         -- Alle Individuen bewertet?
                         if eval_ctr = pop_size-1 then
@@ -220,8 +222,9 @@ begin
                             report "[ctrl] Generationslimit erreicht (" & integer'image(max_gen) & "), bestes fit=" & integer'image(to_integer(unsigned(best_fit_r))) severity warning;
                             state <= S_DONE;
                         else
-                            if to_integer(gen_ctr) mod 1 = 0 then
+                            if to_integer(gen_ctr) mod 1 = 0 then -- mod 10
                                 report "[ctrl] Generation " & integer'image(to_integer(gen_ctr)) & " best_fit=" & integer'image(to_integer(unsigned(best_fit_r))) severity note;
+                                print_sudoku(deserialize_sudoku(best_chr_r));
                             end if;
                             gen_ctr <= gen_ctr + 1;
                             repr_ctr <= to_unsigned(1, idx_size);

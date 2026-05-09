@@ -21,6 +21,7 @@ entity ga_top is
 
         -- Problemkonstante (immutable)
         const : in std_logic_vector(chr_size-1 downto 0);
+        const_mask : in std_logic_vector(chr_size-1 downto 0);
 
         -- Ergebnis
         -- best_chr : out std_logic;
@@ -83,7 +84,6 @@ architecture rtl of ga_top is
     -- signal s_best_chr : std_logic_vector(chr_size-1 downto 0);
 
 begin
-
     -- best_chr <= s_best_chr(chr_size-1);
     
     -- process(clk)
@@ -184,6 +184,7 @@ begin
             clk => clk,
             rst => rst,
             start => cx_start,
+            const_mask => const_mask,
             chr_a => cx_chr_a,
             chr_b => cx_chr_b,
             rnd_cx => rnd(rnd_sel_bits + rnd_cx_bits - 1 downto rnd_sel_bits),

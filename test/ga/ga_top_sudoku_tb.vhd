@@ -19,7 +19,9 @@ architecture rtl of ga_top_sudoku_tb is
     signal clk      : std_logic := '1';
     signal rst      : std_logic := '1';
     signal start    : std_logic := '0';
+
     signal const    : std_logic_vector(chr_size-1 downto 0) := (others => '0');
+    signal const_mask  : std_logic_vector(chr_size-1 downto 0);
 
     signal best_chr : std_logic_vector(chr_size-1 downto 0);
     signal best_fit : std_logic_vector(fp_size-1 downto 0);
@@ -33,14 +35,15 @@ begin
             fp_size  => fp_size,
             pop_size => pop_size,
             k        => 4,
-            mut_bits => 7,
-            max_gen  => 500
+            mut_bits => 6,
+            max_gen  => 100000
         )
         port map(
             clk      => clk,
             rst      => rst,
             start    => start,
             const    => const,
+            const_mask => const_mask,
             best_chr => best_chr,
             best_fit => best_fit,
             done     => done
@@ -111,6 +114,26 @@ begin
     end process;
 
     
+    process(const)
+    begin
+        for i in 0 to susi*susi-1 loop
 
+            if const(blsi*(i+1)-1 downto blsi*i) =
+                std_logic_vector(to_unsigned(9, blsi)) then
+
+                -- freies Feld
+                const_mask(blsi*(i+1)-1 downto blsi*i)
+                    <= (others => '0');
+
+            else
+
+                -- festes Feld
+                const_mask(blsi*(i+1)-1 downto blsi*i)
+                    <= (others => '1');
+
+            end if;
+
+        end loop;
+    end process;
 
 end architecture;
