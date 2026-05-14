@@ -5,7 +5,7 @@
 # xset fp rehash
 
 xhost +local:docker
-podman run --rm --replace -it --name xilinx-ise \
+podman run --privileged --replace -it --name xilinx-ise \
   -e DISPLAY=:0 \
   -v /tmp/.X11-unix:/tmp/.X11-unix \
   -v .:/xise-installer \

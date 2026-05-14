@@ -9,7 +9,8 @@ RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
     locale-gen en_US.UTF-8 && \
     /usr/sbin/update-locale LANG=en_US.UTF-8
 
-RUN apt-get update && apt-get install -y \
+RUN dpkg --add-architecture i386 && apt update
+RUN apt install -y \
     build-essential \
     wget \
     x11-apps \
@@ -28,13 +29,19 @@ RUN apt-get update && apt-get install -y \
     xfonts-75dpi \
     xfonts-100dpi \
     libmotif-dev libncurses5 libstdc++5 xfonts-75dpi xfonts-100dpi libxtst6 libsm6 libxrender1 libxrandr2 xfonts-base xfonts-scalable xfonts-utils fontconfig \
-    expect libfontconfig1 libfreetype6 libglib2.0-0 libsm6 libxi6 locales sudo libxp6 multiarch-support
+    expect libfontconfig1 libfreetype6 libglib2.0-0 libsm6 libxi6 locales sudo libxp6 multiarch-support \
+    libc6:i386 libstdc++6:i386 zlib1g:i386 libncurses5:i386 libx11-6:i386 libxext6:i386 lsb-core \
+    openssh-server openssh-client
 RUN rm -rf /var/lib/apt/lists/*
 
-# Kram für Ubuntu ab 16.04, lieber ganz alt... :)
-#RUN wget -O /tmp/libxp6.deb https://archive.debian.org/debian/pool/main/libx/libxp/libxp6_1.0.2-2_amd64.deb
-#RUN wget -O /tmp/mas.deb http://archive.ubuntu.com/ubuntu/pool/main/g/glibc/multiarch-support_2.27-3ubuntu1_amd64.deb
-#RUN dpkg -i /tmp/mas.deb && dpkg -i /tmp/libxp6.deb && rm /tmp/*.deb
+RUN mkdir -p /root/.ssh && \
+    ssh-keygen -t rsa -b 2048 -N "" -f /root/.ssh/id_rsa && \
+    cat /root/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys && \
+    chmod 600 /root/.ssh/authorized_keys && \
+    chmod 700 /root/.ssh && \
+    ssh-keygen -A && \
+    mkdir /var/run/sshd && \
+    /usr/sbin/sshd
 
 RUN mkfontdir && mkfontscale && fc-cache -fv
 
