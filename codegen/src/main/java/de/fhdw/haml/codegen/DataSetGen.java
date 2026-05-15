@@ -108,14 +108,18 @@ public class DataSetGen {
     public int fpFrac = 12;
 
     @SneakyThrows
-    public void gen() {
+    public void gen(String subDir, boolean classification) {
         int adrSize = (int) Math.ceil(Math.log(dataSet.size)/Math.log(2));
         int partSize = (int) Math.ceil(Math.log(dataSet.inputSize)/Math.log(2));
 
         StringBuilder entries = new StringBuilder();
         for (int i = 0; i < dataSet.size; i++) {
             entries.append(DATAPOINT_PRE.formatted(i));
-            entries.append(DATAVALUE_TEMPLATE.formatted(0, Binary.toBinaryPad((int) dataSet.outputs[i][0], fpSize)));
+            entries.append(DATAVALUE_TEMPLATE.formatted(0,
+                    classification
+                            ? Binary.toBinaryPad((int) dataSet.outputs[i][0], fpSize)
+                            : Binary.toFixedPoint(dataSet.outputs[i][0], fpSize, fpFrac)
+            ));
             entries.append(", ");
             for (int input = 0; input < dataSet.inputSize; input++) {
                 entries.append(DATAVALUE_TEMPLATE.formatted(
@@ -144,7 +148,7 @@ public class DataSetGen {
                 entries,
                 name
         );
-        Files.writeString(Path.of("../test/knnc/" + name + "_dataset_tb.vhd"), file, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE);
+        Files.writeString(Path.of("../test/" + subDir + "/" + name + "_dataset_tb.vhd"), file, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE);
     }
 
 }
