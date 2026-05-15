@@ -17,7 +17,7 @@ entity ram is
     );
 
     constant rows : natural := 2**adr_size;
-    
+
 end entity;
 
 architecture rtl of ram is

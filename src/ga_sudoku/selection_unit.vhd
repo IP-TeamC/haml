@@ -84,7 +84,7 @@ begin
                             for i in 0 to k*2-1 loop
                                 candidates_reg(i) <= candidates(i);
                             end loop;
-                           
+
                             best_fit_a <= (others => '1');
                             best_fit_b <= (others => '1');
 

@@ -18,7 +18,7 @@ architecture rtl of reg_tb is
     signal rst : std_logic := '1';
     signal we : std_logic := '0';
     signal data : std_logic_vector(size-1 downto 0);
-    
+
     -- Outputs
     signal state : std_logic_vector(size-1 downto 0);
 
@@ -47,7 +47,7 @@ begin
         rst <= '1';
         wait for clk_period;
         assert state = "00000000";
-        
+
         rst <= '0';
         wait for clk_period;
         assert state = "00000000";

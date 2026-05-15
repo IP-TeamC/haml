@@ -45,7 +45,7 @@ architecture rtl of ga_top is
 
     signal rnd : std_logic_vector(rnd_padded-1 downto 0);
 
-    -- population_mem 
+    -- population_mem
     signal rd_idx : std_logic_vector(idx_size-1 downto 0);
     signal rd_chr : std_logic_vector(chr_size-1 downto 0);
     signal rd_fit : std_logic_vector(fp_size-1 downto 0);
@@ -85,18 +85,18 @@ architecture rtl of ga_top is
 
 begin
     -- best_chr <= s_best_chr(chr_size-1);
-    
+
     -- process(clk)
     -- begin
     --     if rising_edge(clk) then
-    -- 
+    --
     --         s_best_chr(chr_size-1 downto 1) <= s_best_chr(chr_size-2 downto 0);
-    --         
+    --
     --         if l_done = '1' then
     --             s_best_chr <= l_best_chr;
     --         end if;
-    -- 
-    -- 
+    --
+    --
     --     end if;
     -- end process;
 

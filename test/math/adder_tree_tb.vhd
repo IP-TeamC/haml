@@ -116,7 +116,7 @@ begin
 
     process
     begin
-        
+
         start4 <= '0';
         start5 <= '0';
         start6 <= '0';

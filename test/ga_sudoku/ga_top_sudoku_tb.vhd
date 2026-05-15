@@ -113,7 +113,7 @@ begin
         wait;
     end process;
 
-    
+
     process(const)
     begin
         for i in 0 to susi*susi-1 loop

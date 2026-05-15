@@ -100,7 +100,7 @@ begin
     end generate;
 
     i_ram_adr <= ram_adr when ram_we = '1' else i_read_adr;
-    
+
     process(clk)
     begin
         if rising_edge(clk) then

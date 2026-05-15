@@ -61,7 +61,7 @@ begin
 
     process
     begin
-        
+
         start <= '0';
         rst <= '1';
         wait for clk_period;

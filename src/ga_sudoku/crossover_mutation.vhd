@@ -14,7 +14,7 @@ entity crossover_mutation is
         start : in std_logic;
 
         const_mask : in std_logic_vector(chr_size-1 downto 0);
-        
+
         -- Eltern:
         chr_a : in std_logic_vector(chr_size-1 downto 0);
         chr_b : in std_logic_vector(chr_size-1 downto 0);
@@ -43,7 +43,7 @@ architecture rtl of crossover_mutation is
     begin
         bits := rnd(n*(pos+1)-1 downto n*pos); -- Teilbereich der Zufallsbits
         acc := '1';
-    
+
         -- AND-Reduktion über Zufallsbits -> true wenn alle '1'
         for i in 0 to n-1 loop
             acc := acc and bits(i);

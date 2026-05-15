@@ -37,7 +37,7 @@ begin
             if start = '1' then
                 sum <= sum_next;
             end if;
-            
+
             if rst = '1' then
                 done <= '0';
             else

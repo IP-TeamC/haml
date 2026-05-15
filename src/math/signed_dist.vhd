@@ -102,7 +102,7 @@ begin
                 fp_frac
             ));
         end generate;
-        
+
     end generate;
 
 end architecture;

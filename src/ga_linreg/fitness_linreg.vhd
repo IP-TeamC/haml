@@ -70,7 +70,7 @@ begin
         if rising_edge(clk) then
             state <= next_state;
             adr <= next_adr;
-            
+
             if rst = '1' then
                 last_adr <= '0';
             elsif std_logic_vector(adr) = end_adr then

@@ -11,13 +11,13 @@ entity population_mem is
     );
     port (
         clk : in  std_logic;
-        
+
         -- Leseport
         rd_idx : in std_logic_vector(natural(ceil(log2(real(pop_size))))-1 downto 0);
         rd_chr : out std_logic_vector(chr_size-1 downto 0);
         rd_fit : out std_logic_vector(fp_size-1 downto 0);
 
-        -- Schreibport 
+        -- Schreibport
         wr_en : in std_logic;
         wr_idx : in std_logic_vector(natural(ceil(log2(real(pop_size))))-1 downto 0);
         wr_chr : in std_logic_vector(chr_size-1 downto 0);

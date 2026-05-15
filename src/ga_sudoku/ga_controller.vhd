@@ -88,7 +88,7 @@ architecture rtl of ga_controller is
         S_SEL_READ_WAIT,
         S_SEL_LOAD,
         S_SEL_START,
-        S_SEL_WAIT, 
+        S_SEL_WAIT,
 
         -- Reproduktion
         S_REPR_READ_A,
@@ -106,7 +106,7 @@ architecture rtl of ga_controller is
     signal eval_ctr : unsigned(idx_size-1 downto 0); -- Zähler für das aktuell zu bewertende Individuum
     signal repr_ctr : unsigned(idx_size-1 downto 0); -- Zähler für den Schreibindex der neuen Kinder
     signal sel_ctr : unsigned(k_idx_size-1 downto 0); -- Zähler für die k*2 Kandidaten, die in die selection_unit geladen werden
-    signal gen_ctr : unsigned(gen_size-1 downto 0); -- Generationenzähler 
+    signal gen_ctr : unsigned(gen_size-1 downto 0); -- Generationenzähler
 
     signal chr_a_buf : std_logic_vector(chr_size-1 downto 0); -- Zwischenpuffer für Chromosom von Eltern A
     signal idx_a_buf : std_logic_vector(idx_size-1 downto 0); -- RAM-Index des Turniersiegers A

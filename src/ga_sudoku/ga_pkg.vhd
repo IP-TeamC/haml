@@ -118,7 +118,7 @@ package body ga_pkg is
                     blsi*(col + susi*row + 1)-1 downto blsi*(col + susi*row)
                 )));
                 if val >= susi then
-                    result(row+1, col+1) := 0; 
+                    result(row+1, col+1) := 0;
                 else
                     result(row+1, col+1) := val + 1;
                 end if;
@@ -188,7 +188,7 @@ package body ga_pkg is
             else
                 if mask(val) = '1' then
                     conflicts := conflicts + 1; -- Duplikat
-                        
+
                     dbg("  -> CONFLICT: value " &
                         integer'image(val) &
                         " already in column " &
@@ -227,7 +227,7 @@ package body ga_pkg is
                 else
                     if mask(val) = '1' then
                         conflicts := conflicts + 1; -- Duplikat
-                        
+
                         dbg("  -> BLOCK CONFLICT value=" &
                             integer'image(val));
 

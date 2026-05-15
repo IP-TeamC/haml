@@ -57,7 +57,7 @@ begin
             di => adder_di,
             do => adder_do
         );
-    
+
     gen_values_line: for i in 0 to 8 generate
         adder_values(8*(i+1)-1 downto 8*i) <= std_logic_vector(resize(row_c(i), 8));
         adder_values(9*8+8*(i+1)-1 downto 9*8+8*i) <= std_logic_vector(resize(col_c(i), 8));

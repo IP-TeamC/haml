@@ -51,12 +51,12 @@ begin
 
     process
     begin
-        
+
         start <= '0';
         rst <= '1';
         wait for clk_period;
         rst <= '0';
-        
+
         start <= '1';
         top_class <= "011101";
         wait for clk_period;

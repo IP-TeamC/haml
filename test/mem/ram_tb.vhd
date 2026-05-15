@@ -51,7 +51,7 @@ begin
         variable a_vec : std_logic_vector(adr_size-1 downto 0);
         variable d_vec : std_logic_vector(data_size-1 downto 0);
     begin
-        
+
         we <= '1';
         for i in 0 to rows-1 loop
             a_vec := std_logic_vector(to_unsigned(i, adr_size));
@@ -60,7 +60,7 @@ begin
             di <= d_vec;
             wait for clk_period;
         end loop;
-        
+
         we <= '0';
         for i in 0 to rows-1 loop
             a_vec := std_logic_vector(to_unsigned(i, adr_size));
@@ -69,7 +69,7 @@ begin
             wait for clk_period;
             assert do = d_vec;
         end loop;
-        
+
         wait;
     end process;
 

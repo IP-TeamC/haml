@@ -97,7 +97,7 @@ begin
 
     process
     begin
-        
+
         start4 <= '0';
         start5 <= '0';
         start6 <= '0';
@@ -107,7 +107,7 @@ begin
         assert done4 = '0';
         assert done5 = '0';
         assert done6 = '0';
-        
+
         start4 <= '1';
         values4 <= "00001011" & "00001111" & "00001001" & "00010110";
         di4 <= "01";
@@ -127,7 +127,7 @@ begin
         wait for clk_period;
         assert done5 = '1';
         assert sum5 = "00001011" & "00011000" & "01000011";
-    
+
         start6 <= '1';
         values6 <= "00001011" & "00001111" & "00001001" & "00010110" & "00010110" & "00010111";
         wait for clk_period;

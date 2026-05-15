@@ -57,12 +57,12 @@ begin
 
     process
     begin
-        
+
         start <= '0';
         rst <= '1';
         wait for clk_period;
         rst <= '0';
-        
+
         start <= '1';
         dist <= "00101111";
         data <= "01";

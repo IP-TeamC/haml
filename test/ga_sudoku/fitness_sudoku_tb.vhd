@@ -22,7 +22,7 @@ entity fitness_sudoku_tb is
     signal chr : std_logic_vector(chr_size-1 downto 0) := (others => '0');
     signal const : std_logic_vector(const_size-1 downto 0) := (others => '0');
     signal di : std_logic_vector(data_size-1 downto 0) := (others => '0');
-    
+
     -- Outputs
     signal do : std_logic_vector(data_size-1 downto 0);
     signal fit : std_logic_vector(fp_size-1 downto 0);
@@ -72,7 +72,7 @@ begin
         variable blk_c : t_conflicts;
         variable vk : std_logic;
     begin
-        
+
         rst <= '1';
         wait for clk_period;
         rst <= '0';
@@ -109,7 +109,7 @@ begin
             for j in 1 to 9 loop
                 if hs_unsolved(i, j) = 0 then
                     hs_unsolved(i, j) := 1;
-                end if;        
+                end if;
             end loop;
         end loop;
         chr_s_u := serialize_sudoku(hs_unsolved);
@@ -152,7 +152,7 @@ begin
 
         vk := valid_known(chr_s_u, chr_k);
         report "Valid known: " & std_logic'image(vk);
-        
+
         wait;
     end process;
 

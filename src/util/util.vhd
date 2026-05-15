@@ -9,7 +9,7 @@ package util is
 
     function to_string(vec : signed)
     return string;
-    
+
     function to_string(vec : unsigned)
     return string;
 
@@ -67,7 +67,7 @@ package body util is
     begin
         report to_string(unsigned(vec));
     end procedure;
-    
+
     procedure print(vec : unsigned) is
     begin
         report to_string(vec);

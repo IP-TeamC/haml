@@ -18,7 +18,7 @@ architecture rtl of lfsr_tb is
     signal rst : std_logic := '1';
     signal generator : std_logic_vector(degree downto 0);
     signal seed : std_logic_vector(degree-1 downto 0);
-    
+
     -- Outputs
     signal rand : std_logic_vector(degree-1 downto 0);
 
