@@ -19,7 +19,7 @@ entity fitness_linreg is
         ram_data : in std_logic_vector(fp_size*(var_num+1)-1 downto 0);
         ram_adr : out std_logic_vector(adr_size-1 downto 0);
 
-        fit : out std_logic_vector(4*fp_size-1 downto 0);
+        fit : out std_logic_vector(fp_size-1 downto 0);
         done : out std_logic
     );
 end entity;
@@ -38,7 +38,7 @@ architecture rtl of fitness_linreg is
 
 begin
 
-    mse_linreg_inst: entity work.mse_linreg
+    mse_linreg: entity work.mse_linreg
         generic map(
             var_num => var_num,
             fp_size => fp_size,

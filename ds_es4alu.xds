@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<DesignStrategy goal="Performance_es4alu" strategy="Performance_es4alu" version="12.1">
+
+  <Description>The Default strategy provides a balanced optimization of performance results vs. runtime. The default property values correspond to the default values of each of the underlying implementation tools. This strategy keeps all properties in an unlocked state so that you can modify the values as you wish.</Description>
+
+  <DeviceList devices="spartan3e"/>
+
+  <Properties>
+    <property name="Synthesize - XST:Optimization Goal" value="Speed"/>
+    <property name="Synthesize - XST:Optimization Effort" value="High"/>
+    <property name="Synthesize - XST:Keep Hierarchy" value="No"/>
+    <property name="Synthesize - XST:Global Optimization Goal" value="AllClockNets"/>
+    <property name="Synthesize - XST:FSM Encoding Algorithm" value="One-Hot"/>
+    <property name="Synthesize - XST:Resource Sharing" value="false"/>
+    <property name="Synthesize - XST:Register Duplication" value="true"/>
+    <property name="Synthesize - XST:Equivalent Register Removal" value="true"/>
+    <property name="Synthesize - XST:Register Balancing" value="Yes"/>
+    <property name="Map:Perform Timing-Driven Packing and Placement" value="true"/>
+    <property name="Map:Map Effort Level" value="High"/>
+    <property name="Map:Extra Effort" value="Continue on Impossible"/>
+    <property name="Map:Starting Placer Cost Table (1-100)" value="25"/>
+    <property name="Map:Combinatorial Logic Optimization" value="true"/>
+    <property name="Map:Register Duplication" value="On"/>
+    <property name="Map:Ignore User Timing Constraints" value="false"/>
+    <property name="Map:Trim Unconnected Signals" value="true"/>
+    <property name="Map:Allow Logic Optimization Across Hierarchy" value="true"/>
+    <property name="Map:Optimization Strategy (Cover Mode)" value="Speed"/>
+    <property name="Place &amp; Route:Place &amp; Route Effort Level (Overall)" value="High"/>
+    <property name="Place &amp; Route:Placer Effort Level (Overrides Overall Level)" value="High"/>
+    <property name="Place &amp; Route:Router Effort Level (Overrides Overall Level)" value="High"/>
+    <property name="Place &amp; Route:Extra Effort (Highest PAR level only)" value="Continue on Impossible"/>
+    <property name="Place &amp; Route:Starting Placer Cost Table (1-100)" value="25"/>
+    <property name="Place &amp; Route:Ignore User Timing Constraints" value="false"/>
+  </Properties>
+
+</DesignStrategy>

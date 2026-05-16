@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<DesignStrategy goal="Performance_v6" strategy="Performance_v6" version="12.1">
+
+  <Description>The Default strategy provides a balanced optimization of performance results vs. runtime. The default property values correspond to the default values of each of the underlying implementation tools. This strategy keeps all properties in an unlocked state so that you can modify the values as you wish.</Description>
+
+  <DeviceList devices="virtex6"/>
+
+  <Properties>
+    <property name="Synthesize - XST:Optimization Goal" value="Speed"/>
+    <property name="Synthesize - XST:Optimization Effort" value="High"/>
+    <property name="Synthesize - XST:Keep Hierarchy" value="No"/>
+    <property name="Synthesize - XST:Global Optimization Goal" value="AllClockNets"/>
+    <property name="Synthesize - XST:FSM Encoding Algorithm" value="One-Hot"/>
+    <property name="Synthesize - XST:Resource Sharing" value="false"/>
+    <property name="Synthesize - XST:Register Duplication" value="true"/>
+    <property name="Synthesize - XST:Equivalent Register Removal" value="true"/>
+    <property name="Synthesize - XST:Register Balancing" value="Yes"/>
+    <property name="Map:Placer Effort Level" value="High"/>
+    <property name="Map:Placer Extra Effort" value="Continue on Impossible"/>
+    <property name="Map:Extra Cost Tables" value="5"/>
+    <property name="Map:Combinatorial Logic Optimization" value="true"/>
+    <property name="Map:Register Duplication" value="On"/>
+    <property name="Map:Global Optimization" value="Speed"/>
+    <property name="Map:Equivalent Register Removal" value="true"/>
+    <property name="Map:Trim Unconnected Signals" value="true"/>
+    <property name="Map:Allow Logic Optimization Across Hierarchy" value="true"/>
+    <property name="Place &amp; Route:Place &amp; Route Effort Level (Overall)" value="High"/>
+    <property name="Place &amp; Route:Extra Effort (Highest PAR level only)" value="Continue on Impossible"/>
+  </Properties>
+
+</DesignStrategy>

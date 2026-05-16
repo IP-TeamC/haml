@@ -2,6 +2,8 @@ package de.fhdw.haml.codegen.linreg;
 
 import de.fhdw.haml.codegen.DataSetGen;
 import de.fhdw.knn.data.*;
+import de.fhdw.knn.trainer.loss.LossFunction;
+import de.fhdw.knn.trainer.loss.MeanSquaredError;
 
 import java.io.IOException;
 
@@ -13,6 +15,8 @@ public class Salary {
         Normalizer normalizerOutputs = new MinMaxNormalizer(-1, 1);
         dataSet.normalizeInputs(normalizerInputs);
         dataSet.normalizeOutputs(normalizerOutputs);
+        LossFunction mse = LossFunction.MEAN_SQUARED_ERROR;
+        mse.totalLoss()
 
         DataSetGen gen = new DataSetGen();
         gen.fpSize = 18;

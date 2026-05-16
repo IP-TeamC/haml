@@ -1,6 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.math_real.all;
 
 use work.math.all;
 
@@ -18,7 +19,7 @@ entity mse_linreg is
 
         ram_data : in std_logic_vector(fp_size*(var_num+1)-1 downto 0);
 
-        fit : out std_logic_vector(4*fp_size-1 downto 0);
+        fit : out std_logic_vector(fp_size-1 downto 0);
         done : out std_logic
     );
 end entity;
@@ -32,17 +33,18 @@ architecture rtl of mse_linreg is
     signal mul_expected : std_logic_vector(fp_size-1 downto 0);
     signal mul_done : std_logic;
 
-    signal adder_values : std_logic_vector(2*fp_size*(var_num+1)-1 downto 0);
+    constant adder_extra_bits : natural := natural(ceil(log2(real(var_num)))); -- evtl. +1
+    signal adder_values : std_logic_vector((adder_extra_bits+fp_size)*(var_num+1)-1 downto 0);
     signal adder_done : std_logic;
-    signal adder_sum : std_logic_vector(2*fp_size-1 downto 0);
-    signal adder_expected : std_logic_vector(2*fp_size-1 downto 0);
+    signal adder_sum : std_logic_vector(adder_extra_bits+fp_size-1 downto 0);
+    signal adder_expected : std_logic_vector(fp_size-1 downto 0);
 
-    signal diff : signed(2*fp_size-1 downto 0);
+    signal diff : signed(fp_size-1 downto 0);
     signal diff_done : std_logic;
-    signal diff_sq : unsigned(4*fp_size-1 downto 0);
+    signal diff_sq : unsigned(fp_size-1 downto 0);
     signal diff_sq_done : std_logic;
 
-    signal err : unsigned(4*fp_size-1 downto 0);
+    signal err : unsigned(fp_size-1 downto 0);
     signal err_done : std_logic;
 
 begin
@@ -65,12 +67,11 @@ begin
     begin
         if rising_edge(clk) then
             mul_expected <= std_logic_vector(mul_dp(0));
-            adder_values(2*fp_size-1 downto fp_size+fp_frac) <= (others => chr(fp_size-1));
-            adder_values(fp_size+fp_frac-1 downto fp_frac) <= chr(fp_size-1 downto 0);
-            adder_values(fp_frac-1 downto 0) <= (others => '0');
+            adder_values(adder_extra_bits+fp_size-1 downto 0) <= std_logic_vector(resize(signed(chr(fp_size-1 downto 0)), adder_extra_bits+fp_size));
             for i in 1 to var_num loop
-                adder_values(flat_upper(2*fp_size, i) downto flat_lower(2*fp_size, i)) <= std_logic_vector(
-                        flat_signed(chr, fp_size, i) * mul_dp(i)
+                -- Multiplikation normalisiert zwischen -1 und +1 ist in demselben Wertebereich (aber Verlust von Genauigkeit)
+                adder_values(flat_upper(adder_extra_bits+fp_size, i) downto flat_lower(adder_extra_bits+fp_size, i)) <= std_logic_vector(
+                        resize(fp_mul(flat_signed(chr, fp_size, i), mul_dp(i), fp_frac), adder_extra_bits+fp_size)
                     );
             end loop;
         end if;
@@ -80,7 +81,7 @@ begin
     adder_tree: entity work.adder_tree
         generic map(
             n => var_num+1,
-            size => 2*fp_size,
+            size => adder_extra_bits+fp_size,
             data_size => fp_size
         )
         port map(
@@ -91,16 +92,16 @@ begin
             sum => adder_sum,
             done => adder_done,
             di => mul_expected,
-            do => adder_expected(fp_size+fp_frac-1 downto fp_frac)
+            do => adder_expected
         );
-    adder_expected(2*fp_size-1 downto fp_size+fp_frac) <= (others => adder_expected(fp_size+fp_frac-1));
-    adder_expected(fp_frac-1 downto 0) <= (others => '0');
 
     -- Stage 4: Differenz berechnen
     process (clk)
+        variable tmp : signed(adder_extra_bits+fp_size-1 downto 0);
     begin
         if rising_edge(clk) then
-            diff <= signed(adder_expected) - signed(adder_sum);
+            tmp := resize(signed(adder_expected), adder_extra_bits+fp_size) - signed(adder_sum);
+            diff <= tmp(adder_extra_bits+fp_size-1 downto adder_extra_bits);
         end if;
     end process;
 
@@ -108,7 +109,7 @@ begin
     process (clk)
     begin
         if rising_edge(clk) then
-            diff_sq <= unsigned(diff * diff);
+            diff_sq <= unsigned(fp_mul(diff, diff, fp_frac));
         end if;
     end process;
 
@@ -119,6 +120,7 @@ begin
             if rst = '1' then
                 err <= (others => '0');
             elsif diff_sq_done = '1' then
+                -- evtl. Anpassung für Anzahl Datensätze (oder doppelt so viele Bits)
                 err <= err + diff_sq;
             end if;
         end if;

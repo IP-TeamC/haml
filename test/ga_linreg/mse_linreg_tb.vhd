@@ -23,7 +23,7 @@ entity mse_linreg_tb is
     signal ram_data : std_logic_vector(fp_size*(var_num+1)-1 downto 0);
 
     -- Outputs
-    signal fit : std_logic_vector(4*fp_size-1 downto 0);
+    signal fit : std_logic_vector(fp_size-1 downto 0);
     signal done : std_logic;
 
 end entity;
@@ -92,20 +92,16 @@ begin
         assert done <= '0';
 
         wait until done = '1' and clk = '0';
-        -- kleiner Fehler
-        assert fit /= "00000000" & "000000000000000000000000";
-        assert signed(fit) >= "00000000" & "000000000000100000000000";
-        assert signed(fit) <= "00000000" & "000000000001000000000000";
-        tmp := fit;
+        -- kleiner Fehler (zu ungenau, deshalb 0)
+        assert fit = "00000000";
         wait for clk_period;
         assert done = '1';
         -- unveraenderter Fehler
-        assert fit = tmp;
+        assert fit = "00000000";
         wait for clk_period;
         assert done = '1';
         -- viel groeßerer Fehler
-        assert signed(fit) >= "00000000" & "011011100100000000000000";
-        assert signed(fit) <= "00000000" & "011011111111111111111111";
+        assert fit = "00" & "000110";
         wait for clk_period;
         assert done = '0';
 
