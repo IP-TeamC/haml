@@ -122,7 +122,7 @@ begin
             if rst = '1' then
                 err <= (others => '0');
             elsif diff_sq_done = '1' then
-                err <= err + resize(diff_sq, adder_extra_bits+fp_size);
+                err <= err + resize(diff_sq, err_extra_bits+fp_size);
             end if;
         end if;
     end process;
