@@ -2,6 +2,9 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+use work.prng.prim_gens;
+use work.prng.sample_seed;
+
 entity pop_init is
     generic (
         var_num : natural;
@@ -14,9 +17,6 @@ entity pop_init is
         start : in std_logic;
         fitness_done : in std_logic;
         fitness_fit : in std_logic_vector(fp_size-1 downto 0);
-
-        generator : std_logic_vector(fp_size downto 0);
-        seed : std_logic_vector(fp_size-1 downto 0);
 
         ram_chr_we : out std_logic_vector(var_num+1 downto 0);
         ram_chr_adr : out std_logic_vector(adr_size-1 downto 0);
@@ -60,8 +60,8 @@ begin
         port map(
             clk => clk,
             rst => rst,
-            generator => generator,--(18 => '1', 11 => '1', others => '0'),
-            seed => seed,--"10" & x"1A42",
+            generator => prim_gens(fp_size)(fp_size downto 0),
+            seed => sample_seed(fp_size-1 downto 0),
             rand => rand
         );
 

@@ -33,9 +33,6 @@ end entity;
 
 architecture rtl of ga_linreg is
 
-    constant generator : std_logic_vector(fp_size downto 0) := (18 => '1', 11 => '1', others => '0');
-    constant seed : std_logic_vector(fp_size-1 downto 0) := "10" & x"1A42";
-
     type t_ram_data is array(natural range <>) of std_logic_vector(fp_size-1 downto 0);
     type t_state is (s_ready, s_init, s_select, s_crossover, s_mutate, s_fit, s_replace);
     signal state : t_state;
@@ -105,8 +102,6 @@ begin
             start => init_start,
             fitness_done => fitness_done,
             fitness_fit => fitness_fit,
-            generator => generator,
-            seed => seed,
             ram_chr_we => init_ram_chr_we,
             ram_chr_adr => init_ram_chr_adr,
             ram_chr_di => init_ram_chr_di,

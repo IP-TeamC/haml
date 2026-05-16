@@ -13,8 +13,6 @@ entity pop_init_tb is
     constant var_num : natural := 2;
     constant fp_size : natural := 8;
     constant adr_size : natural := 2;
-    constant generator : std_logic_vector(8 downto 0) := "101110000";
-    constant seed : std_logic_vector(7 downto 0) := "01100111";
 
     -- Inputs
     signal clk : std_logic := '1';
@@ -49,8 +47,6 @@ begin
             start => start,
             fitness_done => fitness_done,
             fitness_fit => fitness_fit,
-            generator => generator,
-            seed => seed,
             ram_chr_we => ram_chr_we,
             ram_chr_adr => ram_chr_adr,
             ram_chr_di => ram_chr_di,
