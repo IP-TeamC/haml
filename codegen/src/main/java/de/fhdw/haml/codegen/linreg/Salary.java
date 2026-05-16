@@ -15,8 +15,6 @@ public class Salary {
         Normalizer normalizerOutputs = new MinMaxNormalizer(-1, 1);
         dataSet.normalizeInputs(normalizerInputs);
         dataSet.normalizeOutputs(normalizerOutputs);
-        LossFunction mse = LossFunction.MEAN_SQUARED_ERROR;
-        mse.totalLoss()
 
         DataSetGen gen = new DataSetGen();
         gen.fpSize = 18;
