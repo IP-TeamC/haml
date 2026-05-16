@@ -63,6 +63,7 @@ begin
     done <= '1' when state = s_ready else '0';
 
     ram_chr_we <= (others => tr_ram_chr_we);
+    ram_chr_adr <= ts_ram_chr_adr when state = s_select else tr_ram_chr_adr;
     ram_chr_di(fp_size*(var_num+2)-1 downto fp_size*(var_num+1)) <= fitness_fit;
     ram_chr_di(fp_size*(var_num+1)-1 downto 0) <= mut_chr_mut;
 

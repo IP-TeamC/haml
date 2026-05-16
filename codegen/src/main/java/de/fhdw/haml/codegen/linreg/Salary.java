@@ -2,8 +2,6 @@ package de.fhdw.haml.codegen.linreg;
 
 import de.fhdw.haml.codegen.DataSetGen;
 import de.fhdw.knn.data.*;
-import de.fhdw.knn.trainer.loss.LossFunction;
-import de.fhdw.knn.trainer.loss.MeanSquaredError;
 
 import java.io.IOException;
 

@@ -85,6 +85,7 @@ begin
 
     init_start <= '1' when state = s_init else '0';
     fitness_start <= init_fitness_start or trainer_fitness_start;
+    trainer_start <= '1' when state = s_train else '0';
 
     ram_dp_we <= dp_we;
     ram_dp_adr <= dp_adr when state = s_ready else fitness_ram_dp_adr;

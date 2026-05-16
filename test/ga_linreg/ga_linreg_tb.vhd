@@ -16,8 +16,8 @@ entity ga_linreg_tb is
     constant var_num : natural := 2;
     constant fp_size : natural := 18;
     constant fp_frac : natural := 16;
-    constant dp_adr_size : natural := 8;
-    constant chr_adr_size : natural := 8;
+    constant dp_adr_size : natural := 7;
+    constant chr_adr_size : natural := 7;
 
     -- Inputs
     signal clk : std_logic := '1';
@@ -90,7 +90,9 @@ begin
         rst <= '0';
         start <= '0';
 
+        mark_end <= '1';
         custom_write_dataset_to_ram(dp_we, dp_adr, dp_data);
+        mark_end <= '0';
 
         wait for clk_period;
         start <= '1';

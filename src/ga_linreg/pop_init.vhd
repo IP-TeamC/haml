@@ -94,7 +94,6 @@ begin
             fitness_done_prev <= fitness_done;
 
             if rst = '1' then
-                state <= s_ready;
                 fitness_done_prev <= '0';
             elsif state /= s_fit_calc and next_state = s_fit_calc then
                 fitness_start <= '1';

@@ -14,6 +14,7 @@ entity mse_linreg_tb is
     constant var_num : natural := 2;
     constant fp_size : natural := 8;
     constant fp_frac : natural := 6;
+    constant adr_size : natural := 2;
 
     -- Inputs
     signal clk : std_logic := '1';
@@ -36,7 +37,8 @@ begin
         generic map (
             var_num => var_num,
             fp_size => fp_size,
-            fp_frac => fp_frac
+            fp_frac => fp_frac,
+            adr_size => adr_size
         )
         port map (
             clk => clk,
@@ -55,7 +57,6 @@ begin
     end process;
 
     process
-        variable tmp : std_logic_vector(31 downto 0);
     begin
         rst <= '1';
         wait for clk_period;

@@ -9,7 +9,8 @@ entity mse_linreg is
     generic (
         var_num : natural := 2;
         fp_size : natural := 18;
-        fp_frac : natural := 16
+        fp_frac : natural := 16;
+        adr_size : natural := 8
     );
     port (
         clk : in std_logic;
@@ -33,7 +34,7 @@ architecture rtl of mse_linreg is
     signal mul_expected : std_logic_vector(fp_size-1 downto 0);
     signal mul_done : std_logic;
 
-    constant adder_extra_bits : natural := natural(ceil(log2(real(var_num)))); -- evtl. +1
+    constant adder_extra_bits : natural := natural(ceil(log2(real(var_num))));
     signal adder_values : std_logic_vector((adder_extra_bits+fp_size)*(var_num+1)-1 downto 0);
     signal adder_done : std_logic;
     signal adder_sum : std_logic_vector(adder_extra_bits+fp_size-1 downto 0);
@@ -44,12 +45,13 @@ architecture rtl of mse_linreg is
     signal diff_sq : unsigned(fp_size-1 downto 0);
     signal diff_sq_done : std_logic;
 
-    signal err : unsigned(fp_size-1 downto 0);
+    constant err_extra_bits : natural := adr_size;
+    signal err : unsigned(err_extra_bits+fp_size-1 downto 0);
     signal err_done : std_logic;
 
 begin
 
-    fit <= std_logic_vector(err);
+    fit <= std_logic_vector(err(adder_extra_bits+fp_size-1 downto adder_extra_bits));
     done <= err_done;
 
     -- Stage 1: RAM-Daten in Register zwischenspeichern
@@ -120,8 +122,7 @@ begin
             if rst = '1' then
                 err <= (others => '0');
             elsif diff_sq_done = '1' then
-                -- evtl. Anpassung für Anzahl Datensätze (oder doppelt so viele Bits)
-                err <= err + diff_sq;
+                err <= err + resize(diff_sq, adder_extra_bits+fp_size);
             end if;
         end if;
     end process;

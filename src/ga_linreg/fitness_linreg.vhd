@@ -42,7 +42,8 @@ begin
         generic map(
             var_num => var_num,
             fp_size => fp_size,
-            fp_frac => fp_frac
+            fp_frac => fp_frac,
+            adr_size => adr_size
         )
         port map(
             clk => clk,
@@ -75,6 +76,8 @@ begin
                 last_adr <= '0';
             elsif std_logic_vector(adr) = end_adr then
                 last_adr <= '1';
+            else
+                last_adr <= '0';
             end if;
         end if;
     end process;
