@@ -51,7 +51,7 @@ architecture rtl of mse_linreg is
 
 begin
 
-    fit <= std_logic_vector(err(adder_extra_bits+fp_size-1 downto adder_extra_bits));
+    fit <= std_logic_vector(err(err_extra_bits+fp_size-1 downto err_extra_bits));
     done <= err_done;
 
     -- Stage 1: RAM-Daten in Register zwischenspeichern
@@ -119,10 +119,12 @@ begin
     process (clk)
     begin
         if rising_edge(clk) then
-            if rst = '1' then
-                err <= (others => '0');
-            elsif diff_sq_done = '1' then
-                err <= err + resize(diff_sq, err_extra_bits+fp_size);
+            if diff_sq_done = '1' then
+                if err_done = '1' then
+                    err <= err + resize(diff_sq, err_extra_bits+fp_size);
+                else
+                    err <= resize(diff_sq, err_extra_bits+fp_size);
+                end if;
             end if;
         end if;
     end process;

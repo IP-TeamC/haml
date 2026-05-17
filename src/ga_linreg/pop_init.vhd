@@ -30,7 +30,7 @@ end entity;
 
 architecture rtl of pop_init is
 
-    type t_state is (s_ready, s_generate, s_fit_calc, s_fit_write);
+    type t_state is (s_ready, s_generate, s_fit_calc, s_fit_write, s_done);
     signal state : t_state;
     signal next_state : t_state;
 
@@ -48,8 +48,7 @@ architecture rtl of pop_init is
 begin
 
     fitness_rst <= '1' when state = s_ready or state = s_fit_write else '0';
-    ram_chr_we(var_num+1) <= fitness_done;
-    ram_chr_we(var_num downto 0) <= chr_we(var_num downto 0);
+    ram_chr_we <= chr_we;
     ram_chr_adr <= std_logic_vector(chr_adr);
     ram_chr_di <= rand when state = s_generate else fitness_fit;
 
@@ -70,7 +69,7 @@ begin
         else s_fit_calc when state = s_generate and chr_adr = (chr_adr'range => '1') and chr_we(var_num) = '1'
         else s_fit_write when state = s_fit_calc and fitness_done_prev = '1' and fitness_done = '0'
         else s_fit_calc when state = s_fit_write and chr_adr /=(chr_adr'range => '1')
-        else s_ready when state = s_fit_write and chr_adr = (chr_adr'range => '1')
+        else s_done when state = s_fit_write and chr_adr = (chr_adr'range => '1')
         else state;
 
     inc_chr_adr <= '1' when state = s_generate or state = s_fit_write else '0';
