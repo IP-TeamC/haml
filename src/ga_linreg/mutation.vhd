@@ -3,7 +3,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 use work.math.all;
-use work.prng.prim_gens;
+use work.prng.prim_gen;
 use work.prng.sample_seed;
 
 entity mutation is
@@ -41,7 +41,7 @@ begin
             port map(
                 clk => clk,
                 rst => rst,
-                generator => prim_gens(fp_size),
+                generator => prim_gen(fp_size),
                 seed => (sample_seed(i downto 0) & sample_seed(fp_size-1 downto i+1)) xor sample_seed(fp_size-1 downto 0),
                 rand => rand(flat_upper(fp_size, i) downto flat_lower(fp_size, i))
             );
@@ -68,7 +68,20 @@ begin
     begin
         if rising_edge(clk) then
             if start = '1' then
-                chr_mut <= chr xor mask;
+                for i in 0 to var_num loop
+                    -- TODO optimieren (ist eher PoC)
+                    if mask(flat_upper(fp_size, i) downto flat_upper(fp_size, i)-3) = "1111" then
+                        chr_mut(flat_upper(fp_size, i)) <= not chr(flat_upper(fp_size, i));
+                    else
+                        chr_mut(flat_upper(fp_size, i)) <= chr(flat_upper(fp_size, i));
+                    end if;
+                    if mask(flat_upper(fp_size, i) downto flat_upper(fp_size, i)-2) = "101" then
+                        chr_mut(flat_upper(fp_size, i)-1) <= not chr(flat_upper(fp_size, i)-1);
+                    else
+                        chr_mut(flat_upper(fp_size, i)-1) <= chr(flat_upper(fp_size, i)-1);
+                    end if;
+                    chr_mut(flat_upper(fp_size, i)-2 downto flat_lower(fp_size, i)) <= chr(flat_upper(fp_size, i)-2 downto flat_lower(fp_size, i)) xor mask(flat_upper(fp_size, i)-2 downto flat_lower(fp_size, i));                    
+                end loop;
             end if;
             done <= start and not rst;
         end if;

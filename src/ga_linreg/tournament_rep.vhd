@@ -3,15 +3,16 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 use work.math.all;
-use work.prng.prim_gens;
+use work.prng.prim_gen;
 use work.prng.sample_seed;
 
 entity tournament_rep is
     generic (
-        k : natural := 4;
+        k : natural := 5;
         var_num : natural := 2;
         fp_size : natural := 18;
-        adr_size : natural := 8
+        adr_size : natural := 8;
+        replace_if_worse : boolean := true
     );
     port (
         clk : in std_logic;
@@ -31,6 +32,7 @@ architecture rtl of tournament_rep is
 
     type t_state is (s_ready, s_read, s_cmp);
     signal state : t_state;
+    signal prev_state : t_state;
     signal next_state : t_state;
 
     signal rand_adr : std_logic_vector(adr_size-1 downto 0);
@@ -44,7 +46,7 @@ architecture rtl of tournament_rep is
 begin
 
     done <= '1' when state = s_cmp else '0';
-    chr_adr <= worst_adr when state = s_cmp else rand_adr;
+    chr_adr <= worst_adr when prev_state = s_cmp else rand_adr;
 
     lfsr: entity work.lfsr
         generic map(
@@ -53,8 +55,8 @@ begin
         port map(
             clk => clk,
             rst => rst,
-            generator => prim_gens(adr_size),
-            seed => sample_seed(adr_size+1 downto 2),
+            generator => prim_gen(adr_size),
+            seed => sample_seed(sample_seed'high downto sample_seed'high-adr_size+1),
             rand => rand_adr
         );
 
@@ -69,6 +71,7 @@ begin
     process (clk)
     begin
         if rising_edge(clk) then
+            prev_state <= state;
             state <= next_state;
             prev_adr <= rand_adr;
 
@@ -85,7 +88,9 @@ begin
                 worst_fit <= flat_unsigned(chr_do, fp_size, var_num+1);
             end if;
 
-            if state = s_cmp and unsigned(chr_fit) < worst_fit then
+            -- TODO Logging entfernen
+            if state = s_cmp and (unsigned(chr_fit) < worst_fit or replace_if_worse) then
+                report "Replace " & work.util.to_string(worst_fit) & " with " & work.util.to_string(chr_fit) & " at " & work.util.to_string(worst_adr);
                 chr_we <= '1';
             end if;
         end if;

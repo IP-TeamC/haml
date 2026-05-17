@@ -3,12 +3,12 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 use work.math.all;
-use work.prng.prim_gens;
+use work.prng.prim_gen;
 use work.prng.sample_seed;
 
 entity tournament_sel is
     generic (
-        k : natural := 4;
+        k : natural := 5;
         var_num : natural := 2;
         fp_size : natural := 18;
         adr_size : natural := 8
@@ -49,7 +49,7 @@ begin
         port map(
             clk => clk,
             rst => rst,
-            generator => prim_gens(adr_size),
+            generator => prim_gen(adr_size),
             seed => sample_seed(adr_size-1 downto 0),
             rand => chr_adr
         );

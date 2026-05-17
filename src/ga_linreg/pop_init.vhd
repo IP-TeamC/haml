@@ -2,7 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-use work.prng.prim_gens;
+use work.prng.prim_gen;
 use work.prng.sample_seed;
 
 entity pop_init is
@@ -59,7 +59,7 @@ begin
         port map(
             clk => clk,
             rst => rst,
-            generator => prim_gens(fp_size)(fp_size downto 0),
+            generator => prim_gen(fp_size),
             seed => sample_seed(fp_size-1 downto 0),
             rand => rand
         );

@@ -14,12 +14,14 @@ entity ga_linreg is
 
     generic (
         mask_factor : natural := 3;
-        k : natural := 4;
+        k_sel : natural := 5;
+        k_rep : natural := 5;
         var_num : natural := 2;
         fp_size : natural := 18;
         fp_frac : natural := 12;
         dp_adr_size : natural := 7;
-        chr_adr_size : natural := 7
+        chr_adr_size : natural := 7;
+        replace_if_worse : boolean := true
     );
 
     port (
@@ -117,9 +119,9 @@ begin
 
     -- 0 => theta0 (constant), 1 => theta1 (linear), ..., var_num+1 => fitness
     gen_ram_chr: for i in 0 to var_num+1 generate
-        ram_dp: entity work.ram
+        ram_chr: entity work.ram
             generic map(
-                adr_size => dp_adr_size,
+                adr_size => chr_adr_size,
                 data_size => fp_size
             )
             port map(
@@ -154,7 +156,7 @@ begin
         generic map (
             var_num => var_num,
             fp_size => fp_size,
-            adr_size => dp_adr_size
+            adr_size => chr_adr_size
         )
         port map (
             clk => clk,
@@ -172,10 +174,12 @@ begin
     trainer: entity work.trainer
         generic map(
             mask_factor => mask_factor,
-            k => k,
+            k_sel => k_sel,
+            k_rep => k_rep,
             var_num => var_num,
             fp_size => fp_size,
-            chr_adr_size => chr_adr_size
+            chr_adr_size => chr_adr_size,
+            replace_if_worse => replace_if_worse
         )
         port map(
             clk => clk,
@@ -203,6 +207,13 @@ begin
 
             if mark_end = '1' then
                 dp_end_adr <= dp_adr;
+            end if;
+
+            -- TODO Logging entfernen
+            if trainer_ram_chr_we = (trainer_ram_chr_we'range => '1') then
+                work.util.print(ram_chr_di(0)); -- const
+                work.util.print(ram_chr_di(1)); -- yoe
+                work.util.print(ram_chr_di(2)); -- grade
             end if;
         end if;
     end process;

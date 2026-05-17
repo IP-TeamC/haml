@@ -9,10 +9,12 @@ entity trainer is
 
     generic (
         mask_factor : natural := 3;
-        k : natural := 4;
+        k_sel : natural := 5;
+        k_rep : natural := 5;
         var_num : natural := 2;
         fp_size : natural := 18;
-        chr_adr_size : natural := 7
+        chr_adr_size : natural := 7;
+        replace_if_worse : boolean := true
     );
 
     port (
@@ -37,16 +39,27 @@ end entity;
 architecture rtl of trainer is
 
     -- Zustandsverwaltung
-    type t_state is (s_ready, s_select, s_crossover, s_mutate, s_fit, s_replace);
+    type t_state is (s_ready, s_select1, s_select2, s_crossover, s_mutate, s_fit, s_replace);
     signal prev_state : t_state;
     signal state : t_state;
     signal next_state : t_state;
 
-    -- Tournament Selection
-    signal ts_start : std_logic;
-    signal ts_ram_chr_adr : std_logic_vector(ram_chr_adr'range);
-    signal ts_best_chr : std_logic_vector(fp_size*(var_num+2)-1 downto 0);
-    signal ts_done : std_logic;
+    -- Tournament Selection 2
+    signal ts1_start : std_logic;
+    signal ts1_ram_chr_adr : std_logic_vector(ram_chr_adr'range);
+    signal ts1_best_chr : std_logic_vector(fp_size*(var_num+2)-1 downto 0);
+    signal ts1_done : std_logic;
+
+    -- Tournament Selection 2
+    signal ts2_start : std_logic;
+    signal ts2_ram_chr_adr : std_logic_vector(ram_chr_adr'range);
+    signal ts2_best_chr : std_logic_vector(fp_size*(var_num+2)-1 downto 0);
+    signal ts2_done : std_logic;
+
+    -- Crossover
+    signal cross_start : std_logic;
+    signal cross_chr_child : std_logic_vector(fp_size*(var_num+1)-1 downto 0);
+    signal cross_done : std_logic;
 
     -- Mutation
     signal mut_start : std_logic;
@@ -67,18 +80,20 @@ begin
     done <= '1' when state = s_ready else '0';
 
     ram_chr_we <= (others => tr_ram_chr_we);
-    ram_chr_adr <= ts_ram_chr_adr when state = s_select else tr_ram_chr_adr;
+    ram_chr_adr <= ts1_ram_chr_adr when state = s_select1 else ts2_ram_chr_adr when state = s_select2 else tr_ram_chr_adr;
     ram_chr_di(fp_size*(var_num+2)-1 downto fp_size*(var_num+1)) <= fitness_fit;
     ram_chr_di(fp_size*(var_num+1)-1 downto 0) <= mut_chr_mut;
 
-    ts_start <= '1' when state = s_select and prev_state /= s_select else '0';
+    ts1_start <= '1' when state = s_select1 and prev_state /= s_select1 else '0';
+    ts2_start <= '1' when state = s_select2 and prev_state /= s_select2 else '0';
+    cross_start <= '1' when state = s_crossover and prev_state /= s_crossover else '0';
     mut_start <= '1' when state = s_mutate and prev_state /= s_mutate else '0';
     fitness_start <= '1' when state = s_fit and prev_state /= s_fit else '0';
     tr_start <= '1' when state = s_replace and prev_state /= s_replace else '0';
 
-    tournament_sel: entity work.tournament_sel
+    tournament_sel1: entity work.tournament_sel
         generic map(
-            k => k,
+            k => k_sel,
             var_num => var_num,
             fp_size => fp_size,
             adr_size => chr_adr_size
@@ -86,11 +101,43 @@ begin
         port map(
             clk => clk,
             rst => rst,
-            start => ts_start,
+            start => ts1_start,
             chr_do => ram_chr_do,
-            chr_adr => ts_ram_chr_adr,
-            done => ts_done,
-            best_chr => ts_best_chr
+            chr_adr => ts1_ram_chr_adr,
+            done => ts1_done,
+            best_chr => ts1_best_chr
+        );
+
+    tournament_sel2: entity work.tournament_sel
+        generic map(
+            k => k_sel,
+            var_num => var_num,
+            fp_size => fp_size,
+            adr_size => chr_adr_size
+        )
+        port map(
+            clk => clk,
+            rst => rst,
+            start => ts2_start,
+            chr_do => ram_chr_do,
+            chr_adr => ts2_ram_chr_adr,
+            done => ts2_done,
+            best_chr => ts2_best_chr
+        );
+
+    crossover: entity work.crossover
+        generic map(
+            var_num => var_num,
+            fp_size => fp_size
+        )
+        port map(
+            clk => clk,
+            rst => rst,
+            start => cross_start,
+            chr_parent1 => ts1_best_chr(flat_upper(fp_size, var_num) downto 0),
+            chr_parent2 => ts2_best_chr(flat_upper(fp_size, var_num) downto 0),
+            done => cross_done,
+            chr_child => cross_chr_child
         );
 
     mutation: entity work.mutation
@@ -103,17 +150,18 @@ begin
             clk => clk,
             rst => rst,
             start => mut_start,
-            chr => ts_best_chr(flat_upper(fp_size, var_num) downto 0),
+            chr => cross_chr_child,
             done => mut_done,
             chr_mut => mut_chr_mut
         );
 
     tournament_rep: entity work.tournament_rep
         generic map(
-            k => k,
+            k => k_rep,
             var_num => var_num,
             fp_size => fp_size,
-            adr_size => chr_adr_size
+            adr_size => chr_adr_size,
+            replace_if_worse => replace_if_worse
         )
         port map(
             clk => clk,
@@ -127,8 +175,10 @@ begin
         );
 
     next_state <= s_ready when rst = '1'
-        else s_select when state = s_ready and start = '1'
-        else s_mutate when state = s_select and ts_done = '1'
+        else s_select1 when state = s_ready and start = '1'
+        else s_select2 when state = s_select1 and ts1_done = '1'
+        else s_crossover when state = s_select2 and ts2_done = '1'
+        else s_mutate when state = s_crossover and cross_done = '1'
         else s_fit when state = s_mutate and mut_done = '1'
         else s_replace when state = s_fit and fitness_done = '0' and fitness_done_prev = '1'
         else s_ready when state = s_replace and tr_done = '1'

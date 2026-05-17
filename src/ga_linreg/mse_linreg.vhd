@@ -72,9 +72,11 @@ begin
             adder_values(adder_extra_bits+fp_size-1 downto 0) <= std_logic_vector(resize(signed(chr(fp_size-1 downto 0)), adder_extra_bits+fp_size));
             for i in 1 to var_num loop
                 -- Multiplikation normalisiert zwischen -1 und +1 ist in demselben Wertebereich (aber Verlust von Genauigkeit)
+                if dp_done = '1' then -- TODO dp_done entfernen, nicht notwendig
                 adder_values(flat_upper(adder_extra_bits+fp_size, i) downto flat_lower(adder_extra_bits+fp_size, i)) <= std_logic_vector(
                         resize(fp_mul(flat_signed(chr, fp_size, i), mul_dp(i), fp_frac), adder_extra_bits+fp_size)
                     );
+                end if;
             end loop;
         end if;
     end process;
@@ -111,7 +113,9 @@ begin
     process (clk)
     begin
         if rising_edge(clk) then
+            if diff_done = '1' then -- TODO dp_done entfernen, nicht notwendig
             diff_sq <= unsigned(fp_mul(diff, diff, fp_frac));
+            end if;
         end if;
     end process;
 

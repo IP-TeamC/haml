@@ -4,13 +4,13 @@ use ieee.numeric_std.all;
 
 entity lfsr is
     generic (
-        degree : natural := 32 -- für post-translate sim gleich wie tb
+        degree : natural := 32
     );
     port (
-        clk   : in std_logic;
+        clk : in std_logic;
         rst : in std_logic;
         -- MSB links x^degree, LSB rechts (1)
-        generator : std_logic_vector(degree downto 0);
+        generator : in std_logic_vector(degree downto 0);
         -- Schieben in Richtung MSB
         seed : in std_logic_vector(degree-1 downto 0);
         rand : out std_logic_vector(degree-1 downto 0)

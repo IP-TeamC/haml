@@ -40,4 +40,19 @@ package prng is
     );
     constant sample_seed : std_logic_vector(31 downto 0) := x"E6981A42";
 
+    function prim_gen(
+        degree : natural
+    ) return std_logic_vector;
+
 end package;
+
+package body prng is
+
+    function prim_gen(
+        degree : natural
+    ) return std_logic_vector is
+    begin
+        return prim_gens(degree)(degree downto 0);
+    end function;
+
+end package body;

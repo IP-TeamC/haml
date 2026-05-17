@@ -12,12 +12,14 @@ entity ga_linreg_tb is
     -- Constants
     constant clk_period : time := 1 ns;
     constant mask_factor : natural := 3;
-    constant k : natural := 4;
+    constant k_sel : natural := 3;
+    constant k_rep : natural := 3;
     constant var_num : natural := 2;
     constant fp_size : natural := 18;
     constant fp_frac : natural := 16;
     constant dp_adr_size : natural := 7;
-    constant chr_adr_size : natural := 7;
+    constant chr_adr_size : natural := 8;
+    constant replace_if_worse : boolean := true;
 
     -- Inputs
     signal clk : std_logic := '1';
@@ -59,12 +61,14 @@ begin
     ga_linreg: entity work.ga_linreg
         generic map(
             mask_factor => mask_factor,
-            k => k,
+            k_sel => k_sel,
+            k_rep => k_rep,
             var_num => var_num,
             fp_size => fp_size,
             fp_frac => fp_frac,
             dp_adr_size => dp_adr_size,
-            chr_adr_size => chr_adr_size
+            chr_adr_size => chr_adr_size,
+            replace_if_worse => replace_if_worse
         )
         port map(
             clk => clk,
