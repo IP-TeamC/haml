@@ -42,6 +42,7 @@ architecture rtl of ga_linreg is
     -- Zustandsverwaltung
     type t_ram_data is array(natural range <>) of std_logic_vector(fp_size-1 downto 0);
     type t_state is (s_ready, s_init, s_train);
+    signal prev_state : t_state;
     signal state : t_state;
     signal next_state : t_state;
 
@@ -82,8 +83,7 @@ architecture rtl of ga_linreg is
 begin
 
     best_chr_adr <= ram_chr_adr;
-
-    init_start <= '1' when state = s_init else '0';
+    init_start <= '1' when state = s_init and prev_state /= s_init else '0';
     fitness_start <= init_fitness_start or trainer_fitness_start;
     trainer_start <= '1' when state = s_train else '0';
 
@@ -198,6 +198,7 @@ begin
     process (clk)
     begin
         if rising_edge(clk) then
+            prev_state <= state;
             state <= next_state;
 
             if mark_end = '1' then

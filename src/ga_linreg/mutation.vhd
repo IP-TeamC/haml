@@ -67,7 +67,9 @@ begin
     process (clk)
     begin
         if rising_edge(clk) then
-            chr_mut <= chr xor mask;
+            if start = '1' then
+                chr_mut <= chr xor mask;
+            end if;
             done <= start and not rst;
         end if;
     end process;

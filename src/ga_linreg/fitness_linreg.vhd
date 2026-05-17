@@ -71,13 +71,10 @@ begin
         if rising_edge(clk) then
             state <= next_state;
             adr <= next_adr;
+            last_adr <= '0';
 
-            if rst = '1' then
-                last_adr <= '0';
-            elsif std_logic_vector(adr) = end_adr then
-                last_adr <= '1';
-            else
-                last_adr <= '0';
+            if std_logic_vector(adr) = end_adr then
+                last_adr <= '1' and not rst;
             end if;
         end if;
     end process;

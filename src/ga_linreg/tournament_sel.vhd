@@ -56,7 +56,7 @@ begin
 
     next_state <= s_ready when rst = '1'
         else s_read when state = s_ready and start = '1'
-        else s_ready when state = s_read and cnt(k) = '1'
+        else s_ready when state = s_read and cnt(k-1) = '1'
         else state;
 
     is_better <= '1' when flat_unsigned(chr_do, fp_size, var_num+1) < flat_unsigned(best, fp_size, var_num+1) else '0';
@@ -66,8 +66,10 @@ begin
         if rising_edge(clk) then
             state <= next_state;
 
-            if rst = '1' or state = s_ready then
-                best <= (others => '1');
+            if state = s_ready then
+                if start = '1' then
+                    best <= (others => '1');
+                end if;
                 cnt <= (0 => '1', others => '0');
             elsif state = s_read then
                 cnt <= cnt(k-1 downto 0) & '0';
