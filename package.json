@@ -5,6 +5,11 @@
   "scripts": {
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs"
+    "docs:preview": "vitepress preview docs",
+    "test:sudoku_bridge": "node test/ga_sudoku/sudoku_bridge.js"
+  },
+  "dependencies": {
+    "fs": "^0.0.1-security",
+    "ws": "^8.20.1"
   }
 }
