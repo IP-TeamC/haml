@@ -35,7 +35,7 @@ begin
             fp_size  => fp_size,
             pop_size => pop_size,
             k        => 4,
-            mut_bits => 6,
+            mut_bits => 5,
             max_gen  => 100000
         )
         port map(

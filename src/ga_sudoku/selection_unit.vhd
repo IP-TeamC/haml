@@ -104,12 +104,12 @@ begin
 
                     when S_TOURNAMENT =>
                         -- Eltern A: Kandidaten 0 bis k-1
-                        if unsigned(fitness(ctr)) < unsigned(best_fit_a) then
+                        if unsigned(fitness(ctr)) <= unsigned(best_fit_a) then
                             best_fit_a <= fitness(ctr);
                             winner_a <= candidates_reg(ctr);
                         end if;
                         -- Eltern B: Kandidaten k bis 2k-1
-                        if unsigned(fitness(ctr+k)) < unsigned(best_fit_b) then
+                        if unsigned(fitness(ctr+k)) <= unsigned(best_fit_b) then
                             best_fit_b <= fitness(ctr+k);
                             winner_b <= candidates_reg(ctr+k);
                         end if;

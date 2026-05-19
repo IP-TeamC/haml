@@ -32,13 +32,19 @@ entity ga_top is
 end entity;
 
 architecture rtl of ga_top is
+
+    constant cell_bits : natural := 4;
+    constant cells : natural := chr_size / cell_bits;
+
     constant idx_size : natural := natural(ceil(log2(real(pop_size))));
     constant k_idx_size : natural := natural(ceil(log2(real(k*2))));
-    constant cx_size : natural := natural(ceil(log2(real(chr_size))));
+
+    constant cx_size : natural := natural(ceil(log2(real(cells))));
 
     constant rnd_sel_bits : natural := idx_size * k * 2;
     constant rnd_cx_bits : natural := cx_size;
     constant rnd_mut_bits : natural := chr_size * mut_bits;
+
     constant rnd_total : natural := rnd_sel_bits + rnd_cx_bits + rnd_mut_bits;
     constant lfsr_n : natural := natural(ceil(real(rnd_total) / 32.0));
     constant rnd_padded : natural := lfsr_n * 32;
@@ -78,27 +84,7 @@ architecture rtl of ga_top is
     signal cx_child_b : std_logic_vector(chr_size-1 downto 0);
     signal cx_done : std_logic;
 
-    -- signal l_done : std_logic;
-    -- signal l_best_chr : std_logic_vector(chr_size-1 downto 0);
-
-    -- signal s_best_chr : std_logic_vector(chr_size-1 downto 0);
-
 begin
-    -- best_chr <= s_best_chr(chr_size-1);
-
-    -- process(clk)
-    -- begin
-    --     if rising_edge(clk) then
-    --
-    --         s_best_chr(chr_size-1 downto 1) <= s_best_chr(chr_size-2 downto 0);
-    --
-    --         if l_done = '1' then
-    --             s_best_chr <= l_best_chr;
-    --         end if;
-    --
-    --
-    --     end if;
-    -- end process;
 
     -- Zufallsgenerator
     rng: entity work.rng_bank
