@@ -8,11 +8,11 @@ use work.prng.sample_seed;
 
 entity tournament_rep is
     generic (
-        k : natural := 5;
-        var_num : natural := 2;
-        fp_size : natural := 18;
-        adr_size : natural := 8;
-        replace_if_worse : boolean := true
+        k : natural;
+        var_num : natural;
+        fp_size : natural;
+        adr_size : natural;
+        replace_if_worse : boolean
     );
     port (
         clk : in std_logic;

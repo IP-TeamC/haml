@@ -8,13 +8,13 @@ use work.math.all;
 entity trainer is
 
     generic (
-        mask_factor : natural := 3;
-        k_sel : natural := 5;
-        k_rep : natural := 5;
-        var_num : natural := 2;
-        fp_size : natural := 18;
-        chr_adr_size : natural := 7;
-        replace_if_worse : boolean := true
+        mask_factor : natural;
+        k_sel : natural;
+        k_rep : natural;
+        var_num : natural;
+        fp_size : natural;
+        chr_adr_size : natural;
+        replace_if_worse : boolean
     );
 
     port (

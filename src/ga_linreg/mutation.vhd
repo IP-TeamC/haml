@@ -8,9 +8,9 @@ use work.prng.sample_seed;
 
 entity mutation is
     generic (
-        mask_factor : natural := 3;
-        var_num : natural := 2;
-        fp_size : natural := 18
+        mask_factor : natural;
+        var_num : natural;
+        fp_size : natural
     );
     port (
         clk : in std_logic;

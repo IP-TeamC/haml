@@ -8,8 +8,8 @@ use work.prng.sample_seed;
 
 entity crossover is
     generic (
-        var_num : natural := 2;
-        fp_size : natural := 18
+        var_num : natural;
+        fp_size : natural
     );
     port (
         clk : in std_logic;

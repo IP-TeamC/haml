@@ -4,10 +4,10 @@ use ieee.numeric_std.all;
 
 entity fitness_linreg is
     generic (
-        var_num : natural := 2;
-        fp_size : natural := 18;
-        fp_frac : natural := 16;
-        adr_size : natural := 8
+        var_num : natural;
+        fp_size : natural;
+        fp_frac : natural;
+        adr_size : natural
     );
     port (
         clk : in std_logic;
