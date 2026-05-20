@@ -86,6 +86,9 @@ package body math is
             and not
                 (res(res'high downto a'length+frac_size) = all_one(res'high downto a'length+frac_size)
                 and res(a'length+frac_size-1) = '1') then
+            report "overflow hier";
+            work.util.print(a);
+            work.util.print(b);
             work.util.print(res(res'high downto a'length+frac_size));
             work.util.print(res(a'length+frac_size-1 downto frac_size));
             work.util.print(res(frac_size-1 downto 0));
