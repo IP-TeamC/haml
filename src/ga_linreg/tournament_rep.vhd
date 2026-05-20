@@ -12,7 +12,7 @@ entity tournament_rep is
         var_num : natural;
         fp_size : natural;
         adr_size : natural;
-        replace_if_worse : boolean
+        replace_with_worse : boolean
     );
     port (
         clk : in std_logic;
@@ -46,7 +46,7 @@ architecture rtl of tournament_rep is
 begin
 
     done <= '1' when state = s_cmp else '0';
-    chr_adr <= worst_adr when prev_state = s_cmp else rand_adr;
+    chr_adr <= worst_adr when next_state /= s_read else rand_adr;
 
     lfsr: entity work.lfsr
         generic map(
@@ -56,7 +56,7 @@ begin
             clk => clk,
             rst => rst,
             generator => prim_gen(adr_size),
-            seed => sample_seed(sample_seed'high downto sample_seed'high-adr_size+1),
+            seed => sample_seed(adr_size, 61),
             rand => rand_adr
         );
 
@@ -66,7 +66,7 @@ begin
         else s_ready when state = s_cmp
         else state;
 
-    is_worse <= '1' when flat_unsigned(chr_do, fp_size, var_num+1) > worst_fit else '0';
+    is_worse <= '1' when flat_unsigned(chr_do, fp_size, var_num+1) >= worst_fit else '0';
 
     process (clk)
     begin
@@ -89,9 +89,11 @@ begin
             end if;
 
             -- TODO Logging entfernen
-            if state = s_cmp and (unsigned(chr_fit) < worst_fit or replace_if_worse) then
+            if state = s_cmp and (unsigned(chr_fit) <= worst_fit or replace_with_worse) then
                 report "Replace " & work.util.to_string(worst_fit) & " with " & work.util.to_string(chr_fit) & " at " & work.util.to_string(worst_adr);
                 chr_we <= '1';
+            elsif state = s_cmp then
+                report "reject";
             end if;
         end if;
     end process;

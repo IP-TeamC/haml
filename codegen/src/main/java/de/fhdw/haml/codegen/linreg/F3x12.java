@@ -33,16 +33,16 @@ public class F3x12 {
         dataSet.normalizeInputs(normalizerInputs);
         dataSet.normalizeOutputs(normalizerOutputs);
 
-        double const0 = fixedPointToDouble("000001101101010111", 16);
-        double m1 = fixedPointToDouble("010011111000101001", 16);
-        //normalizerOutputs.denormalize(dataSet.outputs);
+        double const0 = fixedPointToDouble("000000001010011001", 17);
+        double m1 = fixedPointToDouble("011111110111000001", 17);
+        normalizerOutputs.denormalize(dataSet.outputs);
         for (int i = 0; i < dataSet.size; i++) {
             double[][] arr = new double[][]{new double[]{const0 + m1 * dataSet.inputs[i][0]}};
-            //normalizerOutputs.denormalize(arr);
+            normalizerOutputs.denormalize(arr);
             System.out.println(Math.round(dataSet.outputs[i][0]) + ", but: " + Math.round(arr[0][0]));
         }
 
-        if (false)
+        if (true)
             return;
 
 

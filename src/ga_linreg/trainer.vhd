@@ -14,7 +14,7 @@ entity trainer is
         var_num : natural;
         fp_size : natural;
         chr_adr_size : natural;
-        replace_if_worse : boolean
+        replace_with_worse : boolean
     );
 
     port (
@@ -161,7 +161,7 @@ begin
             var_num => var_num,
             fp_size => fp_size,
             adr_size => chr_adr_size,
-            replace_if_worse => replace_if_worse
+            replace_with_worse => replace_with_worse
         )
         port map(
             clk => clk,

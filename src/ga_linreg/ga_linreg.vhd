@@ -21,7 +21,7 @@ entity ga_linreg is
         fp_frac : natural := 12;
         dp_adr_size : natural := 7;
         chr_adr_size : natural := 7;
-        replace_if_worse : boolean := true
+        replace_with_worse : boolean := true
     );
 
     port (
@@ -71,6 +71,7 @@ architecture rtl of ga_linreg is
 
     -- Fitness-Funktion
     signal fitness_start : std_logic;
+    signal fitness_chr : std_logic_vector(fp_size*(var_num+1)-1 downto 0);
     signal fitness_ram_dp_adr : std_logic_vector(ram_dp_adr'range);
     signal fitness_fit : std_logic_vector(fp_size-1 downto 0);
     signal fitness_done : std_logic;
@@ -95,6 +96,7 @@ begin
         ram_dp_di(i) <= dp_data;
     end generate; 
 
+    fitness_chr <= ram_chr_do(flat_upper(fp_size, var_num) downto 0) when state = s_init else trainer_ram_chr_di(flat_upper(fp_size, var_num) downto 0);
     ram_chr_we <= init_ram_chr_we or trainer_ram_chr_we;
     ram_chr_adr <= init_ram_chr_adr when state = s_init else trainer_ram_chr_adr;
     gen_ram_chr_di: for i in 0 to var_num+1 generate
@@ -144,7 +146,7 @@ begin
             clk => clk,
             rst => rst,
             start => fitness_start,
-            chr => ram_chr_do(flat_upper(fp_size, var_num) downto 0),
+            chr => fitness_chr,
             end_adr => dp_end_adr,
             ram_data => ram_dp_do,
             ram_adr => fitness_ram_dp_adr,
@@ -179,7 +181,7 @@ begin
             var_num => var_num,
             fp_size => fp_size,
             chr_adr_size => chr_adr_size,
-            replace_if_worse => replace_if_worse
+            replace_with_worse => replace_with_worse
         )
         port map(
             clk => clk,
@@ -212,8 +214,8 @@ begin
             -- TODO Logging entfernen
             if trainer_ram_chr_we = (trainer_ram_chr_we'range => '1') then
                 work.util.print(ram_chr_di(0)); -- const
-                work.util.print(ram_chr_di(1)); -- yoe
-                work.util.print(ram_chr_di(2)); -- grade
+                work.util.print(ram_chr_di(1)); -- m1
+                work.util.print(ram_chr_di(2)); -- fit
             end if;
         end if;
     end process;

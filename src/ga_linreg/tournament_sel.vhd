@@ -50,7 +50,7 @@ begin
             clk => clk,
             rst => rst,
             generator => prim_gen(adr_size),
-            seed => sample_seed(adr_size-1 downto 0),
+            seed => sample_seed(adr_size, 60),
             rand => chr_adr
         );
 

@@ -38,7 +38,7 @@ begin
             clk => clk,
             rst => rst,
             generator => prim_gen(var_num+1),
-            seed => sample_seed(var_num downto 0),
+            seed => sample_seed(var_num+1, 63),
             rand => rand
         );
 
