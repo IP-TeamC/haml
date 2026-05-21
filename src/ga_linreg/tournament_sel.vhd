@@ -29,7 +29,7 @@ end entity;
 
 architecture rtl of tournament_sel is
 
-    type t_state is (s_ready, s_read1, s_clear, s_read2);
+    type t_state is (s_ready, s_cache, s_read1, s_clear, s_read2);
     signal state : t_state;
     signal next_state : t_state;
 
@@ -40,12 +40,14 @@ architecture rtl of tournament_sel is
     signal best_first : std_logic_vector(chr_do'range);
     signal next_best_first : std_logic_vector(chr_do'range);
 
-    signal cnt : std_logic_vector(2*k+1 downto 0);
+    signal cnt : std_logic_vector(2*k+2 downto 0);
     signal next_cnt : std_logic_vector(cnt'range);
+
+    signal chr_cache : std_logic_vector(chr_do'range);
 
 begin
 
-    done <= cnt(2*k+1);
+    done <= cnt(2*k+2);
     best_chr1 <= best_first;
     best_chr2 <= best;
 
@@ -62,20 +64,22 @@ begin
         );
 
     next_state <= s_ready when rst = '1'
-        else s_read1 when state = s_ready and start = '1'
-        else s_clear when state = s_read1 and cnt(k-1) = '1'
+        else s_cache when state = s_ready and start = '1'
+        else s_read1 when state = s_cache
+        else s_clear when state = s_read1 and cnt(k) = '1'
         else s_read2 when state = s_clear
-        else s_ready when state = s_read2 and cnt(2*k) = '1'
+        else s_ready when state = s_read2 and cnt(2*k+1) = '1'
         else state;
 
-    is_better <= '1' when flat_unsigned(chr_do, fp_size, var_num+1) < flat_unsigned(best, fp_size, var_num+1) else '0';
+    is_better <= '1' when flat_unsigned(chr_cache, fp_size, var_num+1) < flat_unsigned(best, fp_size, var_num+1)
+        else '0';
 
     next_best <= (others => '1') when (state = s_ready and start = '1') or (state = s_clear)
-        else chr_do when (state = s_read1 or state = s_read2) and is_better = '1'
+        else chr_cache when (state = s_read1 or state = s_read2) and is_better = '1'
         else best;
 
     next_cnt <= (0 => '1', others => '0') when state = s_ready
-        else cnt(2*k downto 0) & '0';
+        else cnt(2*k+1 downto 0) & '0';
 
     next_best_first <= best when state = s_clear
         else best_first;
@@ -87,6 +91,7 @@ begin
             best <= next_best;
             best_first <= next_best_first;
             cnt <= next_cnt;
+            chr_cache <= chr_do;
         end if;
     end process;
 

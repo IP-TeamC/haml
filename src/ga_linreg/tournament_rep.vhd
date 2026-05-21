@@ -30,7 +30,7 @@ end entity;
 
 architecture rtl of tournament_rep is
 
-    type t_state is (s_ready, s_read, s_cmp);
+    type t_state is (s_ready, s_cache, s_read, s_cmp);
     signal state : t_state;
     signal next_state : t_state;
 
@@ -45,15 +45,20 @@ architecture rtl of tournament_rep is
     signal worst_fit : unsigned(chr_fit'range);
     signal next_worst_fit : unsigned(chr_fit'range);
 
-    signal cnt : std_logic_vector(k downto 0);
+    signal cnt : std_logic_vector(k-1 downto 0);
     signal next_cnt : std_logic_vector(cnt'range);
 
     signal next_chr_we : std_logic;
+    signal next_done : std_logic;
+    signal is_done : std_logic;
+
+    signal chr_cache : std_logic_vector(chr_do'range);
+    signal adr_cache : std_logic_vector(chr_adr'range);
 
 begin
 
-    done <= '1' when state = s_cmp else '0';
-    chr_adr <= worst_adr when next_state /= s_read else rand_adr;
+    done <= is_done;
+    chr_adr <= worst_adr when is_done = '1' else rand_adr;
 
     lfsr: entity work.lfsr
         generic map(
@@ -68,26 +73,30 @@ begin
         );
 
     next_state <= s_ready when rst = '1'
-        else s_read when state = s_ready and start = '1'
-        else s_cmp when state = s_read and cnt(k) = '1'
+        else s_cache when state = s_ready and start = '1'
+        else s_read when state = s_cache
+        else s_cmp when state = s_read and cnt(k-1) = '1'
         else s_ready when state = s_cmp
         else state;
 
-    is_worse <= '1' when flat_unsigned(chr_do, fp_size, var_num+1) >= worst_fit
+    is_worse <= '1' when flat_unsigned(chr_cache, fp_size, var_num+1) >= worst_fit
         else '0';
 
-    next_worst_adr <= prev_adr when state = s_read and is_worse = '1'
+    next_worst_adr <= adr_cache when state = s_read and is_worse = '1'
         else worst_adr;
 
     next_worst_fit <= (others => '0') when rst = '1' or state = s_ready
-        else flat_unsigned(chr_do, fp_size, var_num+1) when state = s_read and is_worse = '1'
+        else flat_unsigned(chr_cache, fp_size, var_num+1) when state = s_read and is_worse = '1'
         else worst_fit;
 
     next_cnt <= (0 => '1', others => '0') when rst = '1' or state = s_ready
-        else cnt(k-1 downto 0) & '0' when state = s_read
+        else cnt(k-2 downto 0) & '0' when state = s_read
         else cnt;
 
     next_chr_we <= '1' when rst = '0' and state = s_cmp and (unsigned(chr_fit) <= worst_fit or replace_with_worse)
+        else '0';
+
+    next_done <= '1' when state = s_cmp
         else '0';
 
     process (clk)
@@ -99,6 +108,9 @@ begin
             worst_fit <= next_worst_fit;
             cnt <= next_cnt;
             chr_we <= next_chr_we;
+            is_done <= next_done;
+            chr_cache <= chr_do;
+            adr_cache <= prev_adr;
 
             -- TODO Logging entfernen
             -- if state = s_cmp and (unsigned(chr_fit) <= worst_fit or replace_with_worse) then
