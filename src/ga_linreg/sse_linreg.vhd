@@ -31,7 +31,7 @@ architecture rtl of sse_linreg is
     type t_reg_dp is array (0 to var_num) of signed(fp_size-1 downto 0);
     type t_reg_neg1 is array (0 to var_num) of std_logic;
     signal reg_chr : t_reg_chr;
-    signal reg_dp : t_reG_dp;
+    signal reg_dp : t_reg_dp;
     signal reg_valid : std_logic;
 
     signal mul_expected : std_logic_vector(fp_size-1 downto 0);
@@ -39,7 +39,7 @@ architecture rtl of sse_linreg is
     signal mul_valid : std_logic;
 
     constant adder_extra_bits : natural := natural(ceil(log2(real(var_num+1))));
-    type t_adder_values is array (0 to var_num) of std_logic_vector(adder_extra_bits+fp_size-1 downto 0);
+    type t_adder_values is array (0 to var_num) of signed(fp_size-1 downto 0);
     signal adder_values : t_adder_values;
     signal adder_values_flat : std_logic_vector((adder_extra_bits+fp_size)*(var_num+1)-1 downto 0);
     signal adder_valid : std_logic;
@@ -50,7 +50,7 @@ architecture rtl of sse_linreg is
     signal diff_neg1 : std_logic;
     signal diff_valid : std_logic;
 
-    signal diff_sq : unsigned(2*fp_size-3 downto 0);
+    signal diff_sq : unsigned(2*fp_size-1 downto 0);
     signal diff_sq_neg1 : std_logic;
     signal diff_sq_valid : std_logic;
 
@@ -66,7 +66,7 @@ architecture rtl of sse_linreg is
         return tmp;
     end function;
 
-    constant pos1_adder_values : std_logic_vector(adder_values(0)'range) := create_pos1_adder_values;
+    constant pos1_adder_values : std_logic_vector(adder_sum'range) := create_pos1_adder_values;
     constant pos1_err : unsigned(err'range) := (err_extra_bits-1 downto 0 => '0') & (2*fp_size-3 downto 0 => '1');
     constant neg1 : signed(fp_size-1 downto 0) := rotate_right(to_signed(1, fp_size), 1);
 
@@ -102,10 +102,10 @@ begin
                 end if;
 
                 if i = 0 then
-                    adder_values(0) <= std_logic_vector(resize(signed(reg_chr(0)), adder_extra_bits+fp_size));
+                    adder_values(0) <= signed(reg_chr(0));
                 else
                     -- Multiplikation normalisiert zwischen -1 und +1 ist in demselben Wertebereich (aber Verlust von Genauigkeit, Sonderfall -1*-1 abrunden auf 0,99... in Folge-Stage)
-                    adder_values(i) <= std_logic_vector(resize(fp_mul(reg_chr(i), reg_dp(i), fp_frac), adder_extra_bits+fp_size));
+                    adder_values(i) <= fp_mul(reg_chr(i), reg_dp(i), fp_frac);
                 end if;
 
             end loop;
@@ -117,7 +117,7 @@ begin
     gen_adder_values_flat: for i in 0 to var_num generate
         with mul_neg1(i) select
             adder_values_flat(flat_upper(adder_extra_bits+fp_size, i) downto flat_lower(adder_extra_bits+fp_size, i)) <=
-                adder_values(i) when '0',
+                std_logic_vector(resize(adder_values(i), adder_extra_bits+fp_size)) when '0',
                 pos1_adder_values when others; -- Sonderfall -1*-1 auf 0,99... abrunden
     end generate;
 
@@ -162,12 +162,9 @@ begin
 
     -- Stage 5: Differenz quadrieren
     process (clk)
-        variable tmp : signed(2*fp_size-1 downto 0);
     begin
         if rising_edge(clk) then
-            -- Vorkomma-Bits nach Quadrieren immer 0 (außer Sonderfall 1 -> Abrunden auf 0,99... in Folge-Stage)
-            tmp := diff * diff;
-            diff_sq <= unsigned(tmp(tmp'high-2 downto 0));
+            diff_sq <= unsigned(diff * diff);
             diff_sq_neg1 <= diff_neg1;
         end if;
     end process;
@@ -180,9 +177,11 @@ begin
             valid_neg1 := err_valid & diff_sq_neg1;
             if diff_sq_valid = '1' then
                 case valid_neg1 is
-                    when "00" => err <= resize(diff_sq, err_extra_bits+2*fp_size-2);
+                    -- Vorkomma-Bits nach Quadrieren immer 0 (außer Sonderfall 1 -> Abrunden auf 0,99... in Folge-Stage)
+                    when "00" => err <= resize(diff_sq(diff_sq'high-2 downto 0), err_extra_bits+2*fp_size-2);
                     when "01" => err <= pos1_err;
-                    when "10" => err <= err + resize(diff_sq, err_extra_bits+2*fp_size-2);
+                    -- Vorkomma-Bits nach Quadrieren immer 0 (außer Sonderfall 1 -> Abrunden auf 0,99... in Folge-Stage)
+                    when "10" => err <= err + resize(diff_sq(diff_sq'high-2 downto 0), err_extra_bits+2*fp_size-2);
                     when "11" => err <= err + pos1_err;
                     when others =>
                 end case;
