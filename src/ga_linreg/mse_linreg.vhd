@@ -27,6 +27,8 @@ end entity;
 
 architecture rtl of mse_linreg is
 
+    constant neg1 : signed(fp_size-1 downto 0) := rotate_right(to_signed(1, fp_size), 1);
+
     type t_dp is array (0 to var_num) of signed(fp_size-1 downto 0);
     type t_dp_neg1 is array (0 to var_num) of std_logic;
     signal mul_dp : t_dp;
@@ -43,23 +45,19 @@ architecture rtl of mse_linreg is
     signal adder_sum : std_logic_vector(adder_extra_bits+fp_size-1 downto 0);
     signal adder_expected : std_logic_vector(fp_size-1 downto 0);
 
-    signal diff : signed(adder_extra_bits+fp_size downto 0);
+    signal diff : signed(fp_size-1 downto 0);
+    signal diff_neg1 : std_logic;
     signal diff_done : std_logic;
-    signal diff_sq : unsigned(2*(adder_extra_bits+fp_size+1)-1 downto 0);
+    signal diff_sq : unsigned(2*fp_size-3 downto 0);
     signal diff_sq_done : std_logic;
 
     constant err_extra_bits : natural := adr_size;
-    signal err : unsigned(err_extra_bits+2*(adder_extra_bits+fp_size+1)-1 downto 0);
+    signal err : unsigned(err_extra_bits+2*fp_size-3 downto 0);
     signal err_done : std_logic;
-
-    constant neg1 : signed(fp_size-1 downto 0) := rotate_right(to_signed(1, fp_size), 1);
-    --constant pos1 : std_logic_vector(fp_size-1 downto 0) := std_logic_vector(not(neg1));
-
-    signal s_chr : std_logic_vector(fp_size*(var_num+1)-1 downto 0);
 
 begin
 
-    fit <= std_logic_vector(err(err_extra_bits+2*(adder_extra_bits+fp_size+1)-1 downto err_extra_bits+2*(adder_extra_bits+fp_size+1)-fp_size));
+    fit <= std_logic_vector(err(err'high downto err'high-fp_size+1));
 
     -- Stage 1: RAM-Daten in Register zwischenspeichern
     process (clk)
@@ -67,12 +65,12 @@ begin
         if rising_edge(clk) then
             for i in 0 to var_num loop
                 mul_dp(i) <= flat_signed(ram_data, fp_size, i);
-                if flat_signed(ram_data, fp_size, i) = neg1 then
+                if start = '1' and flat_signed(ram_data, fp_size, i) = neg1 then
                     mul_dp_neg1(i) <= '1';
                 else
                     mul_dp_neg1(i) <= '0';
                 end if;
-                if flat_signed(chr, fp_size, i) = neg1 then
+                if start = '1' and flat_signed(chr, fp_size, i) = neg1 then
                     mul_chr_neg1(i) <= '1';
                 else
                     mul_chr_neg1(i) <= '0';
@@ -86,35 +84,16 @@ begin
     begin
         if rising_edge(clk) then
             mul_expected <= std_logic_vector(mul_dp(0));
-            if dp_done = '1' and mul_done = '0' then
-                work.util.print(chr);
-                s_chr <= chr;
-                assert mul_dp(0) = "100000000000000000" severity failure;
-                assert mul_dp(1) = "100000000000000000" severity failure;
-            end if;
-            if dp_done = '1' and mul_done = '1' then
-                assert s_chr = chr severity failure;
-            end if;
-            if dp_done = '1' and start = '0' then
-                s_chr <= chr;
-                assert mul_dp(0) = "011111111111111111" severity failure;
-                assert mul_dp(1) = "011111111111111111" severity failure;
-            end if;
-            --work.util.print(chr);
-            -- adder_values(adder_extra_bits+fp_size-1 downto 0) <= std_logic_vector(resize(signed(chr(fp_size-1 downto 0)), adder_extra_bits+fp_size));
             adder_values(adder_extra_bits+fp_size-1 downto 0) <= std_logic_vector(resize(signed(chr(fp_size-1 downto 0)), adder_extra_bits+fp_size));
             for i in 1 to var_num loop
-                -- Multiplikation normalisiert zwischen -1 und +1 ist in demselben Wertebereich (aber Verlust von Genauigkeit)
-                if dp_done = '1' and not (mul_chr_neg1(i) = '1' and mul_dp_neg1(i) = '1') then -- TODO dp_done entfernen, nicht notwendig
-                    --report "mx_mse_ur: " & work.util.to_string(fp_mul(flat_signed(chr, fp_size, i), mul_dp(i), fp_frac));
-                    --report "mx_mse: " & work.util.to_string(resize(fp_mul(flat_signed(chr, fp_size, i), mul_dp(i), fp_frac), adder_extra_bits+fp_size));
+                -- Multiplikation normalisiert zwischen -1 und +1 ist in demselben Wertebereich (aber Verlust von Genauigkeit, Sonderfall -1*-1 abrunden auf 0,99...)
+                if (mul_chr_neg1(i) = '1' and mul_dp_neg1(i) = '1') then
+                    adder_values(flat_upper(adder_extra_bits+fp_size, i) downto flat_upper(adder_extra_bits+fp_size, i)-adder_extra_bits) <= (others => '0');
+                    adder_values(flat_upper(adder_extra_bits+fp_size, i)-adder_extra_bits-1 downto flat_lower(adder_extra_bits+fp_size, i)) <= (others => '1');
+                elsif dp_done = '1' then
                     adder_values(flat_upper(adder_extra_bits+fp_size, i) downto flat_lower(adder_extra_bits+fp_size, i)) <= std_logic_vector(
                             resize(fp_mul(flat_signed(chr, fp_size, i), mul_dp(i), fp_frac), adder_extra_bits+fp_size)
                         );
-                elsif dp_done = '1' then
-                    assert false severity failure;
-                    adder_values(flat_upper(adder_extra_bits+fp_size, i) downto flat_upper(adder_extra_bits+fp_size, i)-adder_extra_bits+1) <= (others => '0');
-                    --adder_values(flat_upper(adder_extra_bits+fp_size, i)-adder_extra_bits downto flat_lower(adder_extra_bits+fp_size, i)) <= pos1;
                 end if;
             end loop;
         end if;
@@ -141,28 +120,31 @@ begin
     -- Stage 4: Differenz berechnen
     process (clk)
         variable tmp : signed(adder_extra_bits+fp_size downto 0);
+        variable tmp_cut : signed(fp_size-1 downto 0);
     begin
         if rising_edge(clk) then
             tmp := resize(signed(adder_expected), adder_extra_bits+fp_size+1) - resize(signed(adder_sum), adder_extra_bits+fp_size+1);
-            if adder_done = '1' then
-                --report "y_mse: " & work.util.to_string(adder_sum);
-                --report "e_mse: " & work.util.to_string(adder_expected);
-                --report "diff_mse: " & work.util.to_string(tmp);
+            tmp_cut := tmp(adder_extra_bits+fp_size downto adder_extra_bits+1);
+            diff <= tmp_cut;
+            if adder_done = '1' and tmp_cut = neg1 then
+                diff_neg1 <= '1';
+            else
+                diff_neg1 <= '0';
             end if;
-            diff <= tmp;--(adder_extra_bits+fp_size downto adder_extra_bits+1);
         end if;
     end process;
 
     -- Stage 5: Differenz quadrieren
     process (clk)
+        variable tmp : signed(2*fp_size-1 downto 0);
     begin
         if rising_edge(clk) then
-            if diff_done = '1' then --and diff /= neg1 then -- TODO dp_done entfernen, nicht notwendig
-                diff_sq <= unsigned(diff * diff);
-                --report "diff_sq_mse: " & work.util.to_string(unsigned(diff * diff));
-            --elsif diff_done = '1' then
-                --assert false severity failure;
-                --diff_sq <= unsigned(pos1);
+            -- Vorkomma-Bits nach Quadrieren immer 0 (außer Sonderfall 1 -> Abrunden auf 0,99...)
+            tmp := diff * diff;
+            if diff_neg1 = '1' then
+                diff_sq <= (others => '1');
+            else
+                diff_sq <= unsigned(tmp(tmp'high-2 downto 0));
             end if;
         end if;
     end process;
@@ -172,13 +154,10 @@ begin
     begin
         if rising_edge(clk) then
             if diff_sq_done = '1' then
-                --report "err_add_mse: " & work.util.to_string(resize(diff_sq, err_extra_bits+2*(adder_extra_bits+fp_size+1)));
-                --report "err_mse: " & work.util.to_string(err);
                 if err_done = '1' then
-                    err <= err + resize(diff_sq, err_extra_bits+2*(adder_extra_bits+fp_size+1));
+                    err <= err + resize(diff_sq, err_extra_bits+2*fp_size-2);
                 else
-                    --report "neu erstllen";
-                    err <= resize(diff_sq, err_extra_bits+2*(adder_extra_bits+fp_size+1));
+                    err <= resize(diff_sq, err_extra_bits+2*fp_size-2);
                 end if;
             end if;
         end if;

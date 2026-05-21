@@ -5,20 +5,20 @@ use ieee.math_real.all;
 
 use work.util.all;
 use work.math.all;
-use work.f3x12_dataset_tb.all;
+use work.lineare_regression1_dataset_tb.all;
 
 entity ga_linreg_tb is
 
     -- Constants
     constant clk_period : time := 1 ns;
-    constant mask_factor : natural := 5;
+    constant mask_factor : natural := 2;
     constant k_sel : natural := 3;
     constant k_rep : natural := 3;
     constant var_num : natural := 1;
     constant fp_size : natural := 18;
     constant fp_frac : natural := 17;
-    constant dp_adr_size : natural := 6;
-    constant chr_adr_size : natural := 6;
+    constant dp_adr_size : natural := 8;
+    constant chr_adr_size : natural := 7;
     constant replace_with_worse : boolean := false;
 
     -- Inputs
@@ -88,18 +88,11 @@ begin
     end process;
 
     process
-        variable a : signed(3 downto 0);
-        variable b : signed(3 downto 0);
     begin
         rst <= '1';
         wait for clk_period;
         rst <= '0';
         start <= '0';
-
-        a := "0111";
-        b := "0111";
-        work.util.print(fp_mul(a, b, 3));
-        --report "fail" severity failure;
 
         mark_end <= '1';
         custom_write_dataset_to_ram(dp_we, dp_adr, dp_data);
@@ -107,8 +100,6 @@ begin
 
         wait for clk_period;
         start <= '1';
-
-        wait;
 
         report "Done";
         wait;

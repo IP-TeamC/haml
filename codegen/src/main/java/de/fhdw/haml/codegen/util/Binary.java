@@ -1,5 +1,7 @@
 package de.fhdw.haml.codegen.util;
 
+import javax.annotation.processing.Generated;
+
 public class Binary {
 
     public static String toFixedPoint(double value, int fpSize, int fpFrac) {
@@ -18,6 +20,16 @@ public class Binary {
 
     public static String toBinaryPad(int value, int pad) {
         return ("%" + pad + "s").formatted(Integer.toBinaryString(value)).replace(' ', '0');
+    }
+
+    @Generated("ChatGPT")
+    public static double fixedPointToDouble(String bits, int fractionalBits) {
+        int totalBits = bits.length();
+        long value = Long.parseLong(bits, 2);
+        if (bits.charAt(0) == '1') {
+            value -= (1L << totalBits);
+        }
+        return value / Math.pow(2, fractionalBits);
     }
 
 }

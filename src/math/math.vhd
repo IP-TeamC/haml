@@ -79,17 +79,6 @@ package body math is
         variable res : signed(2*a'length-1 downto 0);
     begin
         res := a * b;
-        -- TODO Logging entfernen
-        if res(res'high) /= res(a'length+frac_size-1) then
-            report "overflow hier";
-            work.util.print(a);
-            work.util.print(b);
-            work.util.print(res(res'high downto a'length+frac_size));
-            work.util.print(res(a'length+frac_size-1 downto frac_size));
-            work.util.print(res(frac_size-1 downto 0));
-            report "overflow!!!" severity failure;
-        end if;
-
         return res(a'length+frac_size-1 downto frac_size);
     end function;
 

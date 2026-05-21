@@ -22,7 +22,7 @@ y_scaled = y_scaler.fit_transform(y)
 
 # Train/Test-Split
 X_train, X_test, y_train, y_test = train_test_split(
-    X_scaled, y_scaled, test_size=0.2, random_state=42
+    X_scaled, y_scaled, test_size=0.01, random_state=42
 )
 
 # Modell trainieren

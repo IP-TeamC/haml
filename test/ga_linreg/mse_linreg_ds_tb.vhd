@@ -27,6 +27,9 @@ entity mse_linreg_ds_tb is
     signal fit : std_logic_vector(fp_size-1 downto 0);
     signal done : std_logic;
 
+signal rand1 : std_logic_vector(fp_size-1 downto 0);
+signal rand2 : std_logic_vector(fp_size-1 downto 0);
+
 end entity;
 
 architecture rtl of mse_linreg_ds_tb is
@@ -56,113 +59,80 @@ begin
         wait for clk_period/2;
     end process;
 
+    lfsr1: entity work.lfsr
+        generic map(
+            degree => fp_size
+        )
+        port map(
+            clk => clk,
+            rst => rst,
+            generator => work.prng.prim_gen(fp_size),
+            seed => work.prng.sample_seed(fp_size, 47),
+            rand => rand1
+        );
+
+    lfsr2: entity work.lfsr
+        generic map(
+            degree => fp_size
+        )
+        port map(
+            clk => clk,
+            rst => rst,
+            generator => work.prng.prim_gen(fp_size),
+            seed => work.prng.sample_seed(fp_size, 50),
+            rand => rand2
+        );
+
     process
-        variable m : signed(17 downto 0) := "001111001001101000";
-        variable b : signed(17 downto 0) := "100110010001111011";
-        variable mx : signed(17 downto 0);
-        variable y : signed(18 downto 0);
-        variable diff : signed(19 downto 0);
-        variable diff_sq : signed(39 downto 0);
-        variable acc : signed(45 downto 0);
-        
+        variable m : signed(fp_size-1 downto 0);
+        variable b : signed(fp_size-1 downto 0);
+        variable mx : signed(fp_size-1 downto 0);
+        variable y : signed(fp_size downto 0);
+        variable diff : signed(fp_size+1 downto 0);
+        variable diff_sq : signed(2*(fp_size+2)-1 downto 0);
+        variable acc : signed(2*(fp_size+2)+5 downto 0);
     begin
         rst <= '1';
         wait for clk_period;
         rst <= '0';
         assert done = '0';
 
-        start <= '1';
+        for cnt in 0 to 1_000_000 loop
 
-        chr <= std_logic_vector(m & b);
-        acc := (others => '0');
-        for i in work.f3x12_dataset_tb.t_dataset'range loop
-            ram_data <= work.f3x12_dataset_tb.dataset(i, 1) & work.f3x12_dataset_tb.dataset(i, 0);
-            --if i > 5 then
-            if m = "100000000000000000" and work.f3x12_dataset_tb.dataset(i, 1) = "100000000000000000" then
-                mx := not("100000000000000000");
-            else
-                mx := fp_mul(m, signed(work.f3x12_dataset_tb.dataset(i, 1)), 17);
-            end if;
-            --report "mx: " & work.util.to_string(mx);
-            y := resize(mx, 19) + resize(b, 19);
-            --report "y: " & work.util.to_string(y);
-            --report "e: " & work.util.to_string(resize(signed(work.f3x12_dataset_tb.dataset(i, 0)), 19));
-            diff := resize(signed(work.f3x12_dataset_tb.dataset(i, 0)), 20) - resize(y, 20);
-            --report "diff: " & work.util.to_string(diff);
-            diff_sq := diff * diff; -- <-- hier ist fehler! fraction anteil? unklar. -1 bis +1 range? nein...
-            --report "diff_sq: " & work.util.to_string(diff_sq);
-            report "err_: " & work.util.to_string(acc);
-            acc := acc + resize(diff_sq, 45);
-            --report "err_add_: " & work.util.to_string(resize(diff_sq, 46));
-            --report "acc: " & work.util.to_string(acc);-- severity failure;
-            --end if;
-            wait for clk_period;
-            -- start <= '0';
-            -- wait for clk_period;
-            -- wait for clk_period;
-            -- wait for clk_period;
-            -- wait for clk_period;
-            -- wait for clk_period;
-            -- wait for clk_period;
-            -- wait for clk_period;
-            -- wait for clk_period;
-            -- wait for clk_period;
-            -- wait for clk_period;
-            -- assert false severity failure;
+            m := signed(rand1);
+            b := signed(rand2);
+            start <= '1';
+            chr <= std_logic_vector(m & b);
+
+            acc := (others => '0');
+            for i in work.f3x12_dataset_tb.t_dataset'range loop
+                ram_data <= work.f3x12_dataset_tb.dataset(i, 1) & work.f3x12_dataset_tb.dataset(i, 0);
+                if m = "100000000000000000" and work.f3x12_dataset_tb.dataset(i, 1) = "100000000000000000" then
+                    mx := not("100000000000000000");
+                else
+                    mx := fp_mul(m, signed(work.f3x12_dataset_tb.dataset(i, 1)), fp_frac);
+                end if;
+                y := resize(mx, fp_size+1) + resize(b, fp_size+1);
+                diff := resize(signed(work.f3x12_dataset_tb.dataset(i, 0)), fp_size+2) - resize(y, fp_size+2);
+                diff_sq := diff * diff;
+                acc := acc + resize(diff_sq, 2*fp_size+1+6+1);
+                wait for clk_period;
+            end loop;
+
+            start <= '0';
+            assert done = '0';
+            wait until done = '1';
+            wait until falling_edge(clk);
+
+            work.util.print(acc(acc'high-2 downto acc'high-fp_size-1));
+            work.util.print(fit);
+
+            assert acc(acc'high downto acc'high-1) = "00";
+            assert unsigned(acc(acc'high-2 downto acc'high-fp_size-1)) = unsigned(fit)
+                or (unsigned(acc(acc'high-2 downto acc'high-fp_size-1)) >= unsigned(fit) - 1 and unsigned(acc(acc'high-2 downto acc'high-fp_size-1)) - 1 <= unsigned(fit))
+                or (unsigned(acc(acc'high-2 downto acc'high-fp_size-1)) + 1 >= unsigned(fit) and unsigned(acc(acc'high-2 downto acc'high-fp_size-1)) <= unsigned(fit) + 1);
+
         end loop;
-        start <= '0';
-        assert done = '0';
-        wait until done = '1';
-        wait until falling_edge(clk);
-        work.util.print(acc);
-        work.util.print(fit);
-        
-
-        report "done";
-        wait;
-
-        start <= '1';
-        -- y = 0.5*x2-0.125*x1+0.25
-        chr <= "00" & "100000"
-            & "11" & "111000"
-            & "00" & "010000";
-
-        -- x2 = 0.1875, x1 = 0.3828125, y = 0.28125 (nicht ganz exakt)
-        -- Error: 0.000214576736
-        ram_data <= "00" & "001100"
-            & "00" & "011001"
-            & "00" & "010010";
-        wait for clk_period;
-        assert done = '0';
-        -- x2 = 0.0625, x1 = 0.5, y = 0.21875 (exakt)
-        -- kein Error
-        ram_data <= "00" & "000100"
-            & "00" & "100000"
-            & "00" & "001110";
-        wait for clk_period;
-        assert done <= '0';
-        -- x2 = 0.0625, x1 = 0.5, y = 0.875 (schlecht)
-        -- Error: 0.430664063
-        ram_data <= "00" & "000100"
-            & "00" & "100000"
-            & "00" & "111000";
-        wait for clk_period;
-        start <= '0';
-        assert done <= '0';
-
-        wait until done = '1' and clk = '0';
-        -- kleiner Fehler (zu ungenau, deshalb 0)
-        assert fit = "00000000";
-        wait for clk_period;
-        assert done = '1';
-        -- unveraenderter Fehler
-        assert fit = "00000000";
-        wait for clk_period;
-        assert done = '1';
-        -- viel groeßerer Fehler
-        assert fit = "00" & "000110";
-        wait for clk_period;
-        assert done = '0';
 
         report "Done";
         wait;

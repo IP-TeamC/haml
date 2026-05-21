@@ -92,8 +92,6 @@ begin
             if state = s_cmp and (unsigned(chr_fit) <= worst_fit or replace_with_worse) then
                 report "Replace " & work.util.to_string(worst_fit) & " with " & work.util.to_string(chr_fit) & " at " & work.util.to_string(worst_adr);
                 chr_we <= '1';
-            elsif state = s_cmp then
-                report "reject";
             end if;
         end if;
     end process;

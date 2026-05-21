@@ -73,24 +73,27 @@ begin
     process (clk)
     begin
         if rising_edge(clk) then
+
+            done <= start and not rst;
+
             if start = '1' then
-                report "mutate";
+
                 for i in 0 to var_num loop
+                    -- untere Blöcke mit nach oben abnehmender Mutationswahrscheinlichkeit
                     for blk in 0 to masks'high-1 loop
                         chr_mut(flat_lower(fp_size, i)+mask_block_size*(blk+1)-1 downto flat_lower(fp_size, i)+mask_block_size*blk) <=
                             chr(flat_lower(fp_size, i)+mask_block_size*(blk+1)-1 downto flat_lower(fp_size, i)+mask_block_size*blk)
                                 xor masks(blk)(flat_lower(fp_size, i)+mask_block_size*(blk+1)-1 downto flat_lower(fp_size, i)+mask_block_size*blk);
                     end loop;
+
+                    -- oberster Block mit geringster Mutationswahrscheinlichkeit
                     chr_mut(flat_upper(fp_size, i) downto flat_lower(fp_size, i)+mask_block_size*masks'high) <=
                             chr(flat_upper(fp_size, i) downto flat_lower(fp_size, i)+mask_block_size*masks'high)
                                 xor masks(masks'high)(flat_upper(fp_size, i) downto flat_lower(fp_size, i)+mask_block_size*masks'high);
                 end loop;
 
-                -- for i in 0 to var_num loop
-                --     chr_mut(flat_upper(fp_size, i) downto flat_lower(fp_size, i)) <= chr(flat_upper(fp_size, i) downto flat_lower(fp_size, i)) xor masks(0)(flat_upper(fp_size, i) downto flat_lower(fp_size, i));
-                -- end loop;
             end if;
-            done <= start and not rst;
+
         end if;
     end process;
 
