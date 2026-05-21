@@ -32,7 +32,6 @@ architecture rtl of tournament_rep is
 
     type t_state is (s_ready, s_read, s_cmp);
     signal state : t_state;
-    signal prev_state : t_state;
     signal next_state : t_state;
 
     signal rand_adr : std_logic_vector(adr_size-1 downto 0);
@@ -94,7 +93,6 @@ begin
     process (clk)
     begin
         if rising_edge(clk) then
-            prev_state <= state;
             state <= next_state;
             prev_adr <= rand_adr;
             worst_adr <= next_worst_adr;

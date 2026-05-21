@@ -33,7 +33,10 @@ architecture rtl of tournament_sel is
     signal next_state : t_state;
 
     signal best : std_logic_vector(fp_size*(var_num+2)-1 downto 0);
+    signal next_best : std_logic_vector(fp_size*(var_num+2)-1 downto 0);
+
     signal cnt : std_logic_vector(k downto 0);
+    signal next_cnt : std_logic_vector(k downto 0);
 
     signal is_better : std_logic;
 
@@ -61,23 +64,19 @@ begin
 
     is_better <= '1' when flat_unsigned(chr_do, fp_size, var_num+1) < flat_unsigned(best, fp_size, var_num+1) else '0';
 
+    next_best <= (others => '1') when state = s_ready and start = '1'
+        else chr_do when state = s_read and is_better = '1'
+        else best;
+
+    next_cnt <= (0 => '1', others => '0') when state = s_ready
+        else cnt(k-1 downto 0) & '0';
+
     process (clk)
     begin
         if rising_edge(clk) then
             state <= next_state;
-
-            if state = s_ready then
-                if start = '1' then
-                    best <= (others => '1');
-                end if;
-                cnt <= (0 => '1', others => '0');
-            elsif state = s_read then
-                cnt <= cnt(k-1 downto 0) & '0';
-            end if;
-
-            if state = s_read and is_better = '1' then
-                best <= chr_do;
-            end if;
+            best <= next_best;
+            cnt <= next_cnt;
         end if;
     end process;
 
