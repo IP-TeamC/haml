@@ -29,12 +29,14 @@ architecture rtl of mse_linreg is
 
     constant neg1 : signed(fp_size-1 downto 0) := rotate_right(to_signed(1, fp_size), 1);
 
-    type t_dp is array (0 to var_num) of signed(fp_size-1 downto 0);
-    type t_dp_neg1 is array (0 to var_num) of std_logic;
-    signal mul_dp : t_dp;
-    signal mul_dp_neg1 : t_dp_neg1;
-    signal mul_chr_neg1 : t_dp_neg1;
-    signal dp_done : std_logic;
+    type t_reg_chr is array (0 to var_num) of signed(fp_size-1 downto 0);
+    type t_reg_dp is array (0 to var_num) of signed(fp_size-1 downto 0);
+    type t_reg_neg1 is array (0 to var_num) of std_logic;
+    signal reg_chr : t_reg_chr;
+    signal reg_dp : t_reG_dp;
+    signal reg_dp_neg1 : t_reg_neg1;
+    signal reg_chr_neg1 : t_reg_neg1;
+    signal reg_done : std_logic;
 
     signal mul_expected : std_logic_vector(fp_size-1 downto 0);
     signal mul_done : std_logic;
@@ -64,16 +66,17 @@ begin
     begin
         if rising_edge(clk) then
             for i in 0 to var_num loop
-                mul_dp(i) <= flat_signed(ram_data, fp_size, i);
+                reg_chr(i) <= flat_signed(chr, fp_size, i);
+                reg_dp(i) <= flat_signed(ram_data, fp_size, i);
                 if start = '1' and flat_signed(ram_data, fp_size, i) = neg1 then
-                    mul_dp_neg1(i) <= '1';
+                    reg_dp_neg1(i) <= '1';
                 else
-                    mul_dp_neg1(i) <= '0';
+                    reg_dp_neg1(i) <= '0';
                 end if;
                 if start = '1' and flat_signed(chr, fp_size, i) = neg1 then
-                    mul_chr_neg1(i) <= '1';
+                    reg_chr_neg1(i) <= '1';
                 else
-                    mul_chr_neg1(i) <= '0';
+                    reg_chr_neg1(i) <= '0';
                 end if;
             end loop;
         end if;
@@ -83,19 +86,35 @@ begin
     process (clk)
     begin
         if rising_edge(clk) then
-            mul_expected <= std_logic_vector(mul_dp(0));
-            adder_values(adder_extra_bits+fp_size-1 downto 0) <= std_logic_vector(resize(signed(chr(fp_size-1 downto 0)), adder_extra_bits+fp_size));
+            -- erwarteten Funktionswert weitergeben, Konstante der linearen Funktion weitergeben
+            mul_expected <= std_logic_vector(reg_dp(0));
+            adder_values(adder_extra_bits+fp_size-1 downto 0)
+                <= std_logic_vector(
+                        resize(
+                            signed(reg_chr(0)),
+                            adder_extra_bits+fp_size
+                        )
+                    );
+
             for i in 1 to var_num loop
                 -- Multiplikation normalisiert zwischen -1 und +1 ist in demselben Wertebereich (aber Verlust von Genauigkeit, Sonderfall -1*-1 abrunden auf 0,99...)
-                if (mul_chr_neg1(i) = '1' and mul_dp_neg1(i) = '1') then
-                    adder_values(flat_upper(adder_extra_bits+fp_size, i) downto flat_upper(adder_extra_bits+fp_size, i)-adder_extra_bits) <= (others => '0');
-                    adder_values(flat_upper(adder_extra_bits+fp_size, i)-adder_extra_bits-1 downto flat_lower(adder_extra_bits+fp_size, i)) <= (others => '1');
-                elsif dp_done = '1' then
-                    adder_values(flat_upper(adder_extra_bits+fp_size, i) downto flat_lower(adder_extra_bits+fp_size, i)) <= std_logic_vector(
-                            resize(fp_mul(flat_signed(chr, fp_size, i), mul_dp(i), fp_frac), adder_extra_bits+fp_size)
-                        );
+                if (reg_chr_neg1(i) = '1' and reg_dp_neg1(i) = '1') then
+                    -- Sonderfall -1*-1 auf 0,99... abrunden
+                    adder_values(flat_upper(adder_extra_bits+fp_size, i) downto flat_upper(adder_extra_bits+fp_size, i)-adder_extra_bits)
+                        <= (others => '0');
+                    adder_values(flat_upper(adder_extra_bits+fp_size, i)-adder_extra_bits-1 downto flat_lower(adder_extra_bits+fp_size, i))
+                        <= (others => '1');
+                else
+                    adder_values(flat_upper(adder_extra_bits+fp_size, i) downto flat_lower(adder_extra_bits+fp_size, i))
+                        <= std_logic_vector(
+                                resize(
+                                    fp_mul(reg_chr(i), reg_dp(i), fp_frac),
+                                    adder_extra_bits+fp_size
+                                )
+                            );
                 end if;
             end loop;
+
         end if;
     end process;
 
@@ -123,7 +142,10 @@ begin
         variable tmp_cut : signed(fp_size-1 downto 0);
     begin
         if rising_edge(clk) then
-            tmp := resize(signed(adder_expected), adder_extra_bits+fp_size+1) - resize(signed(adder_sum), adder_extra_bits+fp_size+1);
+
+            tmp := resize(signed(adder_expected), adder_extra_bits+fp_size+1)
+                - resize(signed(adder_sum), adder_extra_bits+fp_size+1);
+
             tmp_cut := tmp(adder_extra_bits+fp_size downto adder_extra_bits+1);
             diff <= tmp_cut;
             if adder_done = '1' and tmp_cut = neg1 then
@@ -131,6 +153,7 @@ begin
             else
                 diff_neg1 <= '0';
             end if;
+
         end if;
     end process;
 
@@ -139,6 +162,7 @@ begin
         variable tmp : signed(2*fp_size-1 downto 0);
     begin
         if rising_edge(clk) then
+
             -- Vorkomma-Bits nach Quadrieren immer 0 (außer Sonderfall 1 -> Abrunden auf 0,99...)
             tmp := diff * diff;
             if diff_neg1 = '1' then
@@ -146,6 +170,7 @@ begin
             else
                 diff_sq <= unsigned(tmp(tmp'high-2 downto 0));
             end if;
+
         end if;
     end process;
 
@@ -167,15 +192,15 @@ begin
     begin
         if rising_edge(clk) then
             if rst = '1' then
-                dp_done <= '0';
+                reg_done <= '0';
                 mul_done <= '0';
                 diff_done <= '0';
                 diff_sq_done <= '0';
                 err_done <= '0';
                 done <= '0';
             else
-                dp_done <= start;
-                mul_done <= dp_done;
+                reg_done <= start;
+                mul_done <= reg_done;
                 diff_done <= adder_done;
                 diff_sq_done <= diff_done;
                 err_done <= diff_sq_done;

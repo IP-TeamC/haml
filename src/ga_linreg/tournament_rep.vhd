@@ -90,7 +90,7 @@ begin
 
             -- TODO Logging entfernen
             if state = s_cmp and (unsigned(chr_fit) <= worst_fit or replace_with_worse) then
-                report "Replace " & work.util.to_string(worst_fit) & " with " & work.util.to_string(chr_fit) & " at " & work.util.to_string(worst_adr);
+                -- report "Replace " & work.util.to_string(worst_fit) & " with " & work.util.to_string(chr_fit) & " at " & work.util.to_string(worst_adr);
                 chr_we <= '1';
             end if;
         end if;

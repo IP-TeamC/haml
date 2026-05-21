@@ -212,11 +212,11 @@ begin
             end if;
 
             -- TODO Logging entfernen
-            if trainer_ram_chr_we = (trainer_ram_chr_we'range => '1') then
-                work.util.print(ram_chr_di(0)); -- const
-                work.util.print(ram_chr_di(1)); -- m1
-                work.util.print(ram_chr_di(2)); -- fit
-            end if;
+            -- if trainer_ram_chr_we = (trainer_ram_chr_we'range => '1') then
+            --     work.util.print(ram_chr_di(0)); -- const
+            --     work.util.print(ram_chr_di(1)); -- m1
+            --     work.util.print(ram_chr_di(2)); -- fit
+            -- end if;
         end if;
     end process;
 
