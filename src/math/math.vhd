@@ -77,15 +77,13 @@ package body math is
         frac_size : natural
     ) return signed is
         variable res : signed(2*a'length-1 downto 0);
-        variable all_zero : signed(res'range) := (others => '0');
-        variable all_one : signed(res'range) := (others => '1');
     begin
         res := a * b;
         -- TODO Logging entfernen
-        if res(res'high downto a'length+frac_size) /= all_zero(res'high downto a'length+frac_size)
-            and not
-                (res(res'high downto a'length+frac_size) = all_one(res'high downto a'length+frac_size)
-                and res(a'length+frac_size-1) = '1') then
+        if res(res'high) /= res(a'length+frac_size-1) then
+            report "overflow hier";
+            work.util.print(a);
+            work.util.print(b);
             work.util.print(res(res'high downto a'length+frac_size));
             work.util.print(res(a'length+frac_size-1 downto frac_size));
             work.util.print(res(frac_size-1 downto 0));

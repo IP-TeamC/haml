@@ -1,11 +1,14 @@
 package de.fhdw.haml.codegen.linreg;
 
 import de.fhdw.haml.codegen.DataSetGen;
-import de.fhdw.knn.data.*;
+import de.fhdw.knn.data.CsvReader;
+import de.fhdw.knn.data.DataSet;
+import de.fhdw.knn.data.MinMaxNormalizer;
+import de.fhdw.knn.data.Normalizer;
 
 import java.io.IOException;
 
-public class Salary {
+public class F3x12 {
 
     // chatty, mal schauen ob es funktioniert...
     public static double fixedPointToDouble(String bits, int fractionalBits) {
@@ -24,18 +27,17 @@ public class Salary {
     }
 
     public static void main(String[] args) throws IOException {
-        DataSet dataSet = CsvReader.readFile("salary.csv", 0, 2, 2, 1, 1);
-        Normalizer normalizerInputs = new MinMaxNormalizer(-1, 1);
-        Normalizer normalizerOutputs = new MinMaxNormalizer(-1, 1);
+        DataSet dataSet = CsvReader.readFile("f3x12.csv", 0, 1, 1, 1, 1);
+        Normalizer normalizerInputs = new MinMaxNormalizer(-1, 1 - Math.pow(2, -17));
+        Normalizer normalizerOutputs = new MinMaxNormalizer(-1, 1 - Math.pow(2, -17));
         dataSet.normalizeInputs(normalizerInputs);
         dataSet.normalizeOutputs(normalizerOutputs);
 
-        double const0 = fixedPointToDouble("000001101101010111", 16);
-        double yoe1 = fixedPointToDouble("010011111000101001", 16);
-        double grade2 = fixedPointToDouble("000100100101001110", 16);
+        double const0 = fixedPointToDouble("000000001010011001", 17);
+        double m1 = fixedPointToDouble("011111110111000001", 17);
         normalizerOutputs.denormalize(dataSet.outputs);
         for (int i = 0; i < dataSet.size; i++) {
-            double[][] arr = new double[][]{new double[]{const0 + yoe1 * dataSet.inputs[i][0] + grade2 * dataSet.inputs[i][1]}};
+            double[][] arr = new double[][]{new double[]{const0 + m1 * dataSet.inputs[i][0]}};
             normalizerOutputs.denormalize(arr);
             System.out.println(Math.round(dataSet.outputs[i][0]) + ", but: " + Math.round(arr[0][0]));
         }
@@ -46,9 +48,9 @@ public class Salary {
 
         DataSetGen gen = new DataSetGen();
         gen.fpSize = 18;
-        gen.fpFrac = 16;
+        gen.fpFrac = 17;
         gen.dataSet = dataSet;
-        gen.name = "salary";
+        gen.name = "f3x12";
         gen.gen("linreg", false);
     }
 

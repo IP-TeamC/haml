@@ -8,10 +8,10 @@ use work.prng.sample_seed;
 
 entity tournament_sel is
     generic (
-        k : natural := 5;
-        var_num : natural := 2;
-        fp_size : natural := 18;
-        adr_size : natural := 8
+        k : natural;
+        var_num : natural;
+        fp_size : natural;
+        adr_size : natural
     );
     port (
         clk : in std_logic;
@@ -50,7 +50,7 @@ begin
             clk => clk,
             rst => rst,
             generator => prim_gen(adr_size),
-            seed => sample_seed(adr_size-1 downto 0),
+            seed => sample_seed(adr_size, 60),
             rand => chr_adr
         );
 

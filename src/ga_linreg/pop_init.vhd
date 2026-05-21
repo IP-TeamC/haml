@@ -50,7 +50,8 @@ begin
     fitness_rst <= '1' when state = s_ready or state = s_fit_write else '0';
     ram_chr_we <= chr_we;
     ram_chr_adr <= std_logic_vector(chr_adr);
-    ram_chr_di <= rand when state = s_generate else fitness_fit;
+    ram_chr_di <= --"011111111111111111" when state = s_generate and chr_we(0) = '1' else "011111111111111111" when state = s_generate else fitness_fit; 
+        rand when state = s_generate else fitness_fit;
 
     lfsr: entity work.lfsr
         generic map(
@@ -60,7 +61,7 @@ begin
             clk => clk,
             rst => rst,
             generator => prim_gen(fp_size),
-            seed => sample_seed(fp_size-1 downto 0),
+            seed => sample_seed(fp_size, 62),
             rand => rand
         );
 

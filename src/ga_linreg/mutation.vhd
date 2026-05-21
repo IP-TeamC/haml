@@ -8,9 +8,9 @@ use work.prng.sample_seed;
 
 entity mutation is
     generic (
-        mask_factor : natural := 3;
-        var_num : natural := 2;
-        fp_size : natural := 18
+        mask_factor : natural;
+        var_num : natural;
+        fp_size : natural
     );
     port (
         clk : in std_logic;
@@ -26,10 +26,13 @@ end entity;
 
 architecture rtl of mutation is
 
-    type t_rand_mem is array (0 to 2*mask_factor-1) of std_logic_vector(fp_size*(var_num+1)-1 downto 0);
+    type t_rand_mem is array (0 to 2*mask_factor+4) of std_logic_vector(fp_size*(var_num+1)-1 downto 0);
     signal rand_mem : t_rand_mem;
     signal rand : std_logic_vector(fp_size*(var_num+1)-1 downto 0);
-    signal mask : std_logic_vector(fp_size*(var_num+1)-1 downto 0);
+
+    constant mask_block_size : natural := fp_size / 4;
+    type t_masks is array (0 to 3) of std_logic_vector(fp_size*(var_num+1)-1 downto 0);
+    signal masks : t_masks;
 
 begin
 
@@ -42,7 +45,7 @@ begin
                 clk => clk,
                 rst => rst,
                 generator => prim_gen(fp_size),
-                seed => (sample_seed(i downto 0) & sample_seed(fp_size-1 downto i+1)) xor sample_seed(fp_size-1 downto 0),
+                seed => sample_seed(fp_size, i),
                 rand => rand(flat_upper(fp_size, i) downto flat_lower(fp_size, i))
             );
     end generate;
@@ -55,10 +58,13 @@ begin
             for i in 0 to mask_factor-2 loop
                 tmp := tmp and rand_mem(2*i+1);
             end loop;
-            mask <= tmp;
+            masks(0) <= tmp;
+            masks(1) <= tmp and rand_mem(2*mask_factor-2);
+            masks(2) <= tmp and rand_mem(2*mask_factor+1) and rand_mem(2*mask_factor+4);
+            masks(3) <= tmp and rand_mem(2*mask_factor-1) and rand_mem(2*mask_factor) and rand_mem(2*mask_factor+3);
 
             rand_mem(0) <= rand;
-            for i in 0 to 2*mask_factor-2 loop
+            for i in 0 to 2*mask_factor+3 loop
                 rand_mem(i+1) <= rand_mem(i);
             end loop;
         end if;
@@ -68,20 +74,21 @@ begin
     begin
         if rising_edge(clk) then
             if start = '1' then
+                report "mutate";
                 for i in 0 to var_num loop
-                    -- TODO optimieren (ist eher PoC)
-                    if mask(flat_upper(fp_size, i) downto flat_upper(fp_size, i)-3) = "1111" then
-                        chr_mut(flat_upper(fp_size, i)) <= not chr(flat_upper(fp_size, i));
-                    else
-                        chr_mut(flat_upper(fp_size, i)) <= chr(flat_upper(fp_size, i));
-                    end if;
-                    if mask(flat_upper(fp_size, i) downto flat_upper(fp_size, i)-2) = "101" then
-                        chr_mut(flat_upper(fp_size, i)-1) <= not chr(flat_upper(fp_size, i)-1);
-                    else
-                        chr_mut(flat_upper(fp_size, i)-1) <= chr(flat_upper(fp_size, i)-1);
-                    end if;
-                    chr_mut(flat_upper(fp_size, i)-2 downto flat_lower(fp_size, i)) <= chr(flat_upper(fp_size, i)-2 downto flat_lower(fp_size, i)) xor mask(flat_upper(fp_size, i)-2 downto flat_lower(fp_size, i));                    
+                    for blk in 0 to masks'high-1 loop
+                        chr_mut(flat_lower(fp_size, i)+mask_block_size*(blk+1)-1 downto flat_lower(fp_size, i)+mask_block_size*blk) <=
+                            chr(flat_lower(fp_size, i)+mask_block_size*(blk+1)-1 downto flat_lower(fp_size, i)+mask_block_size*blk)
+                                xor masks(blk)(flat_lower(fp_size, i)+mask_block_size*(blk+1)-1 downto flat_lower(fp_size, i)+mask_block_size*blk);
+                    end loop;
+                    chr_mut(flat_upper(fp_size, i) downto flat_lower(fp_size, i)+mask_block_size*masks'high) <=
+                            chr(flat_upper(fp_size, i) downto flat_lower(fp_size, i)+mask_block_size*masks'high)
+                                xor masks(masks'high)(flat_upper(fp_size, i) downto flat_lower(fp_size, i)+mask_block_size*masks'high);
                 end loop;
+
+                -- for i in 0 to var_num loop
+                --     chr_mut(flat_upper(fp_size, i) downto flat_lower(fp_size, i)) <= chr(flat_upper(fp_size, i) downto flat_lower(fp_size, i)) xor masks(0)(flat_upper(fp_size, i) downto flat_lower(fp_size, i));
+                -- end loop;
             end if;
             done <= start and not rst;
         end if;
