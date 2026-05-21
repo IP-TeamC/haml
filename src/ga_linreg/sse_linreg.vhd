@@ -27,8 +27,6 @@ end entity;
 
 architecture rtl of sse_linreg is
 
-    constant neg1 : signed(fp_size-1 downto 0) := rotate_right(to_signed(1, fp_size), 1);
-
     type t_reg_chr is array (0 to var_num) of signed(fp_size-1 downto 0);
     type t_reg_dp is array (0 to var_num) of signed(fp_size-1 downto 0);
     type t_reg_neg1 is array (0 to var_num) of std_logic;
@@ -50,12 +48,17 @@ architecture rtl of sse_linreg is
     signal diff : signed(fp_size-1 downto 0);
     signal diff_neg1 : std_logic;
     signal diff_valid : std_logic;
+
     signal diff_sq : unsigned(2*fp_size-3 downto 0);
+    signal diff_sq_neg1 : std_logic;
     signal diff_sq_valid : std_logic;
 
     constant err_extra_bits : natural := adr_size;
     signal err : unsigned(err_extra_bits+2*fp_size-3 downto 0);
     signal err_valid : std_logic;
+
+    constant pos1 : unsigned(err'range) := (err_extra_bits-1 downto 0 => '0') & (2*fp_size-3 downto 0 => '1');
+    constant neg1 : signed(fp_size-1 downto 0) := rotate_right(to_signed(1, fp_size), 1);
 
 begin
 
@@ -162,28 +165,27 @@ begin
         variable tmp : signed(2*fp_size-1 downto 0);
     begin
         if rising_edge(clk) then
-
-            -- Vorkomma-Bits nach Quadrieren immer 0 (außer Sonderfall 1 -> Abrunden auf 0,99...)
+            -- Vorkomma-Bits nach Quadrieren immer 0 (außer Sonderfall 1 -> Abrunden auf 0,99... in Folge-Stage)
             tmp := diff * diff;
-            if diff_neg1 = '1' then
-                diff_sq <= (others => '1');
-            else
-                diff_sq <= unsigned(tmp(tmp'high-2 downto 0));
-            end if;
-
+            diff_sq <= unsigned(tmp(tmp'high-2 downto 0));
+            diff_sq_neg1 <= diff_neg1;
         end if;
     end process;
 
     -- Stage 6: quadr. Differenz Akkumulieren
     process (clk)
+        variable valid_neg1 : std_logic_vector(1 downto 0);
     begin
         if rising_edge(clk) then
+            valid_neg1 := err_valid & diff_sq_neg1;
             if diff_sq_valid = '1' then
-                if err_valid = '1' then
-                    err <= err + resize(diff_sq, err_extra_bits+2*fp_size-2);
-                else
-                    err <= resize(diff_sq, err_extra_bits+2*fp_size-2);
-                end if;
+                case valid_neg1 is
+                    when "00" => err <= resize(diff_sq, err_extra_bits+2*fp_size-2);
+                    when "01" => err <= pos1;
+                    when "10" => err <= err + resize(diff_sq, err_extra_bits+2*fp_size-2);
+                    when "11" => err <= err + pos1;
+                    when others =>
+                end case;
             end if;
         end if;
     end process;
