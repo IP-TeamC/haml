@@ -19,7 +19,7 @@ entity mse_linreg_tb is
     -- Inputs
     signal clk : std_logic := '1';
     signal rst : std_logic;
-    signal start : std_logic;
+    signal valid : std_logic;
     signal chr : std_logic_vector(fp_size*(var_num+1)-1 downto 0);
     signal ram_data : std_logic_vector(fp_size*(var_num+1)-1 downto 0);
 
@@ -43,7 +43,7 @@ begin
         port map (
             clk => clk,
             rst => rst,
-            start => start,
+            valid => valid,
             chr => chr,
             ram_data => ram_data,
             fit => fit,
@@ -63,7 +63,7 @@ begin
         rst <= '0';
         assert done = '0';
 
-        start <= '1';
+        valid <= '1';
         -- y = 0.5*x2-0.125*x1+0.25
         chr <= "00" & "100000"
             & "11" & "111000"
@@ -89,7 +89,7 @@ begin
             & "00" & "100000"
             & "00" & "111000";
         wait for clk_period;
-        start <= '0';
+        valid <= '0';
         assert done <= '0';
 
         wait until done = '1' and clk = '0';

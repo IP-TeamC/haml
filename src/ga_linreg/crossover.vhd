@@ -45,6 +45,8 @@ begin
     process (clk)
     begin
         if rising_edge(clk) then
+
+            done <= start and not rst;
             if start = '1' then
                 for i in 0 to var_num loop
                     if rand(i) = '1' then
@@ -54,7 +56,7 @@ begin
                     end if;
                 end loop;
             end if;
-            done <= start and not rst;
+
         end if;
     end process;
 

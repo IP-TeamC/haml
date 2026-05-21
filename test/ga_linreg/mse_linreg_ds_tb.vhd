@@ -19,7 +19,7 @@ entity mse_linreg_ds_tb is
     -- Inputs
     signal clk : std_logic := '1';
     signal rst : std_logic;
-    signal start : std_logic;
+    signal valid : std_logic;
     signal chr : std_logic_vector(fp_size*(var_num+1)-1 downto 0);
     signal ram_data : std_logic_vector(fp_size*(var_num+1)-1 downto 0);
 
@@ -46,7 +46,7 @@ begin
         port map (
             clk => clk,
             rst => rst,
-            start => start,
+            valid => valid,
             chr => chr,
             ram_data => ram_data,
             fit => fit,
@@ -101,7 +101,7 @@ begin
 
             m := signed(rand1);
             b := signed(rand2);
-            start <= '1';
+            valid <= '1';
             chr <= std_logic_vector(m & b);
 
             acc := (others => '0');
@@ -119,7 +119,7 @@ begin
                 wait for clk_period;
             end loop;
 
-            start <= '0';
+            valid <= '0';
             assert done = '0';
             wait until done = '1';
             wait until falling_edge(clk);

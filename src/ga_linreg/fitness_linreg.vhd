@@ -32,9 +32,11 @@ architecture rtl of fitness_linreg is
 
     signal adr : unsigned(ram_adr'range);
     signal next_adr : unsigned(ram_adr'range);
-    signal last_adr : std_logic;
 
-    signal mse_start : std_logic;
+    signal last_adr : std_logic;
+    signal next_last_adr : std_logic;
+
+    signal mse_valid : std_logic;
 
 begin
 
@@ -48,7 +50,7 @@ begin
         port map(
             clk => clk,
             rst => rst,
-            start => mse_start,
+            valid => mse_valid,
             chr => chr,
             ram_data => ram_data,
             fit => fit,
@@ -56,7 +58,7 @@ begin
         );
 
     ram_adr <= std_logic_vector(adr);
-    mse_start <= '1' when state = s_running else '0';
+    mse_valid <= '1' when state = s_running else '0';
 
     next_adr <= (others => '0') when (state = s_ready and start = '1') or rst = '1'
         else adr + 1;
@@ -66,16 +68,14 @@ begin
         else s_running when state = s_first
         else state;
 
+    next_last_adr <= '1' when rst = '0' and std_logic_vector(adr) = end_adr else '0';
+
     process (clk)
     begin
         if rising_edge(clk) then
             state <= next_state;
             adr <= next_adr;
-            last_adr <= '0';
-
-            if std_logic_vector(adr) = end_adr then
-                last_adr <= '1' and not rst;
-            end if;
+            last_adr <= next_last_adr;
         end if;
     end process;
 

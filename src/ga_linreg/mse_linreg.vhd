@@ -15,7 +15,7 @@ entity mse_linreg is
     port (
         clk : in std_logic;
         rst : in std_logic;
-        start : in std_logic;
+        valid : in std_logic;
         chr : in std_logic_vector(fp_size*(var_num+1)-1 downto 0);
 
         ram_data : in std_logic_vector(fp_size*(var_num+1)-1 downto 0);
@@ -36,26 +36,26 @@ architecture rtl of mse_linreg is
     signal reg_dp : t_reG_dp;
     signal reg_dp_neg1 : t_reg_neg1;
     signal reg_chr_neg1 : t_reg_neg1;
-    signal reg_done : std_logic;
+    signal reg_valid : std_logic;
 
     signal mul_expected : std_logic_vector(fp_size-1 downto 0);
-    signal mul_done : std_logic;
+    signal mul_valid : std_logic;
 
     constant adder_extra_bits : natural := natural(ceil(log2(real(var_num+1))));
     signal adder_values : std_logic_vector((adder_extra_bits+fp_size)*(var_num+1)-1 downto 0);
-    signal adder_done : std_logic;
+    signal adder_valid : std_logic;
     signal adder_sum : std_logic_vector(adder_extra_bits+fp_size-1 downto 0);
     signal adder_expected : std_logic_vector(fp_size-1 downto 0);
 
     signal diff : signed(fp_size-1 downto 0);
     signal diff_neg1 : std_logic;
-    signal diff_done : std_logic;
+    signal diff_valid : std_logic;
     signal diff_sq : unsigned(2*fp_size-3 downto 0);
-    signal diff_sq_done : std_logic;
+    signal diff_sq_valid : std_logic;
 
     constant err_extra_bits : natural := adr_size;
     signal err : unsigned(err_extra_bits+2*fp_size-3 downto 0);
-    signal err_done : std_logic;
+    signal err_valid : std_logic;
 
 begin
 
@@ -68,12 +68,12 @@ begin
             for i in 0 to var_num loop
                 reg_chr(i) <= flat_signed(chr, fp_size, i);
                 reg_dp(i) <= flat_signed(ram_data, fp_size, i);
-                if start = '1' and flat_signed(ram_data, fp_size, i) = neg1 then
+                if valid = '1' and flat_signed(ram_data, fp_size, i) = neg1 then
                     reg_dp_neg1(i) <= '1';
                 else
                     reg_dp_neg1(i) <= '0';
                 end if;
-                if start = '1' and flat_signed(chr, fp_size, i) = neg1 then
+                if valid = '1' and flat_signed(chr, fp_size, i) = neg1 then
                     reg_chr_neg1(i) <= '1';
                 else
                     reg_chr_neg1(i) <= '0';
@@ -128,10 +128,10 @@ begin
         port map(
             clk => clk,
             rst => rst,
-            start => mul_done,
+            start => mul_valid,
             values => adder_values,
             sum => adder_sum,
-            done => adder_done,
+            done => adder_valid,
             di => mul_expected,
             do => adder_expected
         );
@@ -148,7 +148,7 @@ begin
 
             tmp_cut := tmp(adder_extra_bits+fp_size downto adder_extra_bits+1);
             diff <= tmp_cut;
-            if adder_done = '1' and tmp_cut = neg1 then
+            if adder_valid = '1' and tmp_cut = neg1 then
                 diff_neg1 <= '1';
             else
                 diff_neg1 <= '0';
@@ -178,8 +178,8 @@ begin
     process (clk)
     begin
         if rising_edge(clk) then
-            if diff_sq_done = '1' then
-                if err_done = '1' then
+            if diff_sq_valid = '1' then
+                if err_valid = '1' then
                     err <= err + resize(diff_sq, err_extra_bits+2*fp_size-2);
                 else
                     err <= resize(diff_sq, err_extra_bits+2*fp_size-2);
@@ -192,19 +192,19 @@ begin
     begin
         if rising_edge(clk) then
             if rst = '1' then
-                reg_done <= '0';
-                mul_done <= '0';
-                diff_done <= '0';
-                diff_sq_done <= '0';
-                err_done <= '0';
+                reg_valid <= '0';
+                mul_valid <= '0';
+                diff_valid <= '0';
+                diff_sq_valid <= '0';
+                err_valid <= '0';
                 done <= '0';
             else
-                reg_done <= start;
-                mul_done <= reg_done;
-                diff_done <= adder_done;
-                diff_sq_done <= diff_done;
-                err_done <= diff_sq_done;
-                done <= diff_sq_done and not diff_done;
+                reg_valid <= valid;
+                mul_valid <= reg_valid;
+                diff_valid <= adder_valid;
+                diff_sq_valid <= diff_valid;
+                err_valid <= diff_sq_valid;
+                done <= diff_sq_valid and not diff_valid;
             end if;
         end if;
     end process;
