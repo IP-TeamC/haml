@@ -19,7 +19,7 @@ entity tournament_rep is
         rst : in std_logic;
         start : in std_logic;
 
-        chr_fit : in std_logic_vector(fp_size-1 downto 0); 
+        chr_fit : in std_logic_vector(fp_size-1 downto 0);
         chr_do : in std_logic_vector(fp_size*(var_num+2)-1 downto 0);
         chr_adr : out std_logic_vector(adr_size-1 downto 0);
         chr_we : out std_logic;
@@ -82,7 +82,7 @@ begin
     next_worst_fit <= (others => '0') when rst = '1' or state = s_ready
         else flat_unsigned(chr_do, fp_size, var_num+1) when state = s_read and is_worse = '1'
         else worst_fit;
-    
+
     next_cnt <= (0 => '1', others => '0') when rst = '1' or state = s_ready
         else cnt(k-1 downto 0) & '0' when state = s_read
         else cnt;

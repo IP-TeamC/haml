@@ -55,7 +55,7 @@ architecture rtl of ga_linreg_tb is
         end loop;
         we <= (others => '0');
     end procedure;
-    
+
 begin
 
     ga_linreg: entity work.ga_linreg

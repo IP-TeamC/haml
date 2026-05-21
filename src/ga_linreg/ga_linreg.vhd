@@ -94,14 +94,14 @@ begin
     ram_dp_adr <= dp_adr when state = s_ready else fitness_ram_dp_adr;
     gen_ram_dp_inputs: for i in 0 to var_num generate
         ram_dp_di(i) <= dp_data;
-    end generate; 
+    end generate;
 
     fitness_chr <= ram_chr_do(flat_upper(fp_size, var_num) downto 0) when state = s_init else trainer_ram_chr_di(flat_upper(fp_size, var_num) downto 0);
     ram_chr_we <= init_ram_chr_we or trainer_ram_chr_we;
     ram_chr_adr <= init_ram_chr_adr when state = s_init else trainer_ram_chr_adr;
     gen_ram_chr_di: for i in 0 to var_num+1 generate
         ram_chr_di(i) <= init_ram_chr_di when state = s_init else flat_vec(trainer_ram_chr_di, fp_size, i);
-    end generate; 
+    end generate;
 
     -- 0 => Expected, 1 => Feature 1, ...
     gen_ram_dp: for i in 0 to var_num generate

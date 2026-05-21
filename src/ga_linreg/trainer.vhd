@@ -29,7 +29,7 @@ entity trainer is
         ram_chr_we : out std_logic_vector(var_num+1 downto 0);
         ram_chr_adr : out std_logic_vector(chr_adr_size-1 downto 0);
         ram_chr_di : out std_logic_vector(fp_size*(var_num+2)-1 downto 0);
-        
+
         fitness_start : out std_logic;
         done : out std_logic
     );
@@ -71,7 +71,7 @@ architecture rtl of trainer is
     signal tr_ram_chr_adr : std_logic_vector(chr_adr_size-1 downto 0);
     signal tr_ram_chr_we : std_logic;
     signal tr_done : std_logic;
-    
+
     -- Fitness
     signal fitness_done_prev : std_logic;
 

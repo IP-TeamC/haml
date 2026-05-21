@@ -81,7 +81,7 @@ begin
     next_chr_adr <= (others => '0') when rst = '1' or state = s_ready
         else chr_adr + 1 when state = s_generate or state = s_fit_write
         else chr_adr;
-    
+
     next_last_chr_adr <= '1' when next_chr_adr = (chr_adr'range => '1') and rst = '0' else '0';
     next_fitness_start <= '1' when state /= s_fit_calc and next_state = s_fit_calc and rst = '0' else '0';
     next_done <= '1' when state = s_fit_write and last_chr_adr = '1' and rst = '0' else '0';
