@@ -22,28 +22,32 @@ entity tournament_sel is
         chr_adr : out std_logic_vector(adr_size-1 downto 0);
 
         done : out std_logic;
-        best_chr : out std_logic_vector(fp_size*(var_num+2)-1 downto 0)
+        best_chr1 : out std_logic_vector(fp_size*(var_num+2)-1 downto 0);
+        best_chr2 : out std_logic_vector(fp_size*(var_num+2)-1 downto 0)
     );
 end entity;
 
 architecture rtl of tournament_sel is
 
-    type t_state is (s_ready, s_read);
+    type t_state is (s_ready, s_read1, s_clear, s_read2);
     signal state : t_state;
     signal next_state : t_state;
 
+    signal is_better : std_logic;
     signal best : std_logic_vector(chr_do'range);
     signal next_best : std_logic_vector(chr_do'range);
+    
+    signal best_first : std_logic_vector(chr_do'range);
+    signal next_best_first : std_logic_vector(chr_do'range);
 
-    signal cnt : std_logic_vector(k downto 0);
+    signal cnt : std_logic_vector(2*k+1 downto 0);
     signal next_cnt : std_logic_vector(cnt'range);
-
-    signal is_better : std_logic;
 
 begin
 
-    done <= cnt(k);
-    best_chr <= best;
+    done <= cnt(2*k+1);
+    best_chr1 <= best_first;
+    best_chr2 <= best;
 
     lfsr: entity work.lfsr
         generic map(
@@ -58,24 +62,30 @@ begin
         );
 
     next_state <= s_ready when rst = '1'
-        else s_read when state = s_ready and start = '1'
-        else s_ready when state = s_read and cnt(k-1) = '1'
+        else s_read1 when state = s_ready and start = '1'
+        else s_clear when state = s_read1 and cnt(k-1) = '1'
+        else s_read2 when state = s_clear
+        else s_ready when state = s_read2 and cnt(2*k) = '1'
         else state;
 
     is_better <= '1' when flat_unsigned(chr_do, fp_size, var_num+1) < flat_unsigned(best, fp_size, var_num+1) else '0';
 
-    next_best <= (others => '1') when state = s_ready and start = '1'
-        else chr_do when state = s_read and is_better = '1'
+    next_best <= (others => '1') when (state = s_ready and start = '1') or (state = s_clear)
+        else chr_do when (state = s_read1 or state = s_read2) and is_better = '1'
         else best;
 
     next_cnt <= (0 => '1', others => '0') when state = s_ready
-        else cnt(k-1 downto 0) & '0';
+        else cnt(2*k downto 0) & '0';
+
+    next_best_first <= best when state = s_clear
+        else best_first;
 
     process (clk)
     begin
         if rising_edge(clk) then
             state <= next_state;
             best <= next_best;
+            best_first <= next_best_first;
             cnt <= next_cnt;
         end if;
     end process;

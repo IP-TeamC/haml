@@ -24,7 +24,8 @@ entity tournament_sel_tb is
     -- Outputs
     signal chr_adr : std_logic_vector(adr_size-1 downto 0);
     signal done : std_logic;
-    signal best_chr : std_logic_vector(fp_size*(var_num+2)-1 downto 0);
+    signal best_chr1 : std_logic_vector(fp_size*(var_num+2)-1 downto 0);
+    signal best_chr2 : std_logic_vector(fp_size*(var_num+2)-1 downto 0);
 
 end entity;
 
@@ -46,7 +47,8 @@ begin
             chr_do => chr_do,
             chr_adr => chr_adr,
             done => done,
-            best_chr => best_chr
+            best_chr1 => best_chr1,
+            best_chr2 => best_chr2
         );
 
     clk_process: process
@@ -65,8 +67,11 @@ begin
         assert chr_adr /= "00000000";
         tmp := chr_adr;
 
+        chr_do <= "0000000000000000";
         start <= '1';
         wait for clk_period;
+
+        -- Nr. 1
         chr_do <= "1011000100010001";
         start <= '0';
         assert done = '0';
@@ -86,8 +91,39 @@ begin
         assert chr_adr /= tmp;
         tmp := chr_adr;
         wait for clk_period;
+
+        -- Clear
+        chr_do <= "0000000000000000";
+        assert done = '0';
+        assert chr_adr /= "00000000";
+        assert chr_adr /= tmp;
+        tmp := chr_adr;
+        wait for clk_period;
+
+        -- Nr. 2
+        chr_do <= "1000000010000001";
+        start <= '0';
+        assert done = '0';
+        assert chr_adr /= "00000000";
+        assert chr_adr /= tmp;
+        tmp := chr_adr;
+        wait for clk_period;
+        chr_do <= "0010000000000010";
+        assert done = '0';
+        assert chr_adr /= "00000000";
+        assert chr_adr /= tmp;
+        tmp := chr_adr;
+        wait for clk_period;
+        chr_do <= "0100000000000000";
+        assert done = '0';
+        assert chr_adr /= "00000000";
+        assert chr_adr /= tmp;
+        tmp := chr_adr;
+        wait for clk_period;
+
         assert done = '1';
-        assert best_chr = "0101001000100010";
+        assert best_chr1 = "0101001000100010";
+        assert best_chr2 = "0010000000000010";
 
         report "Done";
         wait;

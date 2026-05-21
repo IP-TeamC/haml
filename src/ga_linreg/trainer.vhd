@@ -39,7 +39,7 @@ end entity;
 architecture rtl of trainer is
 
     -- Zustandsverwaltung
-    type t_state is (s_ready, s_select1, s_select2, s_crossover, s_mutate, s_fit, s_replace);
+    type t_state is (s_ready, s_select, s_crossover, s_mutate, s_fit, s_replace);
     signal prev_state : t_state;
     signal state : t_state;
     signal next_state : t_state;
@@ -47,12 +47,9 @@ architecture rtl of trainer is
     -- Tournament Selection
     signal ts_start : std_logic;
     signal ts_ram_chr_adr : std_logic_vector(ram_chr_adr'range);
-    signal ts_best_chr : std_logic_vector(ram_chr_do'range);
+    signal ts_best_chr1 : std_logic_vector(ram_chr_do'range);
+    signal ts_best_chr2 : std_logic_vector(ram_chr_do'range);
     signal ts_done : std_logic;
-
-    -- Tournament Selection (Zwischenspeicher aus 1. Tournament Selection)
-    signal ts_best_chr_first : std_logic_vector(ram_chr_do'range);
-    signal next_ts_best_chr_first : std_logic_vector(ram_chr_do'range);
 
     -- Crossover
     signal cross_start : std_logic;
@@ -75,12 +72,12 @@ begin
     done <= '1' when state = s_ready else '0';
 
     ram_chr_we <= (others => tr_ram_chr_we);
-    ram_chr_adr <= ts_ram_chr_adr when state = s_select1 or state = s_select2
+    ram_chr_adr <= ts_ram_chr_adr when state = s_select
         else tr_ram_chr_adr;
     ram_chr_di(fp_size*(var_num+2)-1 downto fp_size*(var_num+1)) <= fitness_fit;
     ram_chr_di(fp_size*(var_num+1)-1 downto 0) <= mut_chr_mut;
 
-    ts_start <= '1' when (state = s_select1 and prev_state /= s_select1) or (state = s_select2 and prev_state /= s_select2)
+    ts_start <= '1' when state = s_select and prev_state /= s_select
         else '0';
     cross_start <= '1' when state = s_crossover and prev_state /= s_crossover
         else '0';
@@ -105,7 +102,8 @@ begin
             chr_do => ram_chr_do,
             chr_adr => ts_ram_chr_adr,
             done => ts_done,
-            best_chr => ts_best_chr
+            best_chr1 => ts_best_chr1,
+            best_chr2 => ts_best_chr2
         );
 
     crossover: entity work.crossover
@@ -117,8 +115,8 @@ begin
             clk => clk,
             rst => rst,
             start => cross_start,
-            chr_parent1 => ts_best_chr_first(flat_upper(fp_size, var_num) downto 0),
-            chr_parent2 => ts_best_chr(flat_upper(fp_size, var_num) downto 0),
+            chr_parent1 => ts_best_chr1(flat_upper(fp_size, var_num) downto 0),
+            chr_parent2 => ts_best_chr2(flat_upper(fp_size, var_num) downto 0),
             done => cross_done,
             chr_child => cross_chr_child
         );
@@ -158,24 +156,19 @@ begin
         );
 
     next_state <= s_ready when rst = '1'
-        else s_select1 when state = s_ready and start = '1'
-        else s_select2 when state = s_select1 and ts_done = '1'
-        else s_crossover when state = s_select2 and ts_done = '1'
+        else s_select when state = s_ready and start = '1'
+        else s_crossover when state = s_select and ts_done = '1'
         else s_mutate when state = s_crossover and cross_done = '1'
         else s_fit when state = s_mutate and mut_done = '1'
         else s_replace when state = s_fit and fitness_done = '1'
         else s_ready when state = s_replace and tr_done = '1'
         else state;
 
-    next_ts_best_chr_first <= ts_best_chr when state = s_select1
-        else ts_best_chr_first;
-
     process (clk)
     begin
         if rising_edge(clk) then
             prev_state <= state;
             state <= next_state;
-            ts_best_chr_first <= next_ts_best_chr_first;
         end if;
     end process;
 
