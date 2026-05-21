@@ -5,9 +5,9 @@ use ieee.math_real.all;
 
 use work.util.all;
 use work.math.all;
-use work.mse_linreg;
+use work.sse_linreg;
 
-entity mse_linreg_ds_tb is
+entity sse_linreg_ds_tb is
 
     -- Constants
     constant clk_period : time := 1 ns;
@@ -32,11 +32,11 @@ signal rand2 : std_logic_vector(fp_size-1 downto 0);
 
 end entity;
 
-architecture rtl of mse_linreg_ds_tb is
+architecture rtl of sse_linreg_ds_tb is
 
 begin
 
-    uut: entity mse_linreg
+    uut: entity sse_linreg
         generic map (
             var_num => var_num,
             fp_size => fp_size,

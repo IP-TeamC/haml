@@ -50,7 +50,6 @@ begin
             ram_chr_we => ram_chr_we,
             ram_chr_adr => ram_chr_adr,
             ram_chr_di => ram_chr_di,
-            fitness_rst => fitness_rst,
             fitness_start => fitness_start,
             done => done
         );

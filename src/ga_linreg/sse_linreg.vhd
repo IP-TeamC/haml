@@ -5,7 +5,7 @@ use ieee.math_real.all;
 
 use work.math.all;
 
-entity mse_linreg is
+entity sse_linreg is
     generic (
         var_num : natural;
         fp_size : natural;
@@ -25,7 +25,7 @@ entity mse_linreg is
     );
 end entity;
 
-architecture rtl of mse_linreg is
+architecture rtl of sse_linreg is
 
     constant neg1 : signed(fp_size-1 downto 0) := rotate_right(to_signed(1, fp_size), 1);
 

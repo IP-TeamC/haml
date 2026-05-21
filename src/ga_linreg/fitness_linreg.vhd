@@ -40,7 +40,7 @@ architecture rtl of fitness_linreg is
 
 begin
 
-    mse_linreg: entity work.mse_linreg
+    sse_linreg: entity work.sse_linreg
         generic map(
             var_num => var_num,
             fp_size => fp_size,

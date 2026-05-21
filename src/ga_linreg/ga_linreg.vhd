@@ -55,7 +55,7 @@ architecture rtl of ga_linreg is
     signal ram_dp_do : std_logic_vector(fp_size*(var_num+1)-1 downto 0);
     signal dp_end_adr : std_logic_vector(dp_adr_size-1 downto 0);
 
-    -- RAM für Population/Chromosome
+    -- RAM fuer Population/Chromosome
     signal ram_chr_we : std_logic_vector(var_num+1 downto 0);
     signal ram_chr_adr : std_logic_vector(chr_adr_size-1 downto 0);
     signal ram_chr_di : t_ram_data(0 to var_num+1);
