@@ -32,15 +32,16 @@ architecture rtl of sse_linreg is
     type t_reg_neg1 is array (0 to var_num) of std_logic;
     signal reg_chr : t_reg_chr;
     signal reg_dp : t_reG_dp;
-    signal reg_dp_neg1 : t_reg_neg1;
-    signal reg_chr_neg1 : t_reg_neg1;
     signal reg_valid : std_logic;
 
     signal mul_expected : std_logic_vector(fp_size-1 downto 0);
+    signal mul_neg1 : t_reg_neg1;
     signal mul_valid : std_logic;
 
     constant adder_extra_bits : natural := natural(ceil(log2(real(var_num+1))));
-    signal adder_values : std_logic_vector((adder_extra_bits+fp_size)*(var_num+1)-1 downto 0);
+    type t_adder_values is array (0 to var_num) of std_logic_vector(adder_extra_bits+fp_size-1 downto 0);
+    signal adder_values : t_adder_values;
+    signal adder_values_flat : std_logic_vector((adder_extra_bits+fp_size)*(var_num+1)-1 downto 0);
     signal adder_valid : std_logic;
     signal adder_sum : std_logic_vector(adder_extra_bits+fp_size-1 downto 0);
     signal adder_expected : std_logic_vector(fp_size-1 downto 0);
@@ -57,7 +58,16 @@ architecture rtl of sse_linreg is
     signal err : unsigned(err_extra_bits+2*fp_size-3 downto 0);
     signal err_valid : std_logic;
 
-    constant pos1 : unsigned(err'range) := (err_extra_bits-1 downto 0 => '0') & (2*fp_size-3 downto 0 => '1');
+    function create_pos1_adder_values return std_logic_vector is
+        variable tmp : std_logic_vector(adder_extra_bits+fp_size-1 downto 0);
+    begin
+        tmp(adder_extra_bits+fp_size-1 downto fp_size-1) := (others => '0');
+        tmp(fp_size-2 downto 0) := (others => '1');
+        return tmp;
+    end function;
+
+    constant pos1_adder_values : std_logic_vector(adder_values(0)'range) := create_pos1_adder_values;
+    constant pos1_err : unsigned(err'range) := (err_extra_bits-1 downto 0 => '0') & (2*fp_size-3 downto 0 => '1');
     constant neg1 : signed(fp_size-1 downto 0) := rotate_right(to_signed(1, fp_size), 1);
 
 begin
@@ -71,16 +81,6 @@ begin
             for i in 0 to var_num loop
                 reg_chr(i) <= flat_signed(chr, fp_size, i);
                 reg_dp(i) <= flat_signed(ram_dp_do, fp_size, i);
-                if valid = '1' and flat_signed(ram_dp_do, fp_size, i) = neg1 then
-                    reg_dp_neg1(i) <= '1';
-                else
-                    reg_dp_neg1(i) <= '0';
-                end if;
-                if valid = '1' and flat_signed(chr, fp_size, i) = neg1 then
-                    reg_chr_neg1(i) <= '1';
-                else
-                    reg_chr_neg1(i) <= '0';
-                end if;
             end loop;
         end if;
     end process;
@@ -89,37 +89,37 @@ begin
     process (clk)
     begin
         if rising_edge(clk) then
-            -- erwarteten Funktionswert weitergeben, Konstante der linearen Funktion weitergeben
-            mul_expected <= std_logic_vector(reg_dp(0));
-            adder_values(adder_extra_bits+fp_size-1 downto 0)
-                <= std_logic_vector(
-                        resize(
-                            signed(reg_chr(0)),
-                            adder_extra_bits+fp_size
-                        )
-                    );
 
-            for i in 1 to var_num loop
-                -- Multiplikation normalisiert zwischen -1 und +1 ist in demselben Wertebereich (aber Verlust von Genauigkeit, Sonderfall -1*-1 abrunden auf 0,99...)
-                if (reg_chr_neg1(i) = '1' and reg_dp_neg1(i) = '1') then
-                    -- Sonderfall -1*-1 auf 0,99... abrunden
-                    adder_values(flat_upper(adder_extra_bits+fp_size, i) downto flat_upper(adder_extra_bits+fp_size, i)-adder_extra_bits)
-                        <= (others => '0');
-                    adder_values(flat_upper(adder_extra_bits+fp_size, i)-adder_extra_bits-1 downto flat_lower(adder_extra_bits+fp_size, i))
-                        <= (others => '1');
+            -- erwarteten Funktionswert weitergeben
+            mul_expected <= std_logic_vector(reg_dp(0));
+
+            for i in 0 to var_num loop
+
+                if reg_valid = '1' and reg_dp(i) = neg1 and reg_chr(i) = neg1 then
+                    mul_neg1(i) <= '1';
                 else
-                    adder_values(flat_upper(adder_extra_bits+fp_size, i) downto flat_lower(adder_extra_bits+fp_size, i))
-                        <= std_logic_vector(
-                                resize(
-                                    fp_mul(reg_chr(i), reg_dp(i), fp_frac),
-                                    adder_extra_bits+fp_size
-                                )
-                            );
+                    mul_neg1(i) <= '0';
                 end if;
+
+                if i = 0 then
+                    adder_values(0) <= std_logic_vector(resize(signed(reg_chr(0)), adder_extra_bits+fp_size));
+                else
+                    -- Multiplikation normalisiert zwischen -1 und +1 ist in demselben Wertebereich (aber Verlust von Genauigkeit, Sonderfall -1*-1 abrunden auf 0,99... in Folge-Stage)
+                    adder_values(i) <= std_logic_vector(resize(fp_mul(reg_chr(i), reg_dp(i), fp_frac), adder_extra_bits+fp_size));
+                end if;
+
             end loop;
 
         end if;
     end process;
+
+    -- Vorbereitung innerhalb Stage 3
+    gen_adder_values_flat: for i in 0 to var_num generate
+        with mul_neg1(i) select
+            adder_values_flat(flat_upper(adder_extra_bits+fp_size, i) downto flat_lower(adder_extra_bits+fp_size, i)) <=
+                adder_values(i) when '0',
+                pos1_adder_values when others; -- Sonderfall -1*-1 auf 0,99... abrunden
+    end generate;
 
     -- Stage 3+: Addition der Multiplikationsergebnisse im Adder-Tree (Multi-Stage)
     adder_tree: entity work.adder_tree
@@ -132,7 +132,7 @@ begin
             clk => clk,
             rst => rst,
             start => mul_valid,
-            values => adder_values,
+            values => adder_values_flat,
             sum => adder_sum,
             done => adder_valid,
             di => mul_expected,
@@ -181,9 +181,9 @@ begin
             if diff_sq_valid = '1' then
                 case valid_neg1 is
                     when "00" => err <= resize(diff_sq, err_extra_bits+2*fp_size-2);
-                    when "01" => err <= pos1;
+                    when "01" => err <= pos1_err;
                     when "10" => err <= err + resize(diff_sq, err_extra_bits+2*fp_size-2);
-                    when "11" => err <= err + pos1;
+                    when "11" => err <= err + pos1_err;
                     when others =>
                 end case;
             end if;
