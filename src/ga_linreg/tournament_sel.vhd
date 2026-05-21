@@ -32,11 +32,11 @@ architecture rtl of tournament_sel is
     signal state : t_state;
     signal next_state : t_state;
 
-    signal best : std_logic_vector(fp_size*(var_num+2)-1 downto 0);
-    signal next_best : std_logic_vector(fp_size*(var_num+2)-1 downto 0);
+    signal best : std_logic_vector(chr_do'range);
+    signal next_best : std_logic_vector(chr_do'range);
 
     signal cnt : std_logic_vector(k downto 0);
-    signal next_cnt : std_logic_vector(k downto 0);
+    signal next_cnt : std_logic_vector(cnt'range);
 
     signal is_better : std_logic;
 

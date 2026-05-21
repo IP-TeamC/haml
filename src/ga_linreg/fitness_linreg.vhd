@@ -15,9 +15,9 @@ entity fitness_linreg is
         start : in std_logic;
         chr : in std_logic_vector(fp_size*(var_num+1)-1 downto 0);
 
-        end_adr : in std_logic_vector(adr_size-1 downto 0);
-        ram_data : in std_logic_vector(fp_size*(var_num+1)-1 downto 0);
-        ram_adr : out std_logic_vector(adr_size-1 downto 0);
+        dp_end_adr : in std_logic_vector(adr_size-1 downto 0);
+        ram_dp_do : in std_logic_vector(fp_size*(var_num+1)-1 downto 0);
+        ram_dp_adr : out std_logic_vector(adr_size-1 downto 0);
 
         fit : out std_logic_vector(fp_size-1 downto 0);
         done : out std_logic
@@ -30,8 +30,8 @@ architecture rtl of fitness_linreg is
     signal state : t_state;
     signal next_state : t_state;
 
-    signal adr : unsigned(ram_adr'range);
-    signal next_adr : unsigned(ram_adr'range);
+    signal adr : unsigned(ram_dp_adr'range);
+    signal next_adr : unsigned(ram_dp_adr'range);
 
     signal last_adr : std_logic;
     signal next_last_adr : std_logic;
@@ -52,12 +52,12 @@ begin
             rst => rst,
             valid => mse_valid,
             chr => chr,
-            ram_data => ram_data,
+            ram_dp_do => ram_dp_do,
             fit => fit,
             done => done
         );
 
-    ram_adr <= std_logic_vector(adr);
+    ram_dp_adr <= std_logic_vector(adr);
     mse_valid <= '1' when state = s_running else '0';
 
     next_adr <= (others => '0') when (state = s_ready and start = '1') or rst = '1'
@@ -68,7 +68,7 @@ begin
         else s_running when state = s_first
         else state;
 
-    next_last_adr <= '1' when rst = '0' and std_logic_vector(adr) = end_adr else '0';
+    next_last_adr <= '1' when rst = '0' and std_logic_vector(adr) = dp_end_adr else '0';
 
     process (clk)
     begin

@@ -21,19 +21,19 @@ entity fitness_linreg_tb is
     signal rst : std_logic;
     signal start : std_logic;
     signal chr : std_logic_vector(fp_size*(var_num+1)-1 downto 0);
-    signal end_adr : std_logic_vector(adr_size-1 downto 0);
-    signal ram_data : std_logic_vector(fp_size*(var_num+1)-1 downto 0);
+    signal dp_end_adr : std_logic_vector(adr_size-1 downto 0);
+    signal ram_dp_do : std_logic_vector(fp_size*(var_num+1)-1 downto 0);
 
     -- Outputs
-    signal ram_adr : std_logic_vector(adr_size-1 downto 0);
+    signal ram_dp_adr : std_logic_vector(adr_size-1 downto 0);
     signal fit : std_logic_vector(fp_size-1 downto 0);
     signal done : std_logic;
 
     -- Setup
-    signal ram_we : std_logic := '1';
-    signal ram_adr_mux : std_logic_vector(ram_adr'range);
-    signal ram_adr_write : std_logic_vector(ram_adr'range) := (others => '0');
-    signal ram_di : std_logic_vector(ram_data'range);
+    signal ram_dp_we : std_logic := '1';
+    signal ram_dp_adr_mux : std_logic_vector(ram_dp_adr'range);
+    signal ram_dp_adr_write : std_logic_vector(ram_dp_adr'range) := (others => '0');
+    signal ram_dp_di : std_logic_vector(ram_dp_do'range);
 
 end entity;
 
@@ -41,19 +41,19 @@ architecture rtl of fitness_linreg_tb is
 
 begin
 
-    ram_adr_mux <= ram_adr when ram_we = '0' else ram_adr_write;
+    ram_dp_adr_mux <= ram_dp_adr when ram_dp_we = '0' else ram_dp_adr_write;
 
-    ram: entity work.ram
+    ram_dp: entity work.ram
         generic map(
             adr_size => adr_size,
-            data_size => ram_data'length
+            data_size => ram_dp_do'length
         )
         port map(
             clk => clk,
-            we => ram_we,
-            adr => ram_adr_mux,
-            di => ram_di,
-            do => ram_data
+            we => ram_dp_we,
+            adr => ram_dp_adr_mux,
+            di => ram_dp_di,
+            do => ram_dp_do
         );
 
     uut: entity fitness_linreg
@@ -68,9 +68,9 @@ begin
             rst => rst,
             start => start,
             chr => chr,
-            end_adr => end_adr,
-            ram_data => ram_data,
-            ram_adr => ram_adr,
+            dp_end_adr => dp_end_adr,
+            ram_dp_do => ram_dp_do,
+            ram_dp_adr => ram_dp_adr,
             fit => fit,
             done => done
         );
@@ -88,46 +88,46 @@ begin
         rst <= '0';
         assert done = '0';
 
-        ram_we <= '1';
-        ram_adr_write <= "00";
+        ram_dp_we <= '1';
+        ram_dp_adr_write <= "00";
         -- x2 = 0.1875, x1 = 0.3828125, y = 0.28125 (nicht ganz exakt)
         -- Error: 0.000214576736
-        ram_di <= "00" & "001100"
+        ram_dp_di <= "00" & "001100"
             & "00" & "011001"
             & "00" & "010010";
         wait for clk_period;
-        ram_adr_write <= "01";
+        ram_dp_adr_write <= "01";
         -- x2 = 0.0625, x1 = 0.5, y = 0.21875 (exakt)
         -- kein Error
-        ram_di <= "00" & "000100"
+        ram_dp_di <= "00" & "000100"
             & "00" & "100000"
             & "00" & "001110";
         wait for clk_period;
-        ram_adr_write <= "10";
+        ram_dp_adr_write <= "10";
         -- x2 = 0.0625, x1 = 0.5, y = 0.875 (schlecht)
         -- Error: 0.430664063
-        ram_di <= "00" & "000100"
+        ram_dp_di <= "00" & "000100"
             & "00" & "100000"
             & "00" & "111000";
         wait for clk_period;
-        ram_we <= '0';
+        ram_dp_we <= '0';
 
         start <= '1';
         -- y = 0.5*x2-0.125*x1+0.25
         chr <= "00" & "100000"
             & "11" & "111000"
             & "00" & "010000";
-        end_adr <= "10";
+        dp_end_adr <= "10";
         wait for clk_period;
         start <= '0';
         assert done = '0';
-        assert ram_adr = "00";
+        assert ram_dp_adr = "00";
         wait for clk_period;
         assert done = '0';
-        assert ram_adr = "01";
+        assert ram_dp_adr = "01";
         wait for clk_period;
         assert done = '0';
-        assert ram_adr = "10";
+        assert ram_dp_adr = "10";
 
         wait until done = '1' and clk = '0';
         -- kleiner Fehler (zu ungenau, deshalb 0)

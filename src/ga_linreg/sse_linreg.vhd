@@ -18,7 +18,7 @@ entity sse_linreg is
         valid : in std_logic;
         chr : in std_logic_vector(fp_size*(var_num+1)-1 downto 0);
 
-        ram_data : in std_logic_vector(fp_size*(var_num+1)-1 downto 0);
+        ram_dp_do : in std_logic_vector(fp_size*(var_num+1)-1 downto 0);
 
         fit : out std_logic_vector(fp_size-1 downto 0);
         done : out std_logic
@@ -70,8 +70,8 @@ begin
         if rising_edge(clk) then
             for i in 0 to var_num loop
                 reg_chr(i) <= flat_signed(chr, fp_size, i);
-                reg_dp(i) <= flat_signed(ram_data, fp_size, i);
-                if valid = '1' and flat_signed(ram_data, fp_size, i) = neg1 then
+                reg_dp(i) <= flat_signed(ram_dp_do, fp_size, i);
+                if valid = '1' and flat_signed(ram_dp_do, fp_size, i) = neg1 then
                     reg_dp_neg1(i) <= '1';
                 else
                     reg_dp_neg1(i) <= '0';

@@ -21,7 +21,7 @@ entity sse_linreg_tb is
     signal rst : std_logic;
     signal valid : std_logic;
     signal chr : std_logic_vector(fp_size*(var_num+1)-1 downto 0);
-    signal ram_data : std_logic_vector(fp_size*(var_num+1)-1 downto 0);
+    signal ram_dp_do : std_logic_vector(fp_size*(var_num+1)-1 downto 0);
 
     -- Outputs
     signal fit : std_logic_vector(fp_size-1 downto 0);
@@ -45,7 +45,7 @@ begin
             rst => rst,
             valid => valid,
             chr => chr,
-            ram_data => ram_data,
+            ram_dp_do => ram_dp_do,
             fit => fit,
             done => done
         );
@@ -71,21 +71,21 @@ begin
 
         -- x2 = 0.1875, x1 = 0.3828125, y = 0.28125 (nicht ganz exakt)
         -- Error: 0.000214576736
-        ram_data <= "00" & "001100"
+        ram_dp_do <= "00" & "001100"
             & "00" & "011001"
             & "00" & "010010";
         wait for clk_period;
         assert done = '0';
         -- x2 = 0.0625, x1 = 0.5, y = 0.21875 (exakt)
         -- kein Error
-        ram_data <= "00" & "000100"
+        ram_dp_do <= "00" & "000100"
             & "00" & "100000"
             & "00" & "001110";
         wait for clk_period;
         assert done <= '0';
         -- x2 = 0.0625, x1 = 0.5, y = 0.875 (schlecht)
         -- Error: 0.430664063
-        ram_data <= "00" & "000100"
+        ram_dp_do <= "00" & "000100"
             & "00" & "100000"
             & "00" & "111000";
         wait for clk_period;

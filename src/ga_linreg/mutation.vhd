@@ -26,12 +26,12 @@ end entity;
 
 architecture rtl of mutation is
 
-    type t_rand_mem is array (0 to 2*mask_factor+4) of std_logic_vector(fp_size*(var_num+1)-1 downto 0);
+    type t_rand_mem is array (0 to 2*mask_factor+4) of std_logic_vector(chr'range);
     signal rand_mem : t_rand_mem;
-    signal rand : std_logic_vector(fp_size*(var_num+1)-1 downto 0);
+    signal rand : std_logic_vector(chr'range);
 
     constant mask_block_size : natural := fp_size / 4;
-    type t_masks is array (0 to 3) of std_logic_vector(fp_size*(var_num+1)-1 downto 0);
+    type t_masks is array (0 to 3) of std_logic_vector(chr'range);
     signal masks : t_masks;
 
 begin
@@ -51,7 +51,7 @@ begin
     end generate;
 
     process (clk)
-        variable tmp : std_logic_vector(fp_size*(var_num+1)-1 downto 0);
+        variable tmp : std_logic_vector(chr'range);
     begin
         if rising_edge(clk) then
             tmp := rand;

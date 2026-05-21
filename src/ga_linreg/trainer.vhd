@@ -47,13 +47,13 @@ architecture rtl of trainer is
     -- Tournament Selection 2
     signal ts1_start : std_logic;
     signal ts1_ram_chr_adr : std_logic_vector(ram_chr_adr'range);
-    signal ts1_best_chr : std_logic_vector(fp_size*(var_num+2)-1 downto 0);
+    signal ts1_best_chr : std_logic_vector(ram_chr_do'range);
     signal ts1_done : std_logic;
 
     -- Tournament Selection 2
     signal ts2_start : std_logic;
     signal ts2_ram_chr_adr : std_logic_vector(ram_chr_adr'range);
-    signal ts2_best_chr : std_logic_vector(fp_size*(var_num+2)-1 downto 0);
+    signal ts2_best_chr : std_logic_vector(ram_chr_do'range);
     signal ts2_done : std_logic;
 
     -- Crossover
@@ -63,17 +63,14 @@ architecture rtl of trainer is
 
     -- Mutation
     signal mut_start : std_logic;
-    signal mut_chr_mut : std_logic_vector(fp_size*(var_num+1)-1 downto 0);
+    signal mut_chr_mut : std_logic_vector(cross_chr_child'range);
     signal mut_done : std_logic;
 
     -- Tournament Replacement
     signal tr_start : std_logic;
-    signal tr_ram_chr_adr : std_logic_vector(chr_adr_size-1 downto 0);
+    signal tr_ram_chr_adr : std_logic_vector(ram_chr_adr'range);
     signal tr_ram_chr_we : std_logic;
     signal tr_done : std_logic;
-
-    -- Fitness
-    signal fitness_done_prev : std_logic;
 
 begin
 
@@ -180,7 +177,7 @@ begin
         else s_crossover when state = s_select2 and ts2_done = '1'
         else s_mutate when state = s_crossover and cross_done = '1'
         else s_fit when state = s_mutate and mut_done = '1'
-        else s_replace when state = s_fit and fitness_done = '0' and fitness_done_prev = '1'
+        else s_replace when state = s_fit and fitness_done = '1'
         else s_ready when state = s_replace and tr_done = '1'
         else state;
 
@@ -189,7 +186,6 @@ begin
         if rising_edge(clk) then
             prev_state <= state;
             state <= next_state;
-            fitness_done_prev <= fitness_done;
         end if;
     end process;
 

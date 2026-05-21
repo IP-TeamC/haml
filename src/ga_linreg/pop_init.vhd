@@ -33,10 +33,10 @@ architecture rtl of pop_init is
     signal state : t_state;
     signal next_state : t_state;
 
-    signal rand : std_logic_vector(fp_size-1 downto 0);
+    signal rand : std_logic_vector(ram_chr_di'range);
 
-    signal chr_we : std_logic_vector(var_num+1 downto 0);
-    signal next_chr_we : std_logic_vector(var_num+1 downto 0);
+    signal chr_we : std_logic_vector(ram_chr_we'range);
+    signal next_chr_we : std_logic_vector(ram_chr_we'range);
 
     signal chr_adr : unsigned(ram_chr_adr'range);
     signal next_chr_adr : unsigned(ram_chr_adr'range);

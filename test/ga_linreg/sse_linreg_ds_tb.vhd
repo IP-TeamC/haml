@@ -21,14 +21,15 @@ entity sse_linreg_ds_tb is
     signal rst : std_logic;
     signal valid : std_logic;
     signal chr : std_logic_vector(fp_size*(var_num+1)-1 downto 0);
-    signal ram_data : std_logic_vector(fp_size*(var_num+1)-1 downto 0);
+    signal ram_dp_do : std_logic_vector(fp_size*(var_num+1)-1 downto 0);
 
     -- Outputs
     signal fit : std_logic_vector(fp_size-1 downto 0);
     signal done : std_logic;
 
-signal rand1 : std_logic_vector(fp_size-1 downto 0);
-signal rand2 : std_logic_vector(fp_size-1 downto 0);
+    -- LFSR
+    signal rand1 : std_logic_vector(fp_size-1 downto 0);
+    signal rand2 : std_logic_vector(fp_size-1 downto 0);
 
 end entity;
 
@@ -48,7 +49,7 @@ begin
             rst => rst,
             valid => valid,
             chr => chr,
-            ram_data => ram_data,
+            ram_dp_do => ram_dp_do,
             fit => fit,
             done => done
         );
@@ -106,7 +107,7 @@ begin
 
             acc := (others => '0');
             for i in work.f3x12_dataset_tb.t_dataset'range loop
-                ram_data <= work.f3x12_dataset_tb.dataset(i, 1) & work.f3x12_dataset_tb.dataset(i, 0);
+                ram_dp_do <= work.f3x12_dataset_tb.dataset(i, 1) & work.f3x12_dataset_tb.dataset(i, 0);
                 if m = "100000000000000000" and work.f3x12_dataset_tb.dataset(i, 1) = "100000000000000000" then
                     mx := not("100000000000000000");
                 else

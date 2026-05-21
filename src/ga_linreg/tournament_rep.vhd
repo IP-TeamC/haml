@@ -34,19 +34,19 @@ architecture rtl of tournament_rep is
     signal state : t_state;
     signal next_state : t_state;
 
-    signal rand_adr : std_logic_vector(adr_size-1 downto 0);
-    signal prev_adr : std_logic_vector(adr_size-1 downto 0);
+    signal rand_adr : std_logic_vector(chr_adr'range);
+    signal prev_adr : std_logic_vector(chr_adr'range);
 
     signal is_worse : std_logic;
 
-    signal worst_adr : std_logic_vector(adr_size-1 downto 0);
-    signal next_worst_adr : std_logic_vector(adr_size-1 downto 0);
+    signal worst_adr : std_logic_vector(chr_adr'range);
+    signal next_worst_adr : std_logic_vector(chr_adr'range);
 
-    signal worst_fit : unsigned(fp_size-1 downto 0);
-    signal next_worst_fit : unsigned(fp_size-1 downto 0);
+    signal worst_fit : unsigned(chr_fit'range);
+    signal next_worst_fit : unsigned(chr_fit'range);
 
     signal cnt : std_logic_vector(k downto 0);
-    signal next_cnt : std_logic_vector(k downto 0);
+    signal next_cnt : std_logic_vector(cnt'range);
 
     signal next_chr_we : std_logic;
 
