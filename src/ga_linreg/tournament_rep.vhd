@@ -37,11 +37,19 @@ architecture rtl of tournament_rep is
 
     signal rand_adr : std_logic_vector(adr_size-1 downto 0);
     signal prev_adr : std_logic_vector(adr_size-1 downto 0);
-    signal worst_adr : std_logic_vector(adr_size-1 downto 0);
-    signal worst_fit : unsigned(fp_size-1 downto 0);
-    signal cnt : std_logic_vector(k downto 0);
 
     signal is_worse : std_logic;
+
+    signal worst_adr : std_logic_vector(adr_size-1 downto 0);
+    signal next_worst_adr : std_logic_vector(adr_size-1 downto 0);
+
+    signal worst_fit : unsigned(fp_size-1 downto 0);
+    signal next_worst_fit : unsigned(fp_size-1 downto 0);
+
+    signal cnt : std_logic_vector(k downto 0);
+    signal next_cnt : std_logic_vector(k downto 0);
+
+    signal next_chr_we : std_logic;
 
 begin
 
@@ -66,7 +74,22 @@ begin
         else s_ready when state = s_cmp
         else state;
 
-    is_worse <= '1' when flat_unsigned(chr_do, fp_size, var_num+1) >= worst_fit else '0';
+    is_worse <= '1' when flat_unsigned(chr_do, fp_size, var_num+1) >= worst_fit
+        else '0';
+
+    next_worst_adr <= prev_adr when state = s_read and is_worse = '1'
+        else worst_adr;
+
+    next_worst_fit <= (others => '0') when rst = '1' or state = s_ready
+        else flat_unsigned(chr_do, fp_size, var_num+1) when state = s_read and is_worse = '1'
+        else worst_fit;
+    
+    next_cnt <= (0 => '1', others => '0') when rst = '1' or state = s_ready
+        else cnt(k-1 downto 0) & '0' when state = s_read
+        else cnt;
+
+    next_chr_we <= '1' when rst = '0' and state = s_cmp and (unsigned(chr_fit) <= worst_fit or replace_with_worse)
+        else '0';
 
     process (clk)
     begin
@@ -74,25 +97,15 @@ begin
             prev_state <= state;
             state <= next_state;
             prev_adr <= rand_adr;
-
-            if rst = '1' or state = s_ready then
-                chr_we <= '0';
-                worst_fit <= (others => '0');
-                cnt <= (0 => '1', others => '0');
-            elsif state = s_read then
-                cnt <= cnt(k-1 downto 0) & '0';
-            end if;
-
-            if state = s_read and is_worse = '1' then
-                worst_adr <= prev_adr;
-                worst_fit <= flat_unsigned(chr_do, fp_size, var_num+1);
-            end if;
+            worst_adr <= next_worst_adr;
+            worst_fit <= next_worst_fit;
+            cnt <= next_cnt;
+            chr_we <= next_chr_we;
 
             -- TODO Logging entfernen
-            if state = s_cmp and (unsigned(chr_fit) <= worst_fit or replace_with_worse) then
-                report "Replace " & work.util.to_string(worst_fit) & " with " & work.util.to_string(chr_fit) & " at " & work.util.to_string(worst_adr);
-                chr_we <= '1';
-            end if;
+            -- if state = s_cmp and (unsigned(chr_fit) <= worst_fit or replace_with_worse) then
+            --     report "Replace " & work.util.to_string(worst_fit) & " with " & work.util.to_string(chr_fit) & " at " & work.util.to_string(worst_adr);
+            -- end if;
         end if;
     end process;
 
