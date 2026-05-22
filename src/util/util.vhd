@@ -1,23 +1,25 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use std.textio.all;
 
 package util is
 
-    function to_string(vec : std_logic_vector)
-    return string;
+    constant DEBUG_ENABLE : boolean := false;
 
-    function to_string(vec : signed)
-    return string;
-
-    function to_string(vec : unsigned)
-    return string;
+    function to_string(vec : std_logic_vector) return string;
+    function to_string(vec : signed) return string;
+    function to_string(vec : unsigned) return string;
 
     procedure print(vec : std_logic_vector);
-
     procedure print(vec : signed);
-
     procedure print(vec : unsigned);
+    procedure print(msg : string);
+
+    procedure debug_print(msg : string);
+    procedure debug_print(prefix : string; vec : std_logic_vector);
+    procedure debug_print(prefix : string; vec : signed);
+    procedure debug_print(prefix : string; vec : unsigned);
 
 end package;
 
@@ -46,17 +48,19 @@ package body util is
         return str;
 	 end function;
 
-    function to_string(vec : signed)
-    return string is
-    begin
-    return to_string(std_logic_vector(vec));
-    end function;
+    -- to_string
 
-    function to_string(vec : unsigned)
-    return string is
+    function to_string(vec : signed) return string is
     begin
         return to_string(std_logic_vector(vec));
     end function;
+
+    function to_string(vec : unsigned) return string is
+    begin
+        return to_string(std_logic_vector(vec));
+    end function;
+
+    -- print
 
     procedure print(vec : std_logic_vector) is
     begin
@@ -71,6 +75,41 @@ package body util is
     procedure print(vec : unsigned) is
     begin
         report to_string(vec);
+    end procedure;
+
+    procedure print(msg : string) is
+    begin
+        report msg;
+    end procedure;
+
+    -- debug_print
+
+    procedure debug_print(msg : string) is
+    begin
+        if DEBUG_ENABLE then
+            report "[DEBUG] " & msg;
+        end if;
+    end procedure;
+
+    procedure debug_print(prefix : string; vec : std_logic_vector) is
+    begin
+        if DEBUG_ENABLE then
+            report "[DEBUG] " & prefix & ": " & to_string(vec);
+        end if;
+    end procedure;
+
+    procedure debug_print(prefix : string; vec : signed) is
+    begin
+        if DEBUG_ENABLE then
+            report "[DEBUG] " & prefix & ": " & to_string(vec);
+        end if;
+    end procedure;
+
+    procedure debug_print(prefix : string; vec : unsigned) is
+    begin
+        if DEBUG_ENABLE then
+            report "[DEBUG] " & prefix & ": " & to_string(vec);
+        end if;
     end procedure;
 
 end package body;
