@@ -3,7 +3,9 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.math_real.all;
 
-entity selection_unit is
+use work.util.all;
+
+entity tournament_sel_sudoku is
     generic (
         fp_size : natural := 8; -- Fitnessbreite
         pop_size : natural := 64; -- Anzahl der Individuen
@@ -29,8 +31,8 @@ entity selection_unit is
     );
 end entity;
 
-architecture rtl of selection_unit is
-    constant idx_size   : natural := natural(ceil(log2(real(pop_size))));
+architecture rtl of tournament_sel_sudoku is
+    constant idx_size : natural := natural(ceil(log2(real(pop_size))));
 
     type t_candidates is array (0 to k*2-1) of std_logic_vector(idx_size-1 downto 0); -- k*2 Kandidatenindizes aus rnd-Bus extrahiert
     type t_fitness is array (0 to k*2-1) of std_logic_vector(fp_size-1 downto 0); -- k*2 Fitnesswerte
@@ -64,8 +66,8 @@ begin
 
                 best_fit_a <= (others => '1');
                 best_fit_b <= (others => '1');
-                winner_a  <= (others => '0');
-                winner_b  <= (others => '0');
+                winner_a <= (others => '0');
+                winner_b <= (others => '0');
 
                 for i in 0 to k*2-1 loop
                     fitness(i) <= (others => '1');
@@ -94,15 +96,23 @@ begin
                             ctr <= 0;
                             state <= S_TOURNAMENT;
 
-                            -- report "[sel] Tournament gestartet, Kandidaten: "
-                            --     & integer'image(to_integer(unsigned(candidates(0))))
-                            --     & " " & integer'image(to_integer(unsigned(candidates(1))))
-                            --     & " " & integer'image(to_integer(unsigned(candidates(2))))
-                            --     & " " & integer'image(to_integer(unsigned(candidates(3))))
-                            --     severity note;
+                            debug_print("[SELC] Tournament gestartet:");
+                            for i in 0 to k-1 loop
+                                debug_print("  > Gruppe A, Cand " & integer'image(i) & ": idx=" & integer'image(to_integer(unsigned(candidates(i)))));
+                            end loop;
+                            for i in k to k*2-1 loop
+                                debug_print("  > Gruppe B, Cand " & integer'image(i) & ": idx=" & integer'image(to_integer(unsigned(candidates(i)))));
+                            end loop;
                         end if;
 
                     when S_TOURNAMENT =>
+
+                        debug_print("[SELC] Eval Schritt " & integer'image(ctr) & 
+                                    " | A: idx=" & integer'image(to_integer(unsigned(candidates_reg(ctr)))) & 
+                                    " fit=" & integer'image(to_integer(unsigned(fitness(ctr)))) & 
+                                    " | B: idx=" & integer'image(to_integer(unsigned(candidates_reg(ctr+k)))) & 
+                                    " fit=" & integer'image(to_integer(unsigned(fitness(ctr+k)))));
+
                         -- Eltern A: Kandidaten 0 bis k-1
                         if unsigned(fitness(ctr)) <= unsigned(best_fit_a) then
                             best_fit_a <= fitness(ctr);
@@ -126,11 +136,11 @@ begin
                         done <= '1';
                         state <= S_IDLE;
 
-                        -- report "[sel] Gewinner: A=idx" & integer'image(to_integer(unsigned(winner_a)))
-                        --     & "(fit=" & integer'image(to_integer(unsigned(best_fit_a))) & ")"
-                        --     & " B=idx" & integer'image(to_integer(unsigned(winner_b)))
-                        --     & "(fit=" & integer'image(to_integer(unsigned(best_fit_b))) & ")"
-                        --     severity note;
+                        debug_print("[SELC] Gewinner ermittelt:");
+                        debug_print("  > Gewinner A = idx " & integer'image(to_integer(unsigned(winner_a))) & 
+                                    " (Fitness = " & integer'image(to_integer(unsigned(best_fit_a))) & ")");
+                        debug_print("  > Gewinner B = idx " & integer'image(to_integer(unsigned(winner_b))) & 
+                                    " (Fitness = " & integer'image(to_integer(unsigned(best_fit_b))) & ")");
 
                     when others =>
                         state <= S_IDLE;

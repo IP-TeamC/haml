@@ -81,3 +81,4 @@ xise-linux/Xilinx.lic
 **/_xmsgs/
 **/isim/
 **/work/
+/.vscode

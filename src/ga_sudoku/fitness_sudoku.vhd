@@ -4,29 +4,35 @@ use ieee.numeric_std.all;
 use ieee.math_real.all;
 
 use work.ga_pkg.all;
+use work.util.all;
 
--- entity fitness is
---     generic (
---         chr_size : natural := 324;
---         fp_size : natural := 8;
---         fp_frac : natural := 0;
---         data_size : natural := 0
---     );
---     port (
---         clk : in std_logic;
---         start : in std_logic;
---         chr : in std_logic_vector(chr_size-1 downto 0);
---         di : in std_logic_vector(data_size-1 downto 0);
---         do : out std_logic_vector(data_size-1 downto 0);
---         fit : out std_logic_vector(fp_size-1 downto 0);
---         done : out std_logic
---     );
--- end entity;
+entity fitness_sudoku is
+    generic (
+        chr_size : natural := 324;
+        fp_size : natural := 8;
+        data_size : natural := 0
+    );
+    port (
+        clk : in std_logic;
+        rst : in std_logic;
+        start : in std_logic;
 
-architecture sudoku of fitness is
+        chr : in std_logic_vector(chr_size-1 downto 0);
+        const : in std_logic_vector(chr_size-1 downto 0);
+
+        di : in std_logic_vector(data_size-1 downto 0);
+        do : out std_logic_vector(data_size-1 downto 0);
+
+        fit : out std_logic_vector(fp_size-1 downto 0);
+        done : out std_logic
+    );
+end entity;
+
+architecture rtl of fitness_sudoku is
 
     type t_line_conflicts is array (0 to 8) of unsigned(3 downto 0);
     type t_blk_conflicts is array (0 to 2, 0 to 2) of unsigned(3 downto 0);
+
     signal row_c : t_line_conflicts;
     signal col_c : t_line_conflicts;
     signal blk_c : t_blk_conflicts;
@@ -62,6 +68,7 @@ begin
         adder_values(8*(i+1)-1 downto 8*i) <= std_logic_vector(resize(row_c(i), 8));
         adder_values(9*8+8*(i+1)-1 downto 9*8+8*i) <= std_logic_vector(resize(col_c(i), 8));
     end generate;
+
     gen_values_blk: for br in 0 to 2 generate
         gen_values_blk_inner: for bc in 0 to 2 generate
             adder_values(2*9*8+8*(bc+3*br+1)-1 downto 2*9*8+8*(bc+3*br)) <= std_logic_vector(resize(blk_c(br, bc), 8));
@@ -74,6 +81,7 @@ begin
             if start = '1' then
                 adder_di <= valid_known(chr, const) & di;
 
+                debug_print("[FIT] Fitness-Berechnung gestartet");
                 for i in 0 to 8 loop
                     row_c(i) <= row_conflicts(chr, i);
                     col_c(i) <= col_conflicts(chr, i);
@@ -92,9 +100,11 @@ begin
                 end if;
                 if adder_do(data_size) = '1' then
                     fit <= adder_sum;
-                    -- report "[fitness] fit=" & integer'image(to_integer(unsigned(adder_sum))) & " (conflicts)" severity note;
+                    debug_print("[FIT] Fitness-Berechnung FERTIG. Errechnete Konflikte (Fitness): " & 
+                                integer'image(to_integer(unsigned(adder_sum))));
                 else
                     fit <= (others => '1');
+                    debug_print("[FIT] Fitness-Berechnung FERTIG. Chromosom war ungültig -> Fitness auf MAX gesetzt.");
                 end if;
             end if;
 

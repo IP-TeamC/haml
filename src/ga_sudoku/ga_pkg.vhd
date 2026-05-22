@@ -5,15 +5,21 @@ use ieee.math_real.all;
 
 package ga_pkg is
 
-    type t_human_sudoku is array (1 to 9, 1 to 9) of integer range 0 to 9;
+    constant debug : boolean := true;
 
     -- Sudoku Size
-    constant chr_size : natural := 324;
-    constant susi : natural := 9;
-    constant susiro : natural := natural(sqrt(real(susi)));
-    constant blsi : natural := natural(ceil(log2(real(susi))));
+    constant sudoku_size : natural := 9; -- Sudoku-Seitenlänge
+    constant cell_bits : natural := 4; -- Bits pro Zelle zum Darstellen der Zahlen (ceil(log2(9+1))=4)
+    constant chr_size : natural := sudoku_size * sudoku_size * cell_bits; -- Chromosomenlänge (324 Bit)
+    constant block_size : natural := 3; -- 3x3-Blöcke
+    constant blocks_per_side : natural := sudoku_size / block_size; -- Anzahl der Blöcke nebeneinander (3)
 
-    constant DEBUG : boolean := false;
+    -- Wert "leer" Encoding
+    constant empty_encoding : natural := 0;
+
+    type t_human_sudoku is array (1 to sudoku_size, 1 to sudoku_size) of integer range 0 to sudoku_size;
+
+    -- Serialisierung & Deserialisierung
 
     function serialize_sudoku(
         human_sudoku : t_human_sudoku
@@ -23,83 +29,90 @@ package ga_pkg is
         chr : std_logic_vector(chr_size-1 downto 0)
     ) return t_human_sudoku;
 
-    procedure print_sudoku(sol : t_human_sudoku);
+    -- Zellzugriff
+
+    -- Gibt den 4-Bit-Wert der Zelle (row, col) aus einem Chromosom zurück
+    function get_cell(
+        chr : std_logic_vector(chr_size-1 downto 0);
+        row : integer range 1 to sudoku_size; -- 1-basiert
+        col : integer range 1 to sudoku_size  -- 1-basiert
+    ) return std_logic_vector;
+ 
+    -- Gibt den 4-Bit-Wert einer Zelle über den flachen Index zurück
+    function get_cell_flat(
+        chr : std_logic_vector(chr_size-1 downto 0);
+        idx : integer range 1 to sudoku_size*sudoku_size
+    ) return std_logic_vector;
+ 
+    -- Konfliktzähler
 
     function col_conflicts(
-        l_chr : std_logic_vector(chr_size-1 downto 0);
-        col : integer range 0 to susi-1
+        chr : std_logic_vector(chr_size-1 downto 0);
+        col : integer range 0 to sudoku_size-1
     ) return unsigned;
 
     function row_conflicts(
-        l_chr : std_logic_vector(chr_size-1 downto 0);
-        row : integer range 0 to susi-1
+        chr : std_logic_vector(chr_size-1 downto 0);
+        row : integer range 0 to sudoku_size-1
     ) return unsigned;
 
     function block_conflicts(
-        l_chr : std_logic_vector(chr_size-1 downto 0);
-        br : integer range 0 to 3-1;
-        bc : integer range 0 to 3-1
+        chr : std_logic_vector(chr_size-1 downto 0);
+        br : integer range 0 to blocks_per_side - 1;
+        bc : integer range 0 to blocks_per_side - 1
     ) return unsigned;
 
+    -- Prüft ob alle festen Zellen korrekt übereinstimmen
     function valid_known(
-        l_chr : std_logic_vector(chr_size-1 downto 0);
-        k_chr : std_logic_vector(chr_size-1 downto 0)
+        chr : std_logic_vector(chr_size-1 downto 0);
+        mask : std_logic_vector(chr_size-1 downto 0)
     ) return std_logic;
+
+    procedure print_sudoku(sol : t_human_sudoku);
 
 end package;
 
 package body ga_pkg is
-
-    procedure dbg(msg : string) is
+    
+    function cell_lo(row, col : integer) return natural is
     begin
-        if DEBUG then
-            report msg severity note;
-        end if;
-    end procedure;
-
-    procedure print_sudoku(sol : t_human_sudoku) is
-        variable row_str : string(1 to 27);
+        return cell_bits * ((col - 1) + sudoku_size * (row - 1));
+    end function;
+ 
+    function get_cell(
+        chr : std_logic_vector(chr_size-1 downto 0);
+        row : integer range 1 to sudoku_size;
+        col : integer range 1 to sudoku_size
+    ) return std_logic_vector is
+        variable lo : natural := cell_lo(row, col);
     begin
-            report "+---------+---------+---------+";
-
-        for row in 1 to 9 loop
-
-            row_str := (others => ' ');
-
-            for col in 1 to 9 loop
-                if sol(row, col) = 0 then
-                    row_str(col*3-2) := '.';
-                else
-                    row_str(col*3-2) :=
-                        character'val(sol(row,col) + character'pos('0'));
-                end if;
-            end loop;
-
-            report "| " & row_str(1 to 7)
-                & " | " & row_str(10 to 16)
-                & " | " & row_str(19 to 25) & " |";
-
-            if row = 3 or row = 6 then
-                report "+---------+---------+---------+";
-            end if;
-
-        end loop;
-
-            report "+---------+---------+---------+";
-    end procedure;
-
+        return chr(lo + cell_bits - 1 downto lo);
+    end function;
+ 
+    function get_cell_flat(
+        chr : std_logic_vector(chr_size-1 downto 0);
+        idx : integer range 1 to sudoku_size*sudoku_size
+    ) return std_logic_vector is
+        variable lo : natural := cell_bits * (idx - 1);
+    begin
+        return chr(lo + cell_bits - 1 downto lo);
+    end function;
 
     function serialize_sudoku(
         human_sudoku : t_human_sudoku
     ) return std_logic_vector is
         variable serialized : std_logic_vector(323 downto 0);
+        variable lo : natural;
+        variable v : natural;
     begin
-        for row in 0 to 8 loop
-            for col in 0 to 8 loop
-                if human_sudoku(row+1, col+1) /= 0 then
-                    serialized(blsi*(col+susi*row+1)-1 downto blsi*(col+susi*row)) := std_logic_vector(to_unsigned(human_sudoku(row+1, col+1) - 1, 4));
+        for row in 1 to sudoku_size loop
+            for col in 1 to sudoku_size loop
+                lo := cell_lo(row, col);
+                v := human_sudoku(row, col);
+                if v = 0 then
+                    serialized(lo + cell_bits - 1 downto lo) := std_logic_vector(to_unsigned(empty_encoding, cell_bits));
                 else
-                    serialized(blsi*(col+susi*row+1)-1 downto blsi*(col+susi*row)) := std_logic_vector(to_unsigned(9, 4));
+                    serialized(lo + cell_bits - 1 downto lo) := std_logic_vector(to_unsigned(v, cell_bits));
                 end if;
             end loop;
         end loop;
@@ -110,17 +123,17 @@ package body ga_pkg is
         chr : std_logic_vector(chr_size-1 downto 0)
     ) return t_human_sudoku is
         variable result : t_human_sudoku;
-        variable val : integer range 0 to blsi**2-1;
+        variable lo : natural;
+        variable val : natural;
     begin
-        for row in 0 to susi-1 loop
-            for col in 0 to susi-1 loop
-                val := to_integer(unsigned(chr(
-                    blsi*(col + susi*row + 1)-1 downto blsi*(col + susi*row)
-                )));
-                if val >= susi then
-                    result(row+1, col+1) := 0;
+        for row in 1 to sudoku_size loop
+            for col in 1 to sudoku_size loop
+                lo := cell_lo(row, col);
+                val  := to_integer(unsigned(chr(lo + cell_bits - 1 downto lo)));
+                if val = empty_encoding or val > sudoku_size then
+                    result(row, col) := 0;
                 else
-                    result(row+1, col+1) := val + 1;
+                    result(row, col) := val;
                 end if;
             end loop;
         end loop;
@@ -128,36 +141,20 @@ package body ga_pkg is
     end function;
 
     function col_conflicts(
-        l_chr : std_logic_vector(chr_size-1 downto 0);
-        col : integer range 0 to susi-1
+        chr : std_logic_vector(chr_size-1 downto 0);
+        col : integer range 0 to sudoku_size-1
     ) return unsigned is
-        variable mask : std_logic_vector(susi-1 downto 0);
-        variable conflicts : unsigned(blsi-1 downto 0);
-        variable val : integer range 0 to blsi**2-1;
+        variable mask : std_logic_vector(sudoku_size downto 1) := (others => '0');
+        variable conflicts : unsigned(cell_bits-1 downto 0) := (others => '0');
+        variable val : integer range 0 to 2**cell_bits-1;
     begin
-        mask := (others => '0');
-        conflicts := (others => '0');
-        for row in 0 to susi-1 loop
-            val := to_integer(unsigned(l_chr(
-                blsi*(col+susi*row+1)-1 downto blsi*(col+susi*row)
-            )));
-
-            dbg("[ROW] r=" & integer'image(row) &
-                " c=" & integer'image(col) &
-                " val=" & integer'image(val));
-
-            if val >= susi then
-                conflicts := conflicts + 1; -- leeres/ungültiges Feld
+        for row in 1 to sudoku_size loop
+            val := to_integer(unsigned(get_cell(chr, row, col + 1)));
+            if val = empty_encoding or val > sudoku_size then
+                conflicts := conflicts + 1; 
+            elsif mask(val) = '1' then
+                conflicts := conflicts + 1; 
             else
-                if mask(val) = '1' then
-                    conflicts := conflicts + 1; -- Duplikat
-
-                    dbg("  -> CONFLICT: value " &
-                        integer'image(val) &
-                        " already in row " &
-                        integer'image(row));
-
-                end if;
                 mask(val) := '1';
             end if;
         end loop;
@@ -165,36 +162,21 @@ package body ga_pkg is
     end function;
 
     function row_conflicts(
-        l_chr : std_logic_vector(chr_size-1 downto 0);
-        row : integer range 0 to susi-1
+        chr : std_logic_vector(chr_size-1 downto 0);
+        row : integer range 0 to sudoku_size-1
     ) return unsigned is
-        variable mask : std_logic_vector(susi-1 downto 0);
-        variable conflicts : unsigned(blsi-1 downto 0);
-        variable val : integer range 0 to blsi**2-1;
+        variable mask : std_logic_vector(sudoku_size downto 1) := (others => '0');
+        variable conflicts : unsigned(cell_bits-1 downto 0) := (others => '0');
+        variable val : integer range 0 to 2**cell_bits-1;
     begin
-        mask := (others => '0');
-        conflicts := (others => '0');
-        for col in 0 to susi-1 loop
-            val := to_integer(unsigned(l_chr(
-                blsi*(col+susi*row+1)-1 downto blsi*(col+susi*row)
-            )));
+        for col in 1 to sudoku_size loop
+            val := to_integer(unsigned(get_cell(chr, row + 1, col)));
 
-            dbg("[COL] c=" & integer'image(col) &
-                " r=" & integer'image(row) &
-                " val=" & integer'image(val));
-
-            if val >= susi then
-                conflicts := conflicts + 1; -- leeres/ungültiges Feld
+            if val = empty_encoding or val > sudoku_size then
+                conflicts := conflicts + 1; 
+            elsif mask(val) = '1' then
+                conflicts := conflicts + 1; 
             else
-                if mask(val) = '1' then
-                    conflicts := conflicts + 1; -- Duplikat
-
-                    dbg("  -> CONFLICT: value " &
-                        integer'image(val) &
-                        " already in column " &
-                        integer'image(col));
-
-                end if;
                 mask(val) := '1';
             end if;
         end loop;
@@ -202,36 +184,27 @@ package body ga_pkg is
     end function;
 
     function block_conflicts(
-        l_chr : std_logic_vector(chr_size-1 downto 0);
-        br : integer range 0 to 3-1;
-        bc : integer range 0 to 3-1
+        chr : std_logic_vector(chr_size-1 downto 0);
+        br : integer range 0 to blocks_per_side - 1;
+        bc : integer range 0 to blocks_per_side - 1
     ) return unsigned is
-        variable mask : std_logic_vector(susi-1 downto 0);
-        variable conflicts : unsigned(blsi-1 downto 0);
-        variable val : integer range 0 to blsi**2-1;
+        variable mask : std_logic_vector(sudoku_size downto 1) := (others => '0');
+        variable conflicts : unsigned(cell_bits-1 downto 0) := (others => '0');
+        variable ro, co : integer;
+        variable val : integer range 0 to 2**cell_bits-1;
     begin
-        mask := (others => '0');
-        conflicts := (others => '0');
-        for ro in 0 to susiro-1 loop
-            for co in 0 to susiro-1 loop
-                val := to_integer(unsigned(l_chr(
-                    blsi*(susiro*(bc+susi*br)+co+susi*ro+1)-1 downto blsi*(susiro*(bc+susi*br)+co+susi*ro)
-                )));
+        for row in 1 to block_size loop
+            for col in 1 to block_size loop
 
-                dbg("[BLOCK] br=" & integer'image(br) &
-                    " bc=" & integer'image(bc) &
-                    " val=" & integer'image(val));
+                ro := br * block_size + row;
+                co := bc * block_size + col;
+                val := to_integer(unsigned(get_cell(chr, ro, co)));
 
-                if val >= susi then
-                    conflicts := conflicts + 1;  -- leeres/ungültiges Feld
+                if val = empty_encoding or val > sudoku_size then
+                    conflicts := conflicts + 1; 
+                elsif mask(val) = '1' then
+                    conflicts := conflicts + 1; 
                 else
-                    if mask(val) = '1' then
-                        conflicts := conflicts + 1; -- Duplikat
-
-                        dbg("  -> BLOCK CONFLICT value=" &
-                            integer'image(val));
-
-                    end if;
                     mask(val) := '1';
                 end if;
             end loop;
@@ -240,22 +213,47 @@ package body ga_pkg is
     end function;
 
     function valid_known(
-        l_chr : std_logic_vector(chr_size-1 downto 0);
-        k_chr : std_logic_vector(chr_size-1 downto 0)
+        chr : std_logic_vector(chr_size-1 downto 0);
+        mask : std_logic_vector(chr_size-1 downto 0)
     ) return std_logic is
-        variable valid : std_logic;
-        variable l_val : integer range 0 to blsi**2-1;
-        variable k_val : integer range 0 to blsi**2-1;
+        variable lo : natural;
     begin
-        valid := '1';
-        for i in 0 to susi*susi-1 loop
-            l_val := to_integer(unsigned(l_chr(blsi*(i+1)-1 downto blsi*i)));
-            k_val := to_integer(unsigned(k_chr(blsi*(i+1)-1 downto blsi*i)));
-            if k_val /= susi and l_val /= k_val then
-                valid := '0';
+        for i in 0 to sudoku_size*sudoku_size-1 loop
+            lo := cell_bits * i;
+            if mask(lo + cell_bits - 1 downto lo) /= (cell_bits-1 downto 0 => '0') then
+                if chr(lo + cell_bits - 1 downto lo) /= mask(lo + cell_bits - 1 downto lo) then
+                    return '0';
+                end if;
             end if;
         end loop;
-        return valid;
+        return '1';
     end function;
+
+    procedure print_sudoku(sol : t_human_sudoku) is
+        variable line : string(1 to 25);
+        variable b, k, idx : integer;
+    begin
+            report "+-------+-------+-------+"; -- Extra eingerückt für besseres Printing
+        for row in 1 to sudoku_size loop
+            line := (others => ' ');
+            for col in 1 to sudoku_size loop
+
+                b := (col - 1) / 3;
+                k := (col - 1) rem 3;
+                idx := 2 + (b * 9) + (k * 2);
+
+                if sol(row, col) = 0 then
+                    line(idx) := '.';
+                else
+                    line(idx) := character'val(sol(row,col) + character'pos('0'));
+                end if;
+            end loop;
+            report "|" & line(1 to 7) & "|" & line(10 to 16) & "|" & line(19 to 25) & "|";
+            if row = 3 or row = 6 then
+                report "+-------+-------+-------+";
+            end if;
+        end loop;
+            report "+-------+-------+-------+"; -- Extra eingerückt für besseres Printing
+    end procedure;
 
 end package body;

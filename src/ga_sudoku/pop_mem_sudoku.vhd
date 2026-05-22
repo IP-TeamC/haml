@@ -3,7 +3,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.math_real.all;
 
-entity population_mem is
+entity pop_mem_sudoku is
     generic (
         chr_size : natural := 324; -- Chromosombreite
         fp_size : natural := 8; -- Fitnessbreite
@@ -25,7 +25,7 @@ entity population_mem is
     );
 end entity;
 
-architecture rtl of population_mem is
+architecture rtl of pop_mem_sudoku is
     constant idx_size : natural := natural(ceil(log2(real(pop_size))));
     constant row_size : natural := chr_size + fp_size;
 

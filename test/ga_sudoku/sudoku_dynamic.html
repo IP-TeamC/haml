@@ -1,364 +1,452 @@
 <!DOCTYPE html>
 <html lang="de">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Sudoku Validator</title>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Sudoku Validator</title>
 
-<style>
-    :root {
-        --bg: #1a1a1a;
-        --panel: #2a2a2a;
-        --panel2: #333;
-        --text: #e5e7eb;
-        --muted: #9ca3af;
-    }
-
-    body {
-        margin: 0;
-        font-family: system-ui, Arial, sans-serif;
-        background: var(--bg);
-        color: var(--text);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 30px;
-    }
-
-    h1 {
-        font-weight: 700;
-        margin-bottom: 2px;
-    }
-
-    .board {
-        margin-top: 20px;
-        display: grid;
-        grid-template-columns: repeat(3, auto);
-        gap: 8px;
-        justify-content: center;
-    }
-
-    .cell {
-        width: 48px;
-        height: 48px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 700;
-        font-size: 18px;
-        background: #2f2f2f;
-        border: 1px solid #444;
-        border-radius: 6px;
-        position: relative;
-    }
-
-    .fixed-correct { background:#3a3a3a; color:#d1d5db; }
-    .fixed-wrong { background:rgba(226,136,19,0.25); border-color:#e28813; color:#f8c685; }
-    .correct { background:rgba(19, 187, 81, 0.25); border-color:#22c55e; color:#86efac; }
-    .wrong { background:rgba(206, 34, 34, 0.25); border-color:#cf2828; color:#fca5a5; }
-
-    .topbar {
-        display:flex;
-        justify-content:center;
-        margin-top:20px;
-        margin-bottom:0px;
-    }
-
-    #status {
-        color: var(--muted);
-    }
-
-    canvas { margin-top: 10px; }
-
-    #replay { margin-top: 30px; margin-bottom: 20px; width: 460px;}
-
-    #fitnessChart {
-        border: 1px solid #444;
-        border-radius: 10px;
-    }
-
-    .chart-wrapper {
-        position: relative;
-    }
-
-</style>
-</head>
-
-<body>
-
-<h1>Sudoku Validator</h1>
-<!-- <div id="status">🔴 Connecting...</div> -->
-
-<div id="meta" class="topbar"></div>
-<div id="output" class="board"></div>
-
-<input id="replay" type="range" min="0" max="0" value="0">
-
-<div class="chart-wrapper">
-    <canvas id="fitnessChart" width="460" height="120"></canvas>
-</div>
-
-
-<script>
-let latest = null;
-let history = [];
-let replayMode = false;
-
-const solution = [
-    [7,6,1,5,8,2,9,3,4],
-    [2,4,5,3,1,9,6,8,7],
-    [9,8,3,6,7,4,2,5,1],
-
-    [8,3,7,1,9,6,4,2,5],
-    [4,9,6,7,2,5,3,1,8],
-    [1,5,2,4,3,8,7,6,9],
-
-    [3,2,4,8,5,7,1,9,6],
-    [5,7,9,2,6,1,8,4,3],
-    [6,1,8,9,4,3,5,7,2]
-];
-
-const hs_unsolved = [
-    [7,0,0,5,8,2,9,3,4],
-    [2,0,5,0,1,9,0,0,7],
-    [0,0,3,0,0,0,2,0,1],
-
-    [0,3,7,1,0,6,4,2,5],
-    [4,9,0,7,0,0,0,1,0],
-    [0,5,2,0,3,8,7,0,0],
-
-    [0,2,0,0,5,7,1,9,6],
-    [5,7,9,2,6,0,0,0,3],
-    [6,0,0,0,4,3,5,7,2]
-];
-
-const ws = new WebSocket("ws://localhost:8080");
-
-ws.onopen = () => {
-    // document.getElementById("status").textContent = "🟢 Connected";
-
-    // INIT REQUEST
-    ws.send(JSON.stringify({ type: "init" }));
-};
-
-ws.onclose = () => {
-    // document.getElementById("status").textContent = "🔴 Disconnected";
-};
-
-ws.onmessage = (event) => {
-
-    const msg = JSON.parse(event.data);
-    console.log(msg)
-
-    // INITIAL FULL STATE
-    if (msg.type === "init") {
-        history = msg.history || [];
-        latest = msg.latest || null;
-
-        updateSlider();
-        render();
-        drawChart();
-        return;
-    }
-
-    // LIVE UPDATE
-    if (msg.type === "grid") {
-        history.push(msg);
-
-        if (!replayMode) latest = msg;
-
-        updateSlider();
-        drawChart();
-
-        if (!replayMode) {
-            render();
+        <style>
+        :root {
+            --bg: #1a1a1a;
+            --panel: #2a2a2a;
+            --panel2: #333;
+            --text: #e5e7eb;
+            --muted: #9ca3af;
         }
-    }
-};
 
-function render() {
-    if (!latest) return;
+        body {
+            margin: 0;
+            font-family: system-ui, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px;
+        }
 
-    const out = document.getElementById("output");
-    const meta = document.getElementById("meta");
+        h1 {
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
 
-    out.innerHTML = "";
+        .board {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(3, auto);
+            gap: 8px;
+            justify-content: center;
 
-    let errors = 0;
+            padding: 12px;
+            border-radius: 12px;
+            transition: box-shadow 0.5s ease, background-color 0.5s ease;
+        }
 
-    for (let br = 0; br < 3; br++) {
-        for (let bc = 0; bc < 3; bc++) {
+        .board.solved-glow {
+            box-shadow: 0 0 40px rgba(34, 197, 94, 0.4);
+            background-color: rgba(34, 197, 94, 0.05);
+        }
 
-            const block = document.createElement("div");
-            block.style.display = "grid";
-            block.style.gridTemplateColumns = "repeat(3, 48px)";
-            block.style.gap = "2px";
+        .cell {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 18px;
+            background: #2f2f2f;
+            border: 1px solid #444;
+            border-radius: 6px;
+            position: relative;
+        }
 
-            for (let r = 0; r < 3; r++) {
-                for (let c = 0; c < 3; c++) {
+        .fixed-correct { background:#3a3a3a; color:#d1d5db; }
+        .fixed-wrong { background:rgba(226,136,19,0.25); border-color:#e28813; color:#f8c685; }
+        .correct { background:rgba(19, 187, 81, 0.25); border-color:#22c55e; color:#86efac; }
+        .wrong { background:rgba(206, 34, 34, 0.25); border-color:#cf2828; color:#fca5a5; }
 
-                    const row = br * 3 + r;
-                    const col = bc * 3 + c;
+        .topbar {
+            display:flex;
+            justify-content:center;
+            margin-top:20px;
+            margin-bottom:0px;
+        }
 
-                    const val = latest.grid[row][col];
+        #status {
+            color: var(--muted);
+        }
 
-                    const cell = document.createElement("div");
-                    cell.className = "cell";
+        canvas { margin-top: 10px; }
 
-                    const isFixed = hs_unsolved[row][col] !== 0;
+        #replay { margin-top: 18px; margin-bottom: 20px; width: 460px;}
 
-                    cell.textContent = val === 0 ? "" : val;
+        #fitnessChart {
+            border: 1px solid #444;
+            border-radius: 10px;
+        }
 
-                    if (val === solution[row][col]) {
-                        cell.classList.add(isFixed ? "fixed-correct" : "correct");
-                    } else {
-                        cell.classList.add(isFixed ? "fixed-wrong" : "wrong");
-                        errors++;
+        .chart-wrapper {
+            position: relative;
+        }
 
-                        const hint = document.createElement("div");
-                        hint.style.position = "absolute";
-                        hint.style.bottom = "2px";
-                        hint.style.right = "4px";
-                        hint.style.fontSize = "10px";
-                        hint.style.color = "#9ca3af";
-                        hint.textContent = solution[row][col];
-                        cell.appendChild(hint);
-                    }
+        /* --- WebSocket Toast --- */
+        #ws-toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--panel);
+            border: 1px solid #444;
+            padding: 12px 16px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            font-size: 14px;
+            z-index: 1000;
+            transition: border-color 0.3s ease;
+        }
 
-                    block.appendChild(cell);
-                }
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        /* Status: Verbunden */
+        #ws-toast.connected { border-color: rgba(34, 197, 94, 0.4); }
+        #ws-toast.connected .status-dot {
+            background-color: #22c55e;
+            box-shadow: 0 0 8px #22c55e;
+        }
+
+        /* Status: Getrennt */
+        #ws-toast.disconnected { border-color: rgba(239, 68, 68, 0.4); }
+        #ws-toast.disconnected .status-dot {
+            background-color: #ef4444;
+            box-shadow: 0 0 8px #ef4444;
+        }
+
+        #ws-reconnect {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        #ws-reconnect:hover { background: #d11111; }
+        #ws-reconnect:active { transform: scale(0.95); }
+
+    </style>
+    </head>
+
+    <body>
+
+        <h1>Sudoku Validator</h1>
+        <div id="meta" class="topbar"></div>
+        <div id="output" class="board"></div>
+
+        <input id="replay" type="range" min="0" max="0" value="0">
+
+        <div class="chart-wrapper">
+            <canvas id="fitnessChart" width="460" height="120"></canvas>
+        </div>
+
+        <div id="ws-toast" class="disconnected">
+            <div class="status-dot"></div>
+            <span id="ws-status-text">Disconnected</span>
+            <button id="ws-reconnect" style="display: none;">Reconnect</button>
+        </div>
+
+        <script>
+    let latest = null;
+    let history = [];
+    let replayMode = false;
+
+    const solution = [
+        [7,6,1,5,8,2,9,3,4],
+        [2,4,5,3,1,9,6,8,7],
+        [9,8,3,6,7,4,2,5,1],
+
+        [8,3,7,1,9,6,4,2,5],
+        [4,9,6,7,2,5,3,1,8],
+        [1,5,2,4,3,8,7,6,9],
+
+        [3,2,4,8,5,7,1,9,6],
+        [5,7,9,2,6,1,8,4,3],
+        [6,1,8,9,4,3,5,7,2]
+    ];
+
+    const hs_unsolved = [
+        [7,0,0,5,8,2,9,3,4],
+        [2,0,5,0,1,9,0,0,7],
+        [0,0,3,0,0,0,2,0,1],
+
+        [0,3,7,1,0,6,4,2,5],
+        [4,9,0,7,0,0,0,1,0],
+        [0,5,2,0,3,8,7,0,0],
+
+        [0,2,0,0,5,7,1,9,6],
+        [5,7,9,2,6,0,0,0,3],
+        [6,0,0,0,4,3,5,7,2]
+    ];
+
+    let ws;
+    const toast = document.getElementById("ws-toast");
+    const toastText = document.getElementById("ws-status-text");
+    const reconnectBtn = document.getElementById("ws-reconnect");
+
+    function connectWS() {
+        // UI Update: Versuche zu verbinden
+        toastText.textContent = "Connecting...";
+        toast.className = "disconnected";
+        toastText.style.color = "var(--muted)";
+        reconnectBtn.style.display = "none";
+
+        ws = new WebSocket("ws://localhost:8080");
+
+        ws.onopen = () => {
+            toastText.textContent = "Live connected";
+            toastText.style.color = "var(--text)";
+            toast.className = "connected";
+            reconnectBtn.style.display = "none";
+            
+            // INIT REQUEST
+            ws.send(JSON.stringify({ type: "init" }));
+        };
+
+        ws.onclose = () => {
+            toastText.textContent = "Disconnected";
+            toastText.style.color = "#fca5a5";
+            toast.className = "disconnected";
+            reconnectBtn.style.display = "block";
+        };
+
+        ws.onerror = (err) => {
+            console.error("WebSocket Fehler:", err);
+            ws.close();
+        };
+
+        ws.onmessage = (event) => {
+            const msg = JSON.parse(event.data);
+
+            // INITIAL FULL STATE
+            if (msg.type === "init") {
+                history = msg.history || [];
+                latest = msg.latest || null;
+
+                updateSlider();
+                render();
+                drawChart();
+                return;
             }
 
-            out.appendChild(block);
+            // LIVE UPDATE
+            if (msg.type === "grid") {
+                history.push(msg);
+
+                if (!replayMode) latest = msg;
+
+                updateSlider();
+                drawChart();
+
+                if (!replayMode) {
+                    render();
+                }
+            }
+        };
+    }
+
+    // Reconnect Button Event-Listener
+    reconnectBtn.addEventListener("click", connectWS);
+
+    // Initiale Verbindung starten
+    connectWS();
+
+    function render() {
+        if (!latest) return;
+
+        const out = document.getElementById("output");
+        const meta = document.getElementById("meta");
+
+        out.innerHTML = "";
+
+        let errors = 0;
+
+        for (let br = 0; br < 3; br++) {
+            for (let bc = 0; bc < 3; bc++) {
+
+                const block = document.createElement("div");
+                block.style.display = "grid";
+                block.style.gridTemplateColumns = "repeat(3, 48px)";
+                block.style.gap = "2px";
+
+                for (let r = 0; r < 3; r++) {
+                    for (let c = 0; c < 3; c++) {
+
+                        const row = br * 3 + r;
+                        const col = bc * 3 + c;
+
+                        const val = latest.grid[row][col];
+
+                        const cell = document.createElement("div");
+                        cell.className = "cell";
+
+                        const isFixed = hs_unsolved[row][col] !== 0;
+
+                        cell.textContent = val === 0 ? "" : val;
+
+                        if (val === solution[row][col]) {
+                            cell.classList.add(isFixed ? "fixed-correct" : "correct");
+                        } else {
+                            cell.classList.add(isFixed ? "fixed-wrong" : "wrong");
+                            errors++;
+
+                            const hint = document.createElement("div");
+                            hint.style.position = "absolute";
+                            hint.style.bottom = "2px";
+                            hint.style.right = "4px";
+                            hint.style.fontSize = "10px";
+                            hint.style.color = "#9ca3af";
+                            hint.textContent = solution[row][col];
+                            cell.appendChild(hint);
+                        }
+
+                        block.appendChild(cell);
+                    }
+                }
+
+                out.appendChild(block);
+            }
+        }
+
+        const infoText = errors === 0
+            ? "✅ Solved"
+            : `❌ Fehler: ${errors}`;
+
+        meta.textContent = latest.generation !== undefined && latest.generation !== null
+            ? `🧬 Generation: ${latest.generation} - 📊 Fitness: ${latest.fitness} - ${infoText}`
+            : "";
+
+        if (errors === 0) {
+            out.classList.add("solved-glow");
+        } else {
+            out.classList.remove("solved-glow");
         }
     }
 
-    const infoText = errors === 0
-        ? "✅ Solved"
-        : `❌ Fehler: ${errors}`;
+    const slider = document.getElementById("replay");
 
-    meta.textContent = latest.generation !== undefined && latest.generation !== null
-        ? `🧬 Generation: ${latest.generation} - 📊 Fitness: ${latest.fitness} - ${infoText}`
-        : "";
-}
+    function updateSlider() {
+        slider.max = Math.max(0, history.length - 1);
 
-const slider = document.getElementById("replay");
-
-function updateSlider() {
-    slider.max = Math.max(0, history.length - 1);
-
-    if (!replayMode) {
-        slider.value = history.length - 1;
-    }
-}
-
-slider.addEventListener("input", () => {
-    const isAtEnd = Number(slider.value) === Number(slider.max);
-    replayMode = !isAtEnd;
-
-    const snap = history[Number(slider.value)];
-    if (!snap) return;
-
-    latest = snap;
-    render();
-});
-
-const canvas = document.getElementById("fitnessChart");
-const ctx = canvas.getContext("2d");
-
-function drawChart() {
-
-    if (history.length < 2) return;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    const minFitness = 0;
-    const maxFitness = Math.max(1, ...history.map(h => h.fitness || 0));
-    const bestFitness = Math.min(...history.map(h => h.fitness || 0));
-
-    const padding = 10;
-    const w = canvas.width - padding * 2;
-    const h = canvas.height - padding * 2;
-
-    // -----------------------
-    // GRID BACKGROUND
-    // -----------------------
-    ctx.strokeStyle = "rgba(255,255,255,0.05)";
-    ctx.lineWidth = 1;
-
-    for (let i = 0; i <= 5; i++) {
-        const y = padding + (i / 5) * h;
-        ctx.beginPath();
-        ctx.moveTo(padding, y);
-        ctx.lineTo(canvas.width - padding, y);
-        ctx.stroke();
+        if (!replayMode) {
+            slider.value = history.length - 1;
+        }
     }
 
-    // -----------------------
-    // LINE
-    // -----------------------
-    ctx.beginPath();
+    slider.addEventListener("input", () => {
+        const isAtEnd = Number(slider.value) === Number(slider.max);
+        replayMode = !isAtEnd;
 
-    history.forEach((hEntry, i) => {
+        const snap = history[Number(slider.value)];
+        if (!snap) return;
 
-        const x = padding + (i / (history.length - 1)) * w;
-
-        const norm = (hEntry.fitness - minFitness) / (maxFitness - minFitness || 1);
-        const y = padding + (1 - norm) * h;
-
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
+        latest = snap;
+        render();
     });
 
-    // -----------------------
-    // COLORED LINE SEGMENTS
-    // -----------------------
-    for (let i = 1; i < history.length; i++) {
+    const canvas = document.getElementById("fitnessChart");
+    const ctx = canvas.getContext("2d");
 
-        const h1 = history[i - 1];
-        const h2 = history[i];
+    function drawChart() {
 
-        const x1 = padding + ((i - 1) / (history.length - 1)) * w;
-        const x2 = padding + (i / (history.length - 1)) * w;
+        const chartData = history.filter(h => h.generation > 0 && h.fitness !== null);
 
-        const norm1 = (h1.fitness - minFitness) / (maxFitness - minFitness || 1);
-        const norm2 = (h2.fitness - minFitness) / (maxFitness - minFitness || 1);
+        if (chartData.length < 2) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            return;
+        }
 
-        const y1 = padding + (1 - norm1) * h;
-        const y2 = padding + (1 - norm2) * h;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Farbe abhängig von Fitness (0 = rot, 1 = grün)
-        const t = norm2;
+        const minFitness = 0;
+        const maxFitness = Math.max(1, ...chartData.map(h => h.fitness || 0));
+        const bestFitness = Math.min(...chartData.map(h => h.fitness || 0));
 
-        const r = Math.floor(255 * t);
-        const g = Math.floor(255 * (1 - t));
-        const b = 80;
+        const padding = 10;
+        const w = canvas.width - padding * 2;
+        const h = canvas.height - padding * 2;
 
-        ctx.strokeStyle = `rgb(${r}, ${g}, ${b})`;
-        ctx.lineWidth = 2;
+        // -----------------------
+        // GRID BACKGROUND
+        // -----------------------
+        ctx.strokeStyle = "rgba(255,255,255,0.05)";
+        ctx.lineWidth = 1;
 
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
-        ctx.stroke();
+        for (let i = 0; i <= 5; i++) {
+            const y = padding + (i / 5) * h;
+            ctx.beginPath();
+            ctx.moveTo(padding, y);
+            ctx.lineTo(canvas.width - padding, y);
+            ctx.stroke();
+        }
+
+        // -----------------------
+        // COLORED LINE SEGMENTS
+        // -----------------------
+        for (let i = 1; i < chartData.length; i++) {
+
+            const h1 = chartData[i - 1];
+            const h2 = chartData[i];
+
+            const x1 = padding + ((i - 1) / (chartData.length - 1)) * w;
+            const x2 = padding + (i / (chartData.length - 1)) * w;
+
+            const norm1 = (h1.fitness - minFitness) / (maxFitness - minFitness || 1);
+            const norm2 = (h2.fitness - minFitness) / (maxFitness - minFitness || 1);
+
+            const y1 = padding + (1 - norm1) * h;
+            const y2 = padding + (1 - norm2) * h;
+
+            // Farbe abhängig von Fitness (0 = rot, 1 = grün)
+            const t = norm2;
+
+            const r = Math.floor(255 * t);
+            const g = Math.floor(255 * (1 - t));
+            const b = 80;
+
+            ctx.strokeStyle = `rgb(${r}, ${g}, ${b})`;
+            ctx.lineWidth = 2;
+
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+        }
+
+        // -----------------------
+        // LABELS (min / max)
+        // -----------------------
+        ctx.fillStyle = "#9ca3af";
+        ctx.font = "10px sans-serif";
+
+        ctx.fillText(`max: ${maxFitness}`, 10, 10);
+        ctx.fillText(`min: ${minFitness}`, 10, canvas.height - 5);
+
+        const y = padding + (1 - (bestFitness / (maxFitness || 1))) * h;
+
+
+
+        ctx.fillText(`best: ${bestFitness}`, 10, y);
     }
+    </script>
 
-    // -----------------------
-    // LABELS (min / max)
-    // -----------------------
-    ctx.fillStyle = "#9ca3af";
-    ctx.font = "10px sans-serif";
-
-    ctx.fillText(`max: ${maxFitness}`, 10, 10);
-    ctx.fillText(`min: ${minFitness}`, 10, canvas.height - 5);
-
-    const y = padding + (1 - (bestFitness / (maxFitness || 1))) * h;
-
-
-
-    ctx.fillText(`best: ${bestFitness}`, 10, y);
-}
-</script>
-
-</body>
+    </body>
 </html>

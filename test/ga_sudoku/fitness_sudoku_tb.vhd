@@ -2,7 +2,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-use work.fitness;
 use work.ga_pkg.all;
 
 entity fitness_sudoku_tb is
@@ -12,7 +11,6 @@ entity fitness_sudoku_tb is
     constant chr_size : natural := 324;
     constant const_size : natural := 324;
     constant fp_size : natural := 8;
-    constant fp_frac : natural := 0;
     constant data_size : natural := 2;
 
     -- Inputs
@@ -34,12 +32,10 @@ architecture rtl of fitness_sudoku_tb is
 
 begin
 
-    uut: entity fitness(sudoku)
+    uut: entity work.fitness_sudoku
         generic map (
             chr_size => chr_size,
-            const_size => const_size,
             fp_size => fp_size,
-            fp_frac => fp_frac,
             data_size => data_size
         )
         port map (

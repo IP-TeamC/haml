@@ -71,12 +71,16 @@ function parseLog() {
             // --------------------
             // GENERATION
             // --------------------
-            if (line.includes("[ctrl] Generation")) {
+            if (line.includes("[GA] Generation") || line.includes("Sudoku geladen")) {
 
                 const genMatch = line.match(/Generation\s+(\d+)/);
                 const fitMatch = line.match(/best_fit=(\d+)/);
 
-                const gen = genMatch ? Number(genMatch[1]) : null;
+                let gen = genMatch ? Number(genMatch[1]) : null;
+
+                if ((line.includes("Sudoku geladen") || line.includes("Uninitialisiertes Feld")) && gen === null) {
+                    gen = 0;
+                }
 
                 if (gen !== lastGeneration) {
                     lastGeneration = gen;
