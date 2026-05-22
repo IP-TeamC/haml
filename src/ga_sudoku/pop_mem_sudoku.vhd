@@ -13,13 +13,13 @@ entity pop_mem_sudoku is
         clk : in  std_logic;
 
         -- Leseport
-        rd_idx : in std_logic_vector(natural(ceil(log2(real(pop_size))))-1 downto 0);
+        rd_idx : in std_logic_vector(natural(ceil(log2(real(pop_size)))) downto 0);
         rd_chr : out std_logic_vector(chr_size-1 downto 0);
         rd_fit : out std_logic_vector(fp_size-1 downto 0);
 
         -- Schreibport
         wr_en : in std_logic;
-        wr_idx : in std_logic_vector(natural(ceil(log2(real(pop_size))))-1 downto 0);
+        wr_idx : in std_logic_vector(natural(ceil(log2(real(pop_size)))) downto 0);
         wr_chr : in std_logic_vector(chr_size-1 downto 0);
         wr_fit : in std_logic_vector(fp_size-1 downto 0)
     );
@@ -36,7 +36,7 @@ begin
 
     mem: entity work.dual_ram
         generic map(
-            adr_size => idx_size,
+            adr_size => idx_size + 1, -- +1 für Ping-Pong
             data_size => row_size
         )
         port map(

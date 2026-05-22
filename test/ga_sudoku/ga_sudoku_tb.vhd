@@ -28,7 +28,7 @@ architecture rtl of ga_sudoku_tb is
 
     signal best_chr : std_logic_vector(chr_size-1 downto 0);
     signal best_fit : std_logic_vector(fp_size-1 downto 0);
-    signal done  : std_logic;
+    signal done : std_logic;
 
 begin
 
@@ -78,7 +78,6 @@ begin
         const <= chr_const;
         
         wait for 1 ns; 
-        print_sudoku(hs_unsolved);
 
         -- Reset
         rst <= '1';

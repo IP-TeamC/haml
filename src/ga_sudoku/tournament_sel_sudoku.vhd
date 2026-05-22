@@ -16,8 +16,8 @@ entity tournament_sel_sudoku is
         rst : in std_logic;
         start : in std_logic;
 
-        -- Zufallszahlen für Kandidatenauswahl
-        rnd : in std_logic_vector(natural(ceil(log2(real(pop_size))))*k*2-1 downto 0);
+        -- Kandidatenauswahl
+        cand_in : in std_logic_vector(natural(ceil(log2(real(pop_size))))*k*2-1 downto 0);
 
         -- Fitnesswerte
         fit_we : in std_logic;
@@ -51,9 +51,9 @@ architecture rtl of tournament_sel_sudoku is
     signal ctr : natural range 0 to k-1;
 begin
 
-    -- Kandidatenindizes aus rnd-Bus extrahieren
+    -- Kandidatenindizes extrahieren
     gen_candidates: for i in 0 to k*2-1 generate
-        candidates(i) <= rnd(idx_size*(i+1)-1 downto idx_size*i);
+        candidates(i) <= cand_in(idx_size*(i+1)-1 downto idx_size*i);
     end generate;
 
     process(clk)
@@ -96,7 +96,7 @@ begin
                             ctr <= 0;
                             state <= S_TOURNAMENT;
 
-                            debug_print("[SELC] Tournament gestartet:");
+                            debug_print("[SEL] Tournament gestartet:");
                             for i in 0 to k-1 loop
                                 debug_print("  > Gruppe A, Cand " & integer'image(i) & ": idx=" & integer'image(to_integer(unsigned(candidates(i)))));
                             end loop;
@@ -107,7 +107,7 @@ begin
 
                     when S_TOURNAMENT =>
 
-                        debug_print("[SELC] Eval Schritt " & integer'image(ctr) & 
+                        debug_print("[SEL] Eval Schritt " & integer'image(ctr) & 
                                     " | A: idx=" & integer'image(to_integer(unsigned(candidates_reg(ctr)))) & 
                                     " fit=" & integer'image(to_integer(unsigned(fitness(ctr)))) & 
                                     " | B: idx=" & integer'image(to_integer(unsigned(candidates_reg(ctr+k)))) & 
@@ -136,7 +136,7 @@ begin
                         done <= '1';
                         state <= S_IDLE;
 
-                        debug_print("[SELC] Gewinner ermittelt:");
+                        debug_print("[SEL] Gewinner ermittelt:");
                         debug_print("  > Gewinner A = idx " & integer'image(to_integer(unsigned(winner_a))) & 
                                     " (Fitness = " & integer'image(to_integer(unsigned(best_fit_a))) & ")");
                         debug_print("  > Gewinner B = idx " & integer'image(to_integer(unsigned(winner_b))) & 

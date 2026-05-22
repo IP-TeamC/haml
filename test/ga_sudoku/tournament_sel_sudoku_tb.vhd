@@ -13,14 +13,14 @@ architecture sim of tournament_sel_sudoku_tb is
     constant k : natural := 4;
     
     constant idx_size : natural := natural(ceil(log2(real(POP_SIZE)))); -- = 6 Bit
-    constant rnd_size : natural := idx_size * K * 2; -- = 48 Bit
+    constant cand_in_size : natural := idx_size * k * 2; -- = 48 Bit
 
     constant CLK_PERIOD : time := 10 ns;
     signal clk : std_logic := '0';
     signal rst : std_logic := '1';
     signal start : std_logic := '0';
 
-    signal rnd : std_logic_vector(rnd_size-1 downto 0) := (others => '0');
+    signal cand_in : std_logic_vector(cand_in_size-1 downto 0) := (others => '0');
     signal fit_we : std_logic := '0';
     signal fit_idx : std_logic_vector(natural(ceil(log2(real(K*2))))-1 downto 0) := (others => '0');
     signal fit_in : std_logic_vector(fp_size-1 downto 0) := (others => '0');
@@ -31,13 +31,11 @@ architecture sim of tournament_sel_sudoku_tb is
     
     type t_integer_array is array (0 to (k*2)-1) of integer;
 
-    function make_rnd_vector(indices : t_integer_array) return std_logic_vector is
-        type t_idx_array is array (0 to 7) of integer;
-        variable arr : t_idx_array := (indices(0), indices(1), indices(2), indices(3), indices(4), indices(5), indices(6), indices(7));
-        variable res : std_logic_vector(rnd_size-1 downto 0);
+    function make_cand_vector(indices : t_integer_array) return std_logic_vector is
+        variable res : std_logic_vector(cand_in_size-1 downto 0);
     begin
-        for i in 0 to (k*2)-1 loop
-            res(idx_size*(i+1)-1 downto idx_size*i) := std_logic_vector(to_unsigned(arr(i), idx_size));
+        for i in 0 to k*2-1 loop
+            res(idx_size*(i+1)-1 downto idx_size*i) := std_logic_vector(to_unsigned(indices(i), idx_size));
         end loop;
         return res;
     end function;
@@ -54,7 +52,7 @@ begin
             clk => clk,
             rst => rst,
             start => start,
-            rnd => rnd,
+            cand_in => cand_in,
             fit_we => fit_we,
             fit_idx => fit_idx,
             fit_in => fit_in,
@@ -124,7 +122,7 @@ begin
         -- Gewinner A muss das Individuum an Slot 1 sein -> Index 42
         -- Gewinner B muss das Individuum an Slot 6 sein -> Index 33
         
-        rnd <= make_rnd_vector((5, 42, 17, 29,  8, 61, 33, 14));
+        cand_in <= make_cand_vector((5, 42, 17, 29,  8, 61, 33, 14));
         
         start <= '1';
         wait for CLK_PERIOD;

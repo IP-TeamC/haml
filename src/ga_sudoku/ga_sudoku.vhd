@@ -61,13 +61,14 @@ architecture rtl of ga_sudoku is
     -- -----------------------------------------------------------------------
     -- pop_mem
     -- -----------------------------------------------------------------------
-    signal pm_rd_idx : std_logic_vector(IDX_W-1 downto 0);
+    signal pm_rd_idx : std_logic_vector(IDX_W downto 0);
     signal pm_rd_chr : std_logic_vector(chr_size-1 downto 0);
     signal pm_rd_fit : std_logic_vector(fp_size-1 downto 0);
     signal pm_wr_en : std_logic;
-    signal pm_wr_idx : std_logic_vector(IDX_W-1 downto 0);
+    signal pm_wr_idx : std_logic_vector(IDX_W downto 0);
     signal pm_wr_chr : std_logic_vector(chr_size-1 downto 0);
     signal pm_wr_fit : std_logic_vector(fp_size-1 downto 0);
+    signal ping_pong : std_logic := '0';
 
     -- -----------------------------------------------------------------------
     -- chr_init
@@ -97,6 +98,8 @@ architecture rtl of ga_sudoku is
 
     type t_cand_arr is array (0 to k*2-1) of std_logic_vector(IDX_W-1 downto 0);
     signal cand : t_cand_arr;
+    signal cand_latch : t_cand_arr;
+    signal sel_cand_vec : std_logic_vector(IDX_W*k*2-1 downto 0);
 
     -- -----------------------------------------------------------------------
     -- crossover
@@ -176,6 +179,10 @@ begin
         cand(i) <= rnd_sel(IDX_W*(i+1)-1 downto IDX_W*i);
     end generate;
 
+    gen_sel_cand: for i in 0 to k*2-1 generate
+        sel_cand_vec(IDX_W*(i+1)-1 downto IDX_W*i) <= cand_latch(i);
+    end generate;
+
     -- -----------------------------------------------------------------------
     -- pop_mem
     -- -----------------------------------------------------------------------
@@ -234,7 +241,7 @@ begin
             clk => clk,
             rst => rst,
             start => sel_start,
-            rnd => rnd_sel,
+            cand_in  => sel_cand_vec,
             fit_we => sel_fit_we,
             fit_idx => sel_fit_idx,
             fit_in => sel_fit_in,
@@ -345,6 +352,7 @@ begin
                             report "[GA] Sudoku geladen (Uninitialisiertes Feld)" severity note;
                             print_sudoku(deserialize_sudoku(const));
                             report "[GA] Starte Solver..." severity note;
+                            report "[GA] Initialisiere leere Felder..." severity note;
 
                             state <= S_INIT_START;
                         end if;
@@ -354,6 +362,7 @@ begin
                     -- --------------------------------------------------------
                     when S_INIT_START =>
                         ci_start <= '1';
+
                         state <= S_INIT_WAIT;
 
                     when S_INIT_WAIT =>
@@ -363,7 +372,7 @@ begin
 
                     when S_INIT_WRITE =>
                         pm_wr_en <= '1';
-                        pm_wr_idx <= std_logic_vector(init_ctr);
+                        pm_wr_idx <= ping_pong & std_logic_vector(init_ctr);
                         pm_wr_chr <= ci_chr;
                         pm_wr_fit <= (others => '1');
 
@@ -379,7 +388,7 @@ begin
                     -- EVALUATION
                     -- --------------------------------------------------------
                     when S_EVAL_READ =>
-                        pm_rd_idx <= std_logic_vector(eval_ctr);
+                        pm_rd_idx <= ping_pong & std_logic_vector(eval_ctr);
                         state <= S_EVAL_READ_WAIT;
 
                     when S_EVAL_READ_WAIT =>
@@ -399,7 +408,7 @@ begin
 
                     when S_EVAL_WRITE =>
                         pm_wr_en <= '1';
-                        pm_wr_idx <= std_logic_vector(eval_ctr);
+                        pm_wr_idx <= ping_pong & std_logic_vector(eval_ctr);
                         pm_wr_chr <= last_chr;
                         pm_wr_fit <= last_fit;
 
@@ -450,19 +459,23 @@ begin
                     -- --------------------------------------------------------
                     when S_ELITE_WRITE =>
                         pm_wr_en <= '1';
-                        pm_wr_idx <= (others => '0');
+                        pm_wr_idx <= (not ping_pong) & std_logic_vector(to_unsigned(0, IDX_W));
                         pm_wr_chr <= best_chr_r;
                         pm_wr_fit <= best_fit_r;
 
                         repr_ctr <= to_unsigned(1, REPR_W); -- Slot 0 = Elite
                         sel_ctr <= (others => '0');
+
+                        for i in 0 to k*2-1 loop
+                            cand_latch(i) <= cand(i); -- LFSR-Snapshot
+                        end loop;
                         state <= S_SEL_READ;
 
                     -- --------------------------------------------------------
                     -- SELEKTION
                     -- --------------------------------------------------------
                     when S_SEL_READ =>
-                        pm_rd_idx <= cand(to_integer(sel_ctr));
+                        pm_rd_idx <= ping_pong & cand_latch(to_integer(sel_ctr));
                         state <= S_SEL_READ_WAIT;
 
                     when S_SEL_READ_WAIT =>
@@ -472,6 +485,13 @@ begin
                         sel_fit_we <= '1';
                         sel_fit_idx <= std_logic_vector(sel_ctr);
                         sel_fit_in <= pm_rd_fit;
+
+                        debug_print("[SEL_LOAD] sel_ctr=" & integer'image(to_integer(sel_ctr)) & 
+                                    " idx=" & integer'image(to_integer(unsigned(cand_latch(to_integer(sel_ctr))))) &
+                                    " fit=" & integer'image(to_integer(unsigned(pm_rd_fit))));
+                        -- if DEBUG_ENABLE then
+                        --     print_sudoku(deserialize_sudoku(pm_rd_chr));
+                        -- end if;
 
                         if sel_ctr = k*2 - 1 then
                             state <= S_SEL_START;
@@ -495,7 +515,7 @@ begin
                     -- REPRODUKTION
                     -- --------------------------------------------------------
                     when S_REPR_READ_A =>
-                        pm_rd_idx <= idx_a_buf;
+                        pm_rd_idx <= ping_pong & idx_a_buf;
                         state <= S_REPR_READ_A_WAIT;
 
                     when S_REPR_READ_A_WAIT =>
@@ -506,7 +526,7 @@ begin
                         state <= S_REPR_READ_B;
 
                     when S_REPR_READ_B =>
-                        pm_rd_idx <= idx_b_buf;
+                        pm_rd_idx <= ping_pong & idx_b_buf;
                         state <= S_REPR_READ_B_WAIT;
 
                     when S_REPR_READ_B_WAIT =>
@@ -541,7 +561,7 @@ begin
                     -- --------------------------------------------------------
                     when S_WRITE_A =>
                         pm_wr_en <= '1';
-                        pm_wr_idx <= std_logic_vector(repr_ctr(IDX_W-1 downto 0));
+                        pm_wr_idx <= (not ping_pong) & std_logic_vector(repr_ctr(IDX_W-1 downto 0));
                         pm_wr_chr <= mut_a_out;
                         pm_wr_fit <= (others => '1');
                         state <= S_WRITE_B;
@@ -549,7 +569,7 @@ begin
                     when S_WRITE_B =>
                         if repr_ctr < pop_size - 1 then
                             pm_wr_en  <= '1';
-                            pm_wr_idx <= std_logic_vector(resize(repr_ctr + 1, IDX_W));
+                            pm_wr_idx <= (not ping_pong) & std_logic_vector(resize(repr_ctr + 1, IDX_W));
                             pm_wr_chr <= mut_b_out;
                             pm_wr_fit <= (others => '1');
                         else
@@ -558,10 +578,14 @@ begin
 
                         if repr_ctr >= pop_size - 2 then
                             eval_ctr <= (others => '0');
+                            ping_pong <= not ping_pong;
                             state <= S_EVAL_READ;
                         else
                             repr_ctr <= repr_ctr + 2;
                             sel_ctr <= (others => '0');
+                            for i in 0 to k*2-1 loop
+                                cand_latch(i) <= cand(i);
+                            end loop;
                             state <= S_SEL_READ;
                         end if;
 
