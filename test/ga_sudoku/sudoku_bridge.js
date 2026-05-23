@@ -2,15 +2,8 @@ const fs = require("fs");
 const path = require("path");
 const WebSocket = require("ws");
 
-let input = process.argv[2];
-
-if (!input) {
-    input = "sim.log"
-}
-
-if (!input.toLowerCase().endsWith(".log")) {
-    input += ".log";
-}
+let input = process.argv[2] || "sim.log";
+if (!input.toLowerCase().endsWith(".log")) input += ".log";
 
 const logPath = path.join(__dirname, input);
 console.log("LOG PATH:", logPath);
@@ -18,159 +11,107 @@ console.log("LOG PATH:", logPath);
 const wss = new WebSocket.Server({ port: 8080 });
 console.log("WebSocket running on ws://localhost:8080");
 
-// --------------------
-// STATE
-// --------------------
 let history = [];
 let latest = null;
 let lastGeneration = null;
 let current = null;
 let lastSize = 0;
 
-// Start parsing on boot
+let solution = null;
+let fixedMask = null;
+let currentGridType = null;
+
 parseLog();
 
-// --------------------
-// PARSER
-// --------------------
 function parseLog() {
-
     if (!fs.existsSync(logPath)) return;
-
     const stats = fs.statSync(logPath);
-
-    // file got truncated or rotated
-    if (stats.size < lastSize) {
-        lastSize = 0;
-        history = [];
-        latest = null;
-        current = null;
-        lastGeneration = null;
-    }
-
+    if (stats.size < lastSize) { lastSize = 0; history = []; latest = null; current = null; }
     if (stats.size === lastSize) return;
 
-    const stream = fs.createReadStream(logPath, {
-        start: lastSize,
-        encoding: "utf-8"
-    });
-
+    const stream = fs.createReadStream(logPath, { start: lastSize, encoding: "utf-8" });
     let buffer = "";
-
-    stream.on("data", chunk => {
-        buffer += chunk;
-    });
-
+    stream.on("data", chunk => buffer += chunk);
     stream.on("end", () => {
-
         const lines = buffer.split("\n");
 
         for (const line of lines) {
             if (!line) continue;
 
-            // --------------------
-            // GENERATION
-            // --------------------
-            if (line.includes("[GA] Generation") || line.includes("Sudoku geladen")) {
-
-                const genMatch = line.match(/Generation\s+(\d+)/);
-                const fitMatch = line.match(/best_fit=(\d+)/);
-
-                let gen = genMatch ? Number(genMatch[1]) : null;
-
-                if ((line.includes("Sudoku geladen") || line.includes("Uninitialisiertes Feld")) && gen === null) {
-                    gen = 0;
-                }
-
-                if (gen !== lastGeneration) {
-                    lastGeneration = gen;
-
-                    current = {
-                        generation: gen,
-                        fitness: fitMatch ? Number(fitMatch[1]) : null,
-                        grid: []
-                    };
-                }
+            if (line.includes("[Bridge] Sudoku Solution")) {
+                currentGridType = "solution";
+                solution = [];
+                continue;
+            }
+            if (line.includes("[GA] Sudoku geladen")) {
+                currentGridType = "mask";
+                fixedMask = [];
+                continue;
             }
 
-            // --------------------
-            // GRID
-            // --------------------
-            if (current && line.includes("|") && /\d/.test(line)) {
+            // Generation Start erkennen
+            if (line.includes("[GA] Generation")) {
+                const genMatch = line.match(/Generation\s+(\d+)/);
+                const fitMatch = line.match(/best_fit=(\d+)/);
+                const timeMatch = line.match(/@(\d+[a-zA-Z]+)/);
 
-                const nums = line
-                    .split("|")
-                    .map(p => p.trim())
-                    .filter(Boolean)
-                    .map(p =>
-                        p.split(/\s+/)
-                            .map(v => v === "." ? 0 : Number(v))
-                            .filter(n => !isNaN(n))
-                    )
+                current = {
+                    generation: genMatch ? Number(genMatch[1]) : 0,
+                    fitness: fitMatch ? Number(fitMatch[1]) : null,
+                    time: timeMatch ? timeMatch[1] : "",
+                    grid: []
+                };
+                currentGridType = "grid";
+            }
+
+            // Grid parsen
+            if (line.includes("|") && /\d/.test(line)) {
+                const nums = line.split("|").map(p => p.trim()).filter(Boolean)
+                    .map(p => p.split(/\s+/).map(v => v === "." ? 0 : Number(v)).filter(n => !isNaN(n)))
                     .flat();
 
                 if (nums.length === 9) {
-                    current.grid.push(nums);
-                }
-
-                if (current.grid.length === 9) {
-
-                    const snapshot = {
-                        type: "grid",
-                        ...current
-                    };
-
-                    latest = snapshot;
-                    history.push(snapshot);
-
-                    broadcast(snapshot);
-                    current = null;
+                    if (currentGridType === "solution") {
+                        solution.push(nums);
+                        if (solution.length === 9) currentGridType = null;
+                    } else if (currentGridType === "mask") {
+                        fixedMask.push(nums.map(n => n !== 0));
+                        if (fixedMask.length === 9) currentGridType = null;
+                    } else if (currentGridType === "grid" && current) {
+                        current.grid.push(nums);
+                        if (current.grid.length === 9) {
+                            latest = { type: "grid", ...current, solution, fixedMask };
+                            history.push(latest);
+                            broadcast(latest);
+                            current = null;
+                        }
+                    }
                 }
             }
         }
-
         lastSize = stats.size;
     });
 }
 
-// --------------------
-// WATCH FILE
-// --------------------
-fs.watchFile(logPath, { interval: 300 }, () => {
-    parseLog();
-});
+fs.watchFile(logPath, { interval: 300 }, parseLog);
 
-// --------------------
-// WS
-// --------------------
 wss.on("connection", (ws) => {
-
-    console.log("Client connected");
-
     ws.on("message", (msg) => {
         const data = JSON.parse(msg);
-
         if (data.type === "init") {
-
             ws.send(JSON.stringify({
                 type: "init",
+                logName: path.parse(logPath).name,
                 history,
-                latest
+                latest,
+                solution,
+                fixedMask
             }));
         }
     });
 });
 
-// --------------------
-// BROADCAST (nur latest)
-// --------------------
 function broadcast(data) {
-
     const msg = JSON.stringify(data);
-
-    wss.clients.forEach(c => {
-        if (c.readyState === WebSocket.OPEN) {
-            c.send(msg);
-        }
-    });
+    wss.clients.forEach(c => { if (c.readyState === WebSocket.OPEN) c.send(msg); });
 }

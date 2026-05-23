@@ -61,10 +61,16 @@
             position: relative;
         }
 
+        /* Modus 1: Lösung ist bekannt (Grün / Rot) */
         .fixed-correct { background:#3a3a3a; color:#d1d5db; }
         .fixed-wrong { background:rgba(226,136,19,0.25); border-color:#e28813; color:#f8c685; }
         .correct { background:rgba(19, 187, 81, 0.25); border-color:#22c55e; color:#86efac; }
         .wrong { background:rgba(206, 34, 34, 0.25); border-color:#cf2828; color:#fca5a5; }
+
+        /* Modus 2: Keine Lösung bekannt (Blau / Orange / Grau) */
+        .fixed-field { background:#3a3a3a; color:#d1d5db; }
+        .guess-field { background:rgba(255,255,255,0.25); color:#d1d5db; }
+        .conflict-field { background:rgba(226,226,00,0.25); border-color:#dee213; color:#f8eb85; }
 
         .topbar {
             display:flex;
@@ -169,33 +175,8 @@
     let history = [];
     let replayMode = false;
 
-    const solution = [
-        [7,6,1,5,8,2,9,3,4],
-        [2,4,5,3,1,9,6,8,7],
-        [9,8,3,6,7,4,2,5,1],
-
-        [8,3,7,1,9,6,4,2,5],
-        [4,9,6,7,2,5,3,1,8],
-        [1,5,2,4,3,8,7,6,9],
-
-        [3,2,4,8,5,7,1,9,6],
-        [5,7,9,2,6,1,8,4,3],
-        [6,1,8,9,4,3,5,7,2]
-    ];
-
-    const hs_unsolved = [
-        [7,0,0,5,8,2,9,3,4],
-        [2,0,5,0,1,9,0,0,7],
-        [0,0,3,0,0,0,2,0,1],
-
-        [0,3,7,1,0,6,4,2,5],
-        [4,9,0,7,0,0,0,1,0],
-        [0,5,2,0,3,8,7,0,0],
-
-        [0,2,0,0,5,7,1,9,6],
-        [5,7,9,2,6,0,0,0,3],
-        [6,0,0,0,4,3,5,7,2]
-    ];
+    let solution = null;
+    let fixedMask = null;
 
     let ws;
     const toast = document.getElementById("ws-toast");
@@ -212,7 +193,7 @@
         ws = new WebSocket("ws://localhost:8080");
 
         ws.onopen = () => {
-            toastText.textContent = "Live connected";
+            toastText.textContent = "Connected";
             toastText.style.color = "var(--text)";
             toast.className = "connected";
             reconnectBtn.style.display = "none";
@@ -235,9 +216,17 @@
 
         ws.onmessage = (event) => {
             const msg = JSON.parse(event.data);
+            console.log(msg);
+
+            if (msg.solution) solution = msg.solution;
+            if (msg.fixedMask) fixedMask = msg.fixedMask;
 
             // INITIAL FULL STATE
             if (msg.type === "init") {
+                if (msg.logName) {
+                    toastText.textContent = `Connected - ${msg.logName}`;
+                }
+
                 history = msg.history || [];
                 latest = msg.latest || null;
 
@@ -269,6 +258,30 @@
     // Initiale Verbindung starten
     connectWS();
 
+    function hasConflict(grid, r, c, val) {
+        if (val === 0) return false;
+        
+        // Reihe prüfen
+        for (let i = 0; i < 9; i++) {
+            if (i !== c && grid[r][i] === val) return true;
+        }
+        // Spalte prüfen
+        for (let i = 0; i < 9; i++) {
+            if (i !== r && grid[i][c] === val) return true;
+        }
+        // 3x3 Block prüfen
+        const br = Math.floor(r / 3) * 3;
+        const bc = Math.floor(c / 3) * 3;
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                const rr = br + i;
+                const cc = bc + j;
+                if ((rr !== r || cc !== c) && grid[rr][cc] === val) return true;
+            }
+        }
+        return false;
+    }
+
     function render() {
         if (!latest) return;
 
@@ -287,51 +300,84 @@
                 block.style.gridTemplateColumns = "repeat(3, 48px)";
                 block.style.gap = "2px";
 
-                for (let r = 0; r < 3; r++) {
+for (let r = 0; r < 3; r++) {
                     for (let c = 0; c < 3; c++) {
 
                         const row = br * 3 + r;
                         const col = bc * 3 + c;
 
                         const val = latest.grid[row][col];
+                        const isFixed = fixedMask ? fixedMask[row][col] : false;
 
                         const cell = document.createElement("div");
                         cell.className = "cell";
-
-                        const isFixed = hs_unsolved[row][col] !== 0;
-
+                        
                         cell.textContent = val === 0 ? "" : val;
+                        if (val === 0) emptyCells++;
 
-                        if (val === solution[row][col]) {
-                            cell.classList.add(isFixed ? "fixed-correct" : "correct");
+                        if (solution) {
+                            // --- MODUS 1: ECHTE LÖSUNG IST BEKANNT ---
+                            const isCorrect = (val === solution[row][col]);
+                            if (isCorrect) {
+                                cell.classList.add(isFixed ? "fixed-correct" : "correct");
+                            } else {
+                                cell.classList.add(isFixed ? "fixed-wrong" : "wrong");
+                                errors++;
+
+                                const hint = document.createElement("div");
+                                hint.style.position = "absolute";
+                                hint.style.bottom = "2px";
+                                hint.style.right = "4px";
+                                hint.style.fontSize = "10px";
+                                hint.style.color = "#9ca3af";
+                                hint.textContent = solution[row][col];
+                                cell.appendChild(hint);
+                            }
                         } else {
-                            cell.classList.add(isFixed ? "fixed-wrong" : "wrong");
-                            errors++;
+                            // --- MODUS 2: KEINE LÖSUNG ---
+                            const conflict = (val !== 0 && hasConflict(latest.grid, row, col, val));
+                            
+                            if (conflict) {
+                                errors++;
+                            }
 
-                            const hint = document.createElement("div");
-                            hint.style.position = "absolute";
-                            hint.style.bottom = "2px";
-                            hint.style.right = "4px";
-                            hint.style.fontSize = "10px";
-                            hint.style.color = "#9ca3af";
-                            hint.textContent = solution[row][col];
-                            cell.appendChild(hint);
+                            if (isFixed) {
+                                cell.classList.add("fixed-field");
+                            } else if (conflict) {
+                                cell.classList.add("conflict-field");
+                            } else {
+                                cell.classList.add("guess-field");
+                            }
                         }
 
                         block.appendChild(cell);
                     }
                 }
-
                 out.appendChild(block);
             }
         }
 
-        const infoText = errors === 0
-            ? "✅ Solved"
-            : `❌ Fehler: ${errors}`;
+        let isSolved = false;
+        let infoText = "";
+
+        if (solution) {
+            isSolved = (errors === 0);
+            infoText = isSolved ? "✅ Solved" : `❌ Fehler: ${errors}`;
+        } else {
+            isSolved = (errors === 0 && emptyCells === 0);
+            if (isSolved) {
+                infoText = "✅ Solved";
+            } else if (errors > 0) {
+                infoText = `⚠️ Konflikte: ${errors}`;
+            } else {
+                infoText = `⏳ Unvollständig (${emptyCells} leer)`;
+            }
+        }
+
+        const timeString = latest.time ? ` - 🕒 ${latest.time}` : "";
 
         meta.textContent = latest.generation !== undefined && latest.generation !== null
-            ? `🧬 Generation: ${latest.generation} - 📊 Fitness: ${latest.fitness} - ${infoText}`
+            ? `🧬 Generation: ${latest.generation} - 📊 Fitness: ${latest.fitness} - ${infoText}` + timeString
             : "";
 
         if (errors === 0) {
@@ -441,8 +487,6 @@
         ctx.fillText(`min: ${minFitness}`, 10, canvas.height - 5);
 
         const y = padding + (1 - (bestFitness / (maxFitness || 1))) * h;
-
-
 
         ctx.fillText(`best: ${bestFitness}`, 10, y);
     }
