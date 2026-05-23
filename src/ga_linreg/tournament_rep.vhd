@@ -11,6 +11,7 @@ entity tournament_rep is
         k : natural;
         var_num : natural;
         fp_size : natural;
+        fit_size : natural;
         adr_size : natural;
         replace_with_worse : boolean
     );
@@ -19,8 +20,9 @@ entity tournament_rep is
         rst : in std_logic;
         start : in std_logic;
 
-        chr_fit : in std_logic_vector(fp_size-1 downto 0);
-        chr_do : in std_logic_vector(fp_size*(var_num+2)-1 downto 0);
+        chr_fit : in std_logic_vector(fit_size-1 downto 0);
+        fit_do : in std_logic_vector(fit_size-1 downto 0);
+        chr_do : in std_logic_vector(fp_size*(var_num+1)-1 downto 0);
         chr_adr : out std_logic_vector(adr_size-1 downto 0);
         chr_we : out std_logic;
 
@@ -52,6 +54,7 @@ architecture rtl of tournament_rep is
     signal next_done : std_logic;
     signal is_done : std_logic;
 
+    signal fit_cache : unsigned(fit_do'range);
     signal chr_cache : std_logic_vector(chr_do'range);
     signal adr_cache : std_logic_vector(chr_adr'range);
 
@@ -79,14 +82,14 @@ begin
         else s_ready when state = s_cmp
         else state;
 
-    is_worse <= '1' when flat_unsigned(chr_cache, fp_size, var_num+1) >= worst_fit
+    is_worse <= '1' when fit_cache >= worst_fit
         else '0';
 
     next_worst_adr <= adr_cache when state = s_read and is_worse = '1'
         else worst_adr;
 
     next_worst_fit <= (others => '0') when rst = '1' or state = s_ready
-        else flat_unsigned(chr_cache, fp_size, var_num+1) when state = s_read and is_worse = '1'
+        else fit_cache when state = s_read and is_worse = '1'
         else worst_fit;
 
     next_cnt <= (0 => '1', others => '0') when rst = '1' or state = s_ready
@@ -109,6 +112,7 @@ begin
             cnt <= next_cnt;
             chr_we <= next_chr_we;
             is_done <= next_done;
+            fit_cache <= unsigned(fit_do);
             chr_cache <= chr_do;
             adr_cache <= prev_adr;
 

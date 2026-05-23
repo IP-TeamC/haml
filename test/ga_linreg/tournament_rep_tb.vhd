@@ -13,6 +13,7 @@ entity tournament_rep_tb is
     constant k : natural := 3;
     constant var_num : natural := 2;
     constant fp_size : natural := 4;
+    constant fit_size : natural := fp_size;
     constant adr_size : natural := 8;
     constant replace_with_worse : boolean := false;
 
@@ -20,8 +21,9 @@ entity tournament_rep_tb is
     signal clk : std_logic := '1';
     signal rst : std_logic;
     signal start : std_logic;
-    signal chr_fit : std_logic_vector(fp_size-1 downto 0);
-    signal chr_do : std_logic_vector(fp_size*(var_num+2)-1 downto 0);
+    signal chr_fit : std_logic_vector(fit_size-1 downto 0);
+    signal fit_do : std_logic_vector(fit_size-1 downto 0);
+    signal chr_do : std_logic_vector(fp_size*(var_num+1)-1 downto 0);
 
     -- Outputs
     signal chr_adr : std_logic_vector(adr_size-1 downto 0);
@@ -39,6 +41,7 @@ begin
             k => k,
             var_num => var_num,
             fp_size => fp_size,
+            fit_size => fit_size,
             adr_size => adr_size,
             replace_with_worse => replace_with_worse
         )
@@ -47,6 +50,7 @@ begin
             rst => rst,
             start => start,
             chr_fit => chr_fit,
+            fit_do => fit_do,
             chr_do => chr_do,
             chr_adr => chr_adr,
             chr_we => chr_we,
@@ -77,7 +81,8 @@ begin
         wait for clk_period;
 
         -- Read
-        chr_do <= "1011000100010001";
+        fit_do <= "1011";
+        chr_do <= "000100010001";
         start <= '0';
         assert done = '0';
         assert chr_we = '0';
@@ -86,14 +91,16 @@ begin
         tmp := chr_adr;
         worst_adr := chr_adr; -- fuer folgende Daten -->
         wait for clk_period;
-        chr_do <= "1101001000100010";
+        fit_do <= "1101";
+        chr_do <= "001000100010";
         assert done = '0';
         assert chr_we = '0';
         assert chr_adr /= "00000000";
         assert chr_adr /= tmp;
         tmp := chr_adr;
         wait for clk_period;
-        chr_do <= "0100010001000100";
+        fit_do <= "0100";
+        chr_do <= "010001000100";
         assert done = '0';
         assert chr_we = '0';
         assert chr_adr /= "00000000";
@@ -102,7 +109,8 @@ begin
         wait for clk_period;
 
         -- Compare
-        chr_do <= "1111111111111111";
+        fit_do <= "1111";
+        chr_do <= "111111111111";
         assert done = '0';
         assert chr_we = '0';
         assert chr_adr /= "00000000";
@@ -111,7 +119,8 @@ begin
         wait for clk_period;
 
         -- Delay (Caching)
-        chr_do <= "1111111111111111";
+        fit_do <= "1111";
+        chr_do <= "111111111111";
         assert done = '0';
         assert chr_we = '0';
         assert chr_adr /= "00000000";

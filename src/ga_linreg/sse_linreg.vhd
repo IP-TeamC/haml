@@ -10,6 +10,7 @@ entity sse_linreg is
         var_num : natural;
         fp_size : natural;
         fp_frac : natural;
+        fit_size : natural;
         adr_size : natural
     );
     port (
@@ -20,7 +21,7 @@ entity sse_linreg is
 
         ram_dp_do : in std_logic_vector(fp_size*(var_num+1)-1 downto 0);
 
-        fit : out std_logic_vector(fp_size-1 downto 0);
+        fit : out std_logic_vector(fit_size-1 downto 0);
         done : out std_logic
     );
 end entity;
@@ -39,7 +40,7 @@ architecture rtl of sse_linreg is
     signal mul_valid : std_logic;
 
     constant adder_extra_bits : natural := natural(ceil(log2(real(var_num+1))));
-    type t_adder_values is array (0 to var_num) of signed(fp_size-1 downto 0);
+    type t_adder_values is array (0 to var_num) of signed(2*fp_size-1 downto 0);
     signal adder_values : t_adder_values;
     signal adder_values_flat : std_logic_vector((adder_extra_bits+fp_size)*(var_num+1)-1 downto 0);
     signal adder_valid : std_logic;
@@ -58,7 +59,7 @@ architecture rtl of sse_linreg is
     signal err : unsigned(err_extra_bits+2*fp_size-3 downto 0);
     signal err_valid : std_logic;
 
-    function create_pos1_adder_values return std_logic_vector is
+    function create_max_adder_values return std_logic_vector is
         variable tmp : std_logic_vector(adder_extra_bits+fp_size-1 downto 0);
     begin
         tmp(adder_extra_bits+fp_size-1 downto fp_size-1) := (others => '0');
@@ -66,13 +67,13 @@ architecture rtl of sse_linreg is
         return tmp;
     end function;
 
-    constant pos1_adder_values : std_logic_vector(adder_sum'range) := create_pos1_adder_values;
-    constant pos1_err : unsigned(err'range) := (err_extra_bits-1 downto 0 => '0') & (2*fp_size-3 downto 0 => '1');
+    constant max_adder_values : std_logic_vector(adder_sum'range) := create_max_adder_values;
+    constant max_err : unsigned(err'range) := (err_extra_bits-1 downto 0 => '0') & (2*fp_size-3 downto 0 => '1');
     constant neg1 : signed(fp_size-1 downto 0) := rotate_right(to_signed(1, fp_size), 1);
 
 begin
 
-    fit <= std_logic_vector(err(err'high downto err'high-fp_size+1));
+    fit <= std_logic_vector(err(err'high downto err'high-fit_size+1));
 
     -- Stage 1: RAM-Daten in Register zwischenspeichern
     process (clk)
@@ -91,7 +92,7 @@ begin
         if rising_edge(clk) then
 
             -- erwarteten Funktionswert weitergeben
-            mul_expected <= std_logic_vector(reg_dp(0));
+            mul_expected <= std_logic_vector(shift_right(reg_dp(0), fp_size-fp_frac-1));
 
             for i in 0 to var_num loop
 
@@ -102,10 +103,11 @@ begin
                 end if;
 
                 if i = 0 then
-                    adder_values(0) <= signed(reg_chr(0));
+                    adder_values(0)(2*fp_size-1 downto fp_size+fp_frac) <= (others => reg_chr(0)(fp_size-1));
+                    adder_values(0)(fp_size+fp_frac-1 downto fp_frac) <= signed(reg_chr(0));
+                    adder_values(0)(fp_frac-1 downto 0) <= (others => '0');
                 else
-                    -- Multiplikation normalisiert zwischen -1 und +1 ist in demselben Wertebereich (aber Verlust von Genauigkeit, Sonderfall -1*-1 abrunden auf 0,99... in Folge-Stage)
-                    adder_values(i) <= fp_mul(reg_chr(i), reg_dp(i), fp_frac);
+                    adder_values(i) <= reg_chr(i) * reg_dp(i);
                 end if;
 
             end loop;
@@ -117,8 +119,8 @@ begin
     gen_adder_values_flat: for i in 0 to var_num generate
         with mul_neg1(i) select
             adder_values_flat(flat_upper(adder_extra_bits+fp_size, i) downto flat_lower(adder_extra_bits+fp_size, i)) <=
-                std_logic_vector(resize(adder_values(i), adder_extra_bits+fp_size)) when '0',
-                pos1_adder_values when others; -- Sonderfall -1*-1 auf 0,99... abrunden
+                std_logic_vector(resize(adder_values(i)(2*fp_size-2 downto fp_size-1), adder_extra_bits+fp_size)) when '0',
+                max_adder_values when others; -- Asymmetrie/Sonderfall MIN*MIN abrunden
     end generate;
 
     -- Stage 3+: Addition der Multiplikationsergebnisse im Adder-Tree (Multi-Stage)
@@ -176,13 +178,13 @@ begin
         if rising_edge(clk) then
             valid_neg1 := err_valid & diff_sq_neg1;
             if diff_sq_valid = '1' then
+                -- vorderste beide MSBs nach Multiplikation (Asymmetrie/Sonderfall MIN*MIN abrunden) immer gleich
+                -- Quadrat ist immer positiv (MSB = 0) => vorderste beide MSBs immer 0
                 case valid_neg1 is
-                    -- Vorkomma-Bits nach Quadrieren immer 0 (außer Sonderfall 1 -> Abrunden auf 0,99... in Folge-Stage)
                     when "00" => err <= resize(diff_sq(diff_sq'high-2 downto 0), err_extra_bits+2*fp_size-2);
-                    when "01" => err <= pos1_err;
-                    -- Vorkomma-Bits nach Quadrieren immer 0 (außer Sonderfall 1 -> Abrunden auf 0,99... in Folge-Stage)
+                    when "01" => err <= max_err;
                     when "10" => err <= err + resize(diff_sq(diff_sq'high-2 downto 0), err_extra_bits+2*fp_size-2);
-                    when "11" => err <= err + pos1_err;
+                    when "11" => err <= err + max_err;
                     when others =>
                 end case;
             end if;

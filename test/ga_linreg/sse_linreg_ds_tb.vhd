@@ -14,6 +14,7 @@ entity sse_linreg_ds_tb is
     constant var_num : natural := 1;
     constant fp_size : natural := 18;
     constant fp_frac : natural := 17;
+    constant fit_size : natural := fp_size;
     constant adr_size : natural := 6;
 
     -- Inputs
@@ -42,6 +43,7 @@ begin
             var_num => var_num,
             fp_size => fp_size,
             fp_frac => fp_frac,
+            fit_size => fit_size,
             adr_size => adr_size
         )
         port map (

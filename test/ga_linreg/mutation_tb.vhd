@@ -13,6 +13,7 @@ entity mutation_tb is
     constant mask_factor : natural := 1;
     constant var_num : natural := 2;
     constant fp_size : natural := 18;
+    constant mut_arith : boolean := false;
 
     -- Inputs
     signal clk : std_logic := '1';
@@ -34,7 +35,8 @@ begin
         generic map (
             mask_factor => mask_factor,
             var_num => var_num,
-            fp_size => fp_size
+            fp_size => fp_size,
+            mut_arith => mut_arith
         )
         port map (
             clk => clk,

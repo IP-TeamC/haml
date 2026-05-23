@@ -16,9 +16,9 @@ entity pop_init is
         rst : in std_logic;
         start : in std_logic;
         fitness_done : in std_logic;
-        fitness_fit : in std_logic_vector(fp_size-1 downto 0);
 
-        ram_chr_we : out std_logic_vector(var_num+1 downto 0);
+        ram_fit_we : out std_logic;
+        ram_chr_we : out std_logic_vector(var_num downto 0);
         ram_chr_adr : out std_logic_vector(adr_size-1 downto 0);
         ram_chr_di : out std_logic_vector(fp_size-1 downto 0);
 
@@ -33,10 +33,8 @@ architecture rtl of pop_init is
     signal state : t_state;
     signal next_state : t_state;
 
-    signal rand : std_logic_vector(ram_chr_di'range);
-
-    signal chr_we : std_logic_vector(ram_chr_we'range);
-    signal next_chr_we : std_logic_vector(ram_chr_we'range);
+    signal chr_we : std_logic_vector(ram_chr_we'high+1 downto 0);
+    signal next_chr_we : std_logic_vector(ram_chr_we'high+1 downto 0);
 
     signal chr_adr : unsigned(ram_chr_adr'range);
     signal next_chr_adr : unsigned(ram_chr_adr'range);
@@ -49,9 +47,9 @@ architecture rtl of pop_init is
 
 begin
 
-    ram_chr_we <= chr_we;
+    ram_fit_we <= chr_we(var_num+1);
+    ram_chr_we <= chr_we(var_num downto 0);
     ram_chr_adr <= std_logic_vector(chr_adr);
-    ram_chr_di <= rand when state = s_generate else fitness_fit;
 
     lfsr: entity work.lfsr
         generic map(
@@ -62,7 +60,7 @@ begin
             rst => rst,
             generator => prim_gen(fp_size),
             seed => sample_seed(fp_size, 62),
-            rand => rand
+            rand => ram_chr_di
         );
 
     next_state <= s_ready when rst = '1'

@@ -7,6 +7,7 @@ entity fitness_linreg is
         var_num : natural;
         fp_size : natural;
         fp_frac : natural;
+        fit_size : natural;
         adr_size : natural
     );
     port (
@@ -19,7 +20,7 @@ entity fitness_linreg is
         ram_dp_do : in std_logic_vector(fp_size*(var_num+1)-1 downto 0);
         ram_dp_adr : out std_logic_vector(adr_size-1 downto 0);
 
-        fit : out std_logic_vector(fp_size-1 downto 0);
+        fit : out std_logic_vector(fit_size-1 downto 0);
         done : out std_logic
     );
 end entity;
@@ -45,6 +46,7 @@ begin
             var_num => var_num,
             fp_size => fp_size,
             fp_frac => fp_frac,
+            fit_size => fit_size,
             adr_size => adr_size
         )
         port map(

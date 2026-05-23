@@ -13,8 +13,10 @@ entity trainer is
         k_rep : natural;
         var_num : natural;
         fp_size : natural;
+        fit_size : natural;
         chr_adr_size : natural;
-        replace_with_worse : boolean
+        replace_with_worse : boolean;
+        mut_arith : boolean
     );
 
     port (
@@ -23,12 +25,15 @@ entity trainer is
         start : in std_logic;
 
         fitness_done : in std_logic;
-        fitness_fit : in std_logic_vector(fp_size-1 downto 0);
+        fitness_fit : in std_logic_vector(fit_size-1 downto 0);
 
-        ram_chr_do : in std_logic_vector(fp_size*(var_num+2)-1 downto 0);
-        ram_chr_we : out std_logic_vector(var_num+1 downto 0);
+        ram_fit_do : in std_logic_vector(fit_size-1 downto 0);
+        ram_fit_we : out std_logic;
+
+        ram_chr_do : in std_logic_vector(fp_size*(var_num+1)-1 downto 0);
+        ram_chr_we : out std_logic_vector(var_num downto 0);
         ram_chr_adr : out std_logic_vector(chr_adr_size-1 downto 0);
-        ram_chr_di : out std_logic_vector(fp_size*(var_num+2)-1 downto 0);
+        ram_chr_di : out std_logic_vector(fp_size*(var_num+1)-1 downto 0);
 
         fitness_start : out std_logic;
         done : out std_logic
@@ -71,11 +76,11 @@ begin
 
     done <= '1' when state = s_ready else '0';
 
+    ram_fit_we <= tr_ram_chr_we;
     ram_chr_we <= (others => tr_ram_chr_we);
     ram_chr_adr <= ts_ram_chr_adr when state = s_select
         else tr_ram_chr_adr;
-    ram_chr_di(fp_size*(var_num+2)-1 downto fp_size*(var_num+1)) <= fitness_fit;
-    ram_chr_di(fp_size*(var_num+1)-1 downto 0) <= mut_chr_mut;
+    ram_chr_di <= mut_chr_mut;
 
     ts_start <= '1' when state = s_select and prev_state /= s_select
         else '0';
@@ -93,12 +98,14 @@ begin
             k => k_sel,
             var_num => var_num,
             fp_size => fp_size,
+            fit_size => fit_size,
             adr_size => chr_adr_size
         )
         port map(
             clk => clk,
             rst => rst,
             start => ts_start,
+            fit_do => ram_fit_do,
             chr_do => ram_chr_do,
             chr_adr => ts_ram_chr_adr,
             done => ts_done,
@@ -115,8 +122,8 @@ begin
             clk => clk,
             rst => rst,
             start => cross_start,
-            chr_parent1 => ts_best_chr1(flat_upper(fp_size, var_num) downto 0),
-            chr_parent2 => ts_best_chr2(flat_upper(fp_size, var_num) downto 0),
+            chr_parent1 => ts_best_chr1,
+            chr_parent2 => ts_best_chr2,
             done => cross_done,
             chr_child => cross_chr_child
         );
@@ -125,7 +132,8 @@ begin
         generic map(
             mask_factor => mask_factor,
             var_num => var_num,
-            fp_size => fp_size
+            fp_size => fp_size,
+            mut_arith => mut_arith
         )
         port map(
             clk => clk,
@@ -141,6 +149,7 @@ begin
             k => k_rep,
             var_num => var_num,
             fp_size => fp_size,
+            fit_size => fit_size,
             adr_size => chr_adr_size,
             replace_with_worse => replace_with_worse
         )
@@ -149,6 +158,7 @@ begin
             rst => rst,
             start => tr_start,
             chr_fit => fitness_fit,
+            fit_do => ram_fit_do,
             chr_do => ram_chr_do,
             chr_adr => tr_ram_chr_adr,
             chr_we => tr_ram_chr_we,

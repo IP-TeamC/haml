@@ -19,9 +19,11 @@ entity ga_linreg is
         var_num : natural := 2;
         fp_size : natural := 18;
         fp_frac : natural := 17;
+        fit_size: natural := 36;
         dp_adr_size : natural := 8;
         chr_adr_size : natural := 8;
-        replace_with_worse : boolean := true
+        replace_with_worse : boolean := false;
+        mut_arith : boolean := true
     );
 
     port (
@@ -57,14 +59,21 @@ architecture rtl of ga_linreg is
     signal next_dp_end_adr : std_logic_vector(dp_end_adr'range);
 
     -- RAM fuer Population/Chromosome
-    signal ram_chr_we : std_logic_vector(var_num+1 downto 0);
+    signal ram_chr_we : std_logic_vector(var_num downto 0);
     signal ram_chr_adr : std_logic_vector(chr_adr_size-1 downto 0);
-    signal ram_chr_di : t_ram_data(0 to var_num+1);
-    signal ram_chr_do : std_logic_vector(fp_size*(var_num+2)-1 downto 0);
+    signal ram_chr_di : t_ram_data(0 to var_num);
+    signal ram_chr_do : std_logic_vector(fp_size*(var_num+1)-1 downto 0);
+
+    -- RAM fuer Fitness der Population/Chromosome
+    signal ram_fit_we : std_logic;
+    signal ram_fit_adr : std_logic_vector(chr_adr_size-1 downto 0);
+    signal ram_fit_di : std_logic_vector(fit_size-1 downto 0);
+    signal ram_fit_do : std_logic_vector(fit_size-1 downto 0);
 
     -- Population Initializer
     signal init_start : std_logic;
     signal init_done : std_logic;
+    signal init_ram_fit_we : std_logic;
     signal init_ram_chr_we : std_logic_vector(ram_chr_we'range);
     signal init_ram_chr_adr : std_logic_vector(ram_chr_adr'range);
     signal init_ram_chr_di : std_logic_vector(fp_size-1 downto 0);
@@ -74,11 +83,12 @@ architecture rtl of ga_linreg is
     signal fitness_start : std_logic;
     signal fitness_chr : std_logic_vector(fp_size*(var_num+1)-1 downto 0);
     signal fitness_ram_dp_adr : std_logic_vector(ram_dp_adr'range);
-    signal fitness_fit : std_logic_vector(ram_chr_di(0)'range);
+    signal fitness_fit : std_logic_vector(ram_fit_di'range);
     signal fitness_done : std_logic;
 
     -- Trainer
     signal trainer_start : std_logic;
+    signal trainer_ram_fit_we : std_logic;
     signal trainer_ram_chr_we : std_logic_vector(ram_chr_we'range);
     signal trainer_ram_chr_adr : std_logic_vector(ram_chr_adr'range);
     signal trainer_ram_chr_di : std_logic_vector(ram_chr_do'range);
@@ -103,15 +113,20 @@ begin
     end generate;
 
     -- Chromosom-RAM-Signale
-    fitness_chr <= ram_chr_do(flat_upper(fp_size, var_num) downto 0) when state = s_init
-        else trainer_ram_chr_di(flat_upper(fp_size, var_num) downto 0);
+    fitness_chr <= ram_chr_do when state = s_init
+        else trainer_ram_chr_di;
     ram_chr_we <= init_ram_chr_we or trainer_ram_chr_we;
     ram_chr_adr <= init_ram_chr_adr when state = s_init
         else trainer_ram_chr_adr;
-    gen_ram_chr_di: for i in 0 to var_num+1 generate
+    gen_ram_chr_di: for i in 0 to var_num generate
         ram_chr_di(i) <= init_ram_chr_di when state = s_init
             else flat_vec(trainer_ram_chr_di, fp_size, i);
     end generate;
+
+    -- Fitness-RAM-Signale
+    ram_fit_we <= init_ram_fit_we or trainer_ram_fit_we;
+    ram_fit_adr <= ram_chr_adr;
+    ram_fit_di <= fitness_fit;
 
     -- 0 => Expected, 1 => Feature 1, ..., var_num => Feature var_num
     gen_ram_dp: for i in 0 to var_num generate
@@ -129,8 +144,8 @@ begin
             );
     end generate;
 
-    -- 0 => theta0 (constant), 1 => theta1 (linear), ..., var_num+1 => fitness
-    gen_ram_chr: for i in 0 to var_num+1 generate
+    -- 0 => theta_0 (constant), 1 => theta_1 (linear), ..., var_num => theta_var_num (linear)
+    gen_ram_chr: for i in 0 to var_num generate
         ram_chr: entity work.ram
             generic map(
                 adr_size => chr_adr_size,
@@ -145,11 +160,25 @@ begin
             );
     end generate;
 
+    ram_fit: entity work.ram
+        generic map(
+            adr_size => chr_adr_size,
+            data_size => fit_size
+        )
+        port map(
+            clk => clk,
+            we => ram_fit_we,
+            adr => ram_fit_adr,
+            di => ram_fit_di,
+            do => ram_fit_do
+        );
+
     fitness_linreg: entity work.fitness_linreg
         generic map(
             var_num => var_num,
             fp_size => fp_size,
             fp_frac => fp_frac,
+            fit_size => fit_size,
             adr_size => dp_adr_size
         )
         port map(
@@ -175,7 +204,7 @@ begin
             rst => rst,
             start => init_start,
             fitness_done => fitness_done,
-            fitness_fit => fitness_fit,
+            ram_fit_we => init_ram_fit_we,
             ram_chr_we => init_ram_chr_we,
             ram_chr_adr => init_ram_chr_adr,
             ram_chr_di => init_ram_chr_di,
@@ -190,8 +219,10 @@ begin
             k_rep => k_rep,
             var_num => var_num,
             fp_size => fp_size,
+            fit_size => fit_size,
             chr_adr_size => chr_adr_size,
-            replace_with_worse => replace_with_worse
+            replace_with_worse => replace_with_worse,
+            mut_arith => mut_arith
         )
         port map(
             clk => clk,
@@ -199,6 +230,8 @@ begin
             start => trainer_start,
             fitness_done => fitness_done,
             fitness_fit => fitness_fit,
+            ram_fit_do => ram_fit_do,
+            ram_fit_we => trainer_ram_fit_we,
             ram_chr_do => ram_chr_do,
             ram_chr_we => trainer_ram_chr_we,
             ram_chr_adr => trainer_ram_chr_adr,
@@ -225,7 +258,7 @@ begin
             -- if trainer_ram_chr_we = (trainer_ram_chr_we'range => '1') then
             --     work.util.print(ram_chr_di(0)); -- const
             --     work.util.print(ram_chr_di(1)); -- m1
-            --     work.util.print(ram_chr_di(2)); -- fit
+            --     work.util.print(ram_chr_di(2)); -- m2
             -- end if;
         end if;
     end process;

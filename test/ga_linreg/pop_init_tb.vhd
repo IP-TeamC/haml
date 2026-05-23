@@ -46,7 +46,6 @@ begin
             rst => rst,
             start => start,
             fitness_done => fitness_done,
-            fitness_fit => fitness_fit,
             ram_chr_we => ram_chr_we,
             ram_chr_adr => ram_chr_adr,
             ram_chr_di => ram_chr_di,
