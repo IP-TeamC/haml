@@ -3,7 +3,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.math_real.all;
 
-use work.ga_pkg.all;
+use work.pkg_sudoku.all;
 use work.util.all;
 
 entity ga_sudoku is
@@ -351,7 +351,6 @@ begin
                             
                             report "[GA] Sudoku geladen (Uninitialisiertes Feld)" severity note;
                             print_sudoku(deserialize_sudoku(const));
-                            report "[GA] Starte Solver..." severity note;
                             report "[GA] Initialisiere leere Felder..." severity note;
 
                             state <= S_INIT_START;
@@ -414,7 +413,7 @@ begin
 
                         if last_fit = (last_fit'range => '1') then
                             report "[GA] WARNUNG: Individuum idx=" & integer'image(to_integer(eval_ctr)) & 
-                                " hat fit=255 (ungueltig)!" severity warning;
+                                   " hat fit=255 (ungueltig)!" severity warning;
                             print_sudoku(deserialize_sudoku(last_chr));
                             report "[GA] const:" severity warning;
                             print_sudoku(deserialize_sudoku(const));

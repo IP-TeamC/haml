@@ -2,7 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-use work.ga_pkg.all;
+use work.pkg_sudoku.all;
 
 entity fitness_sudoku_tb is
 
@@ -100,7 +100,9 @@ begin
                 (5, 7, 9,   2, 6, 1,   8, 4, 3),
                 (6, 1, 8,   9, 4, 3,   5, 7, 2)
             );
+
         chr_k := serialize_sudoku(hs_unsolved);
+        
         for i in 1 to 9 loop
             for j in 1 to 9 loop
                 if hs_unsolved(i, j) = 0 then

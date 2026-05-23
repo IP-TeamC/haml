@@ -3,7 +3,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.math_real.all;
 
-package ga_pkg is
+package pkg_sudoku is
 
     constant debug : boolean := true;
 
@@ -72,7 +72,7 @@ package ga_pkg is
 
 end package;
 
-package body ga_pkg is
+package body pkg_sudoku is
     
     function cell_lo(row, col : integer) return natural is
     begin

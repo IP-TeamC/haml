@@ -2,7 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-use work.ga_pkg.all;
+use work.pkg_sudoku.all;
 
 entity crossover_sudoku_tb is
 -- Testbench hat keine Ports

@@ -3,12 +3,12 @@ use ieee.std_logic_1164.all;
 use ieee.math_real.all;
 use ieee.numeric_std.all;
 
-use work.ga_pkg.all;
+use work.pkg_sudoku.all;
 
-entity ga_sudoku_tb is
+entity ga_sudoku_easy_tb is
 end entity;
 
-architecture rtl of ga_sudoku_tb is
+architecture rtl of ga_sudoku_easy_tb is
 
     constant clk_period : time := 10 ns;
 
@@ -58,21 +58,52 @@ begin
     end process;
 
     stim_proc : process
+        variable hs_solved : t_human_sudoku;
         variable hs_unsolved : t_human_sudoku;
         variable chr_const : std_logic_vector(chr_size-1 downto 0);
         variable sol : t_human_sudoku;
     begin
+        
+        -- ==============================================================
+        -- Hinweis: Das gelöste Sudoku wird ausschließlich zur visuellen
+        -- Darstellung in der Browser-Darstellung verwendet und hat für 
+        -- den eigentlichen Algorithmus keinen weiten Nutzen.
+        -- ==============================================================
+
+        -- **************************************************************
+
+        hs_solved := (
+                (7, 6, 1,   5, 8, 2,   9, 3, 4),
+                (2, 4, 5,   3, 1, 9,   6, 8, 7),
+                (9, 8, 3,   6, 7, 4,   2, 5, 1),
+
+                (8, 3, 7,   1, 9, 6,   4, 2, 5),
+                (4, 9, 6,   7, 2, 5,   3, 1, 8),
+                (1, 5, 2,   4, 3, 8,   7, 6, 9),
+
+                (3, 2, 4,   8, 5, 7,   1, 9, 6),
+                (5, 7, 9,   2, 6, 1,   8, 4, 3),
+                (6, 1, 8,   9, 4, 3,   5, 7, 2)
+            );
+
+        report "[Bridge] Sudoku Solution:";
+        print_sudoku(hs_solved);
+
+        -- **************************************************************
+
         hs_unsolved := (
-            (7,0,0, 5,8,2, 9,3,4),
-            (2,0,5, 0,1,9, 0,0,7),
-            (0,0,3, 0,0,0, 2,0,1),
-            (0,3,7, 1,0,6, 4,2,5),
-            (4,9,0, 7,0,0, 0,1,0),
-            (0,5,2, 0,3,8, 7,0,0),
-            (0,2,0, 0,5,7, 1,9,6),
-            (5,7,9, 2,6,0, 0,0,3),
-            (6,0,0, 0,4,3, 5,7,2)
-        );
+                (7, 0, 0,   5, 8, 2,   9, 3, 4),
+                (2, 0, 5,   0, 1, 9,   0, 0, 7),
+                (0, 0, 3,   0, 0, 0,   2, 0, 1),
+
+                (0, 3, 7,   1, 0, 6,   4, 2, 5),
+                (4, 9, 0,   7, 0, 0,   0, 1, 0),
+                (0, 5, 2,   0, 3, 8,   7, 0, 0),
+
+                (0, 2, 0,   0, 5, 7,   1, 9, 6),
+                (5, 7, 9,   2, 6, 0,   0, 0, 3),
+                (6, 0, 0,   0, 4, 3,   5, 7, 2)
+            );
         
         chr_const := serialize_sudoku(hs_unsolved);
         const <= chr_const;

@@ -2,7 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-use work.ga_pkg.all;
+use work.pkg_sudoku.all;
 use work.util.all;
 
 entity chr_init_sudoku is
