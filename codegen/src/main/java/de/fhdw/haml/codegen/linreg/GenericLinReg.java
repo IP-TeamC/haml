@@ -26,7 +26,7 @@ public class GenericLinReg {
         GenericLinReg salary = new GenericLinReg("salary.csv", 2);
         GenericLinReg lineareRegression1 = new GenericLinReg("lineare_regression1.csv");
         GenericLinReg lineareRegression2 = new GenericLinReg("lineare_regression2.csv");
-        lineareRegression1.printFromNormalized("011111111100011001", "100000000110000111");
+        salary.printFromNormalized("111111001101101100", "011101000101000000", "111011101010101011");
     }
 
     public GenericLinReg(String fileName) {
@@ -61,8 +61,10 @@ public class GenericLinReg {
     public void printFromNormalized(String constant, String... coefs) {
         double[] factors = new double[coefs.length + 1];
         factors[0] = fixedPointToDouble(constant, fpFrac);
+        System.out.println("constant 0: " + factors[0]);
         for (int i = 0; i < coefs.length; i++) {
             factors[i + 1] = fixedPointToDouble(coefs[i], fpFrac);
+            System.out.println("coefficient " + (i + 1) + ": " + factors[i + 1]);
         }
         normalizerOutputs.denormalize(dataSet.outputs);
         for (int i = 0; i < dataSet.size; i++) {
