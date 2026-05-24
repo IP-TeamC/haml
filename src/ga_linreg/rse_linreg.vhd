@@ -5,13 +5,15 @@ use ieee.math_real.all;
 
 use work.math.all;
 
-entity sse_linreg is
+-- Rescaled Sum of Errors (Square/Absolute)
+entity rse_linreg is
     generic (
         var_num : natural;
         fp_size : natural;
         fp_frac : natural;
         fit_size : natural;
-        adr_size : natural
+        adr_size : natural;
+        square : boolean
     );
     port (
         clk : in std_logic;
@@ -26,7 +28,7 @@ entity sse_linreg is
     );
 end entity;
 
-architecture rtl of sse_linreg is
+architecture rtl of rse_linreg is
 
     type t_reg_chr is array (0 to var_num) of signed(fp_size-1 downto 0);
     type t_reg_dp is array (0 to var_num) of signed(fp_size-1 downto 0);
@@ -35,19 +37,19 @@ architecture rtl of sse_linreg is
     signal reg_dp : t_reg_dp;
     signal reg_valid : std_logic;
 
-    signal mul_expected : std_logic_vector(fp_size-1 downto 0);
+    signal mul_expected : std_logic_vector(2*fp_size-1 downto 0);
     signal mul_neg1 : t_reg_neg1;
     signal mul_valid : std_logic;
 
-    constant adder_extra_bits : natural := natural(ceil(log2(real(var_num+1))));
+    constant adder_extra_bits : natural := natural(ceil(log2(real(var_num+1))))-1;
     type t_adder_values is array (0 to var_num) of signed(2*fp_size-1 downto 0);
     signal adder_values : t_adder_values;
-    signal adder_values_flat : std_logic_vector((adder_extra_bits+fp_size)*(var_num+1)-1 downto 0);
+    signal adder_values_flat : std_logic_vector((adder_extra_bits+2*fp_size)*(var_num+1)-1 downto 0);
     signal adder_valid : std_logic;
-    signal adder_sum : std_logic_vector(adder_extra_bits+fp_size-1 downto 0);
-    signal adder_expected : std_logic_vector(fp_size-1 downto 0);
+    signal adder_sum : std_logic_vector(adder_extra_bits+2*fp_size-1 downto 0);
+    signal adder_expected : std_logic_vector(2*fp_size-1 downto 0);
 
-    signal diff : signed(fp_size-1 downto 0);
+    signal diff : signed(adder_extra_bits+2*fp_size downto 0);
     signal diff_neg1 : std_logic;
     signal diff_valid : std_logic;
 
@@ -60,16 +62,16 @@ architecture rtl of sse_linreg is
     signal err_valid : std_logic;
 
     function create_max_adder_values return std_logic_vector is
-        variable tmp : std_logic_vector(adder_extra_bits+fp_size-1 downto 0);
+        variable tmp : std_logic_vector(adder_extra_bits+2*fp_size-1 downto 0);
     begin
-        tmp(adder_extra_bits+fp_size-1 downto fp_size-1) := (others => '0');
-        tmp(fp_size-2 downto 0) := (others => '1');
+        tmp(adder_extra_bits+2*fp_size-1 downto 2*fp_size-1) := (others => '0');
+        tmp(2*fp_size-2 downto 0) := (others => '1');
         return tmp;
     end function;
 
     constant max_adder_values : std_logic_vector(adder_sum'range) := create_max_adder_values;
     constant max_err : unsigned(err'range) := (err_extra_bits-1 downto 0 => '0') & (2*fp_size-3 downto 0 => '1');
-    constant neg1 : signed(fp_size-1 downto 0) := rotate_right(to_signed(1, fp_size), 1);
+    constant neg1 : signed(2*fp_size-1 downto 0) := rotate_right(to_signed(1, 2*fp_size), 1);
 
 begin
 
@@ -92,7 +94,9 @@ begin
         if rising_edge(clk) then
 
             -- erwarteten Funktionswert weitergeben
-            mul_expected <= std_logic_vector(shift_right(reg_dp(0), fp_size-fp_frac-1));
+            mul_expected(2*fp_size-1 downto fp_size+fp_frac) <= (others => reg_dp(0)(fp_size-1));
+            mul_expected(fp_size+fp_frac-1 downto fp_frac) <= std_logic_vector(reg_dp(0));
+            mul_expected(fp_frac-1 downto 0) <= (others => '0');
 
             for i in 0 to var_num loop
 
@@ -118,8 +122,8 @@ begin
     -- Vorbereitung innerhalb Stage 3
     gen_adder_values_flat: for i in 0 to var_num generate
         with mul_neg1(i) select
-            adder_values_flat(flat_upper(adder_extra_bits+fp_size, i) downto flat_lower(adder_extra_bits+fp_size, i)) <=
-                std_logic_vector(resize(adder_values(i)(2*fp_size-2 downto fp_size-1), adder_extra_bits+fp_size)) when '0',
+            adder_values_flat(flat_upper(adder_extra_bits+2*fp_size, i) downto flat_lower(adder_extra_bits+2*fp_size, i)) <=
+                std_logic_vector(resize(adder_values(i)(2*fp_size-2 downto 0), adder_extra_bits+2*fp_size)) when '0',
                 max_adder_values when others; -- Asymmetrie/Sonderfall MIN*MIN abrunden
     end generate;
 
@@ -127,8 +131,8 @@ begin
     adder_tree: entity work.adder_tree
         generic map(
             n => var_num+1,
-            size => adder_extra_bits+fp_size,
-            data_size => fp_size
+            size => adder_extra_bits+2*fp_size,
+            data_size => 2*fp_size
         )
         port map(
             clk => clk,
@@ -143,17 +147,15 @@ begin
 
     -- Stage 4: Differenz berechnen
     process (clk)
-        variable tmp : signed(adder_extra_bits+fp_size downto 0);
-        variable tmp_cut : signed(fp_size-1 downto 0);
+        variable tmp : signed(adder_extra_bits+2*fp_size downto 0);
     begin
         if rising_edge(clk) then
 
-            tmp := resize(signed(adder_expected), adder_extra_bits+fp_size+1)
-                - resize(signed(adder_sum), adder_extra_bits+fp_size+1);
+            tmp := resize(signed(adder_expected), adder_extra_bits+2*fp_size+1)
+                - resize(signed(adder_sum), adder_extra_bits+2*fp_size+1);
+            diff <= tmp;
 
-            tmp_cut := tmp(adder_extra_bits+fp_size downto adder_extra_bits+1);
-            diff <= tmp_cut;
-            if adder_valid = '1' and tmp_cut = neg1 then
+            if adder_valid = '1' and tmp = neg1 then
                 diff_neg1 <= '1';
             else
                 diff_neg1 <= '0';
@@ -162,23 +164,29 @@ begin
         end if;
     end process;
 
-    -- Stage 5: Differenz quadrieren
+    -- Stage 5: Differenz quadrieren (bzw. absoluten Wert bestimmen)
     process (clk)
     begin
         if rising_edge(clk) then
-            diff_sq <= unsigned(diff * diff);
-            diff_sq_neg1 <= diff_neg1;
+            if square then
+                diff_sq <= unsigned(diff(diff'high downto diff'high-fp_size+1) * diff(diff'high downto diff'high-fp_size+1));
+                diff_sq_neg1 <= diff_neg1;
+            else
+                -- MSB von abs(...) ist immer 0, bei Quadrat werden vorderste beide MSBs entfernt, deshalb weitere 0 vorne
+                diff_sq <= unsigned('0' & abs(diff(diff'high downto diff'high-2*fp_size+2)));
+                diff_sq_neg1 <= '0';
+            end if;
         end if;
     end process;
 
-    -- Stage 6: quadr. Differenz Akkumulieren
+    -- Stage 6: quadr./abs. Differenz Akkumulieren
     process (clk)
         variable valid_neg1 : std_logic_vector(1 downto 0);
     begin
         if rising_edge(clk) then
             valid_neg1 := err_valid & diff_sq_neg1;
             if diff_sq_valid = '1' then
-                -- vorderste beide MSBs nach Multiplikation (Asymmetrie/Sonderfall MIN*MIN abrunden) immer gleich
+                -- vorderste beide MSBs nach Quadrieren (Asymmetrie/Sonderfall MIN*MIN abrunden) immer gleich
                 -- Quadrat ist immer positiv (MSB = 0) => vorderste beide MSBs immer 0
                 case valid_neg1 is
                     when "00" => err <= resize(diff_sq(diff_sq'high-2 downto 0), err_extra_bits+2*fp_size-2);

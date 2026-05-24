@@ -5,9 +5,9 @@ use ieee.math_real.all;
 
 use work.util.all;
 use work.math.all;
-use work.sse_linreg;
+use work.rse_linreg;
 
-entity sse_linreg_tb is
+entity rse_linreg_tb is
 
     -- Constants
     constant clk_period : time := 1 ns;
@@ -16,6 +16,7 @@ entity sse_linreg_tb is
     constant fp_frac : natural := 6;
     constant fit_size : natural := fp_size;
     constant adr_size : natural := 2;
+    constant square : boolean := false;
 
     -- Inputs
     signal clk : std_logic := '1';
@@ -30,17 +31,18 @@ entity sse_linreg_tb is
 
 end entity;
 
-architecture rtl of sse_linreg_tb is
+architecture rtl of rse_linreg_tb is
 
 begin
 
-    uut: entity sse_linreg
+    uut: entity rse_linreg
         generic map (
             var_num => var_num,
             fp_size => fp_size,
             fp_frac => fp_frac,
             fit_size => fit_size,
-            adr_size => adr_size
+            adr_size => adr_size,
+            square => square
         )
         port map (
             clk => clk,

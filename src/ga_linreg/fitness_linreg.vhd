@@ -8,7 +8,8 @@ entity fitness_linreg is
         fp_size : natural;
         fp_frac : natural;
         fit_size : natural;
-        adr_size : natural
+        adr_size : natural;
+        square : boolean
     );
     port (
         clk : in std_logic;
@@ -41,13 +42,14 @@ architecture rtl of fitness_linreg is
 
 begin
 
-    sse_linreg: entity work.sse_linreg
+    rse_linreg: entity work.rse_linreg
         generic map(
             var_num => var_num,
             fp_size => fp_size,
             fp_frac => fp_frac,
             fit_size => fit_size,
-            adr_size => adr_size
+            adr_size => adr_size,
+            square => square
         )
         port map(
             clk => clk,

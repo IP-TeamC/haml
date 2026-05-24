@@ -23,7 +23,8 @@ entity ga_linreg is
         dp_adr_size : natural := 8;
         chr_adr_size : natural := 8;
         replace_with_worse : boolean := false;
-        mut_arith : boolean := true
+        mut_arith : boolean := true;
+        square : boolean := false
     );
 
     port (
@@ -179,7 +180,8 @@ begin
             fp_size => fp_size,
             fp_frac => fp_frac,
             fit_size => fit_size,
-            adr_size => dp_adr_size
+            adr_size => dp_adr_size,
+            square => square
         )
         port map(
             clk => clk,

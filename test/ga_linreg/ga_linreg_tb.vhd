@@ -5,23 +5,24 @@ use ieee.math_real.all;
 
 use work.util.all;
 use work.math.all;
-use work.salary_dataset_tb.all;
+use work.lineare_regression2_dataset_tb.all;
 
 entity ga_linreg_tb is
 
     -- Constants
     constant clk_period : time := 1 ns;
-    constant mask_factor : natural := 4;
+    constant mask_factor : natural := 3;
     constant k_sel : natural := 3;
     constant k_rep : natural := 3;
-    constant var_num : natural := 2;
+    constant var_num : natural := 1;
     constant fp_size : natural := 18;
     constant fp_frac : natural := 17;
     constant fit_size : natural := 2*fp_size;
-    constant dp_adr_size : natural := 7;
-    constant chr_adr_size : natural := 6;
+    constant dp_adr_size : natural := 8;
+    constant chr_adr_size : natural := 5;
     constant replace_with_worse : boolean := false;
     constant mut_arith : boolean := true;
+    constant square : boolean := false;
 
     -- Inputs
     signal clk : std_logic := '1';
@@ -72,7 +73,8 @@ begin
             dp_adr_size => dp_adr_size,
             chr_adr_size => chr_adr_size,
             replace_with_worse => replace_with_worse,
-            mut_arith => mut_arith
+            mut_arith => mut_arith,
+            square => square
         )
         port map(
             clk => clk,

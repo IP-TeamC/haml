@@ -16,6 +16,7 @@ entity fitness_linreg_tb is
     constant fp_frac : natural := 6;
     constant fit_size : natural := fp_size;
     constant adr_size : natural := 2;
+    constant square : boolean := false;
 
     -- Inputs
     signal clk : std_logic := '1';
@@ -63,7 +64,8 @@ begin
             fp_size => fp_size,
             fp_frac => fp_frac,
             fit_size => fit_size,
-            adr_size => adr_size
+            adr_size => adr_size,
+            square => square
         )
         port map (
             clk => clk,
