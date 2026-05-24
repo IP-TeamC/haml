@@ -46,6 +46,15 @@ function parseLog() {
             if (line.includes("[GA] Sudoku geladen")) {
                 currentGridType = "mask";
                 fixedMask = [];
+
+                const timeMatch = line.match(/@(\d+[a-zA-Z]+)/);
+                
+                current = {
+                    generation: 0,
+                    fitness: null,
+                    timestamp: timeMatch ? timeMatch[1] : "",
+                    grid: []
+                };
                 continue;
             }
 
@@ -76,7 +85,14 @@ function parseLog() {
                         if (solution.length === 9) currentGridType = null;
                     } else if (currentGridType === "mask") {
                         fixedMask.push(nums.map(n => n !== 0));
-                        if (fixedMask.length === 9) currentGridType = null;
+                        current.grid.push(nums);
+                        if (fixedMask.length === 9) {
+                            currentGridType = null;
+                            latest = { type: "grid", ...current, fixedMask };
+                            history.push(latest);
+                            broadcast(latest);
+                            current = null;
+                        }
                     } else if (currentGridType === "grid" && current) {
                         current.grid.push(nums);
                         if (current.grid.length === 9) {
