@@ -39,10 +39,12 @@ architecture rtl of adder_tree is
 
     function f_stages_config
     return t_stages_config is
-        variable cur_n : natural := n;
-        variable next_n : natural := natural(ceil(real(n)/2.0));
+        variable cur_n : natural;
+        variable next_n : natural;
         variable configs : t_stages_config;
     begin
+        cur_n := n;
+        next_n := natural(ceil(real(n)/2.0));
         configs(0) := (
                 n => cur_n,
                 values_lower => 0,

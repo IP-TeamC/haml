@@ -26,12 +26,7 @@ architecture rtl of kselect is
     constant max_count_size : natural := natural(floor(log2(real(k))))+1;
     constant max_class : natural := 2**max_count_size-1;
     type t_class_counter is array (0 to max_class) of unsigned(max_count_size-1 downto 0);
-    --signal class_counter : t_class_counter;
 begin
-
-    -- TODO gleiche Anzahl
-    -- TODO Pipeline
-    -- sehr unsauber und kritischer Pfad hier vermutlich Katastrophe :(
 
     process(clk)
         variable class_counter : t_class_counter;
