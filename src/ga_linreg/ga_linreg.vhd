@@ -37,7 +37,7 @@ entity ga_linreg is
         dp_adr : in std_logic_vector(dp_adr_size-1 downto 0);
         dp_data : in std_logic_vector(fp_size-1 downto 0);
 
-        best_chr_adr : out std_logic_vector(chr_adr_size-1 downto 0)
+        best_chr : out std_logic_vector(fp_size*(var_num+1)-1 downto 0)
     );
 
 end entity;
@@ -95,10 +95,11 @@ architecture rtl of ga_linreg is
     signal trainer_ram_chr_di : std_logic_vector(ram_chr_do'range);
     signal trainer_fitness_start : std_logic;
 
-begin
+    signal better_chr : std_logic;
+    signal best_chr_fit : unsigned(fitness_fit'range);
+    signal next_best_chr_fit : unsigned(fitness_fit'range);
 
-    -- TODO
-    best_chr_adr <= ram_chr_adr;
+begin
 
     -- Startsignale fuer Komponenten
     init_start <= '1' when state = s_init and prev_state /= s_init else '0';
@@ -249,12 +250,22 @@ begin
     next_dp_end_adr <= dp_adr when mark_end = '1'
         else dp_end_adr;
 
+    better_chr <= '1' when fitness_done = '1' and unsigned(fitness_fit) <= best_chr_fit
+        else '0';
+    
+    next_best_chr_fit <= unsigned(fitness_fit) when better_chr = '1' or state = s_init
+        else best_chr_fit;
+
     process (clk)
     begin
         if rising_edge(clk) then
             prev_state <= state;
             state <= next_state;
             dp_end_adr <= next_dp_end_adr;
+            best_chr_fit <= next_best_chr_fit;
+            if better_chr = '1' then
+                best_chr <= fitness_chr;
+            end if;
 
             -- TODO Logging entfernen
             -- if trainer_ram_chr_we = (trainer_ram_chr_we'range => '1') then

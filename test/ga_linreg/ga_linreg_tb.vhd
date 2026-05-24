@@ -34,7 +34,7 @@ entity ga_linreg_tb is
     signal dp_data : std_logic_vector(fp_size-1 downto 0);
 
     -- Outputs
-    signal best_chr_adr : std_logic_vector(chr_adr_size-1 downto 0);
+    signal best_chr : std_logic_vector(fp_size*(var_num+1)-1 downto 0);
 
 end entity;
 
@@ -84,7 +84,7 @@ begin
             dp_we => dp_we,
             dp_adr => dp_adr,
             dp_data => dp_data,
-            best_chr_adr => best_chr_adr
+            best_chr => best_chr
         );
 
     clk_process: process
@@ -94,6 +94,7 @@ begin
     end process;
 
     process
+        variable prev_best_chr : std_logic_vector(fp_size*(var_num+1)-1 downto 0);
     begin
         rst <= '1';
         wait for clk_period;
@@ -106,6 +107,17 @@ begin
 
         wait for clk_period;
         start <= '1';
+
+        while true loop
+            if best_chr /= prev_best_chr then
+                prev_best_chr := best_chr;
+            end if;
+            for i in 0 to var_num loop
+                report integer'image(i) & ": " & work.util.to_string(flat_vec(best_chr, fp_size, i));
+            end loop;
+            report "------";
+            wait for 1 us;
+        end loop;
 
         report "Done";
         wait;
