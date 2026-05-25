@@ -7,7 +7,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, r2_score
 
 # CSV laden
-df = pd.read_csv("f3x12.csv")
+df = pd.read_csv("lineare_regression2.csv")
 
 # Features und Zielvariable
 X = df[["x"]]
@@ -32,7 +32,7 @@ model = LinearRegression()
 model.fit(X_train, y_train)
 
 # Vorhersagen
-#y_pred_scaled = model.predict(X_test)
+y_pred = model.predict(X_test)
 
 # Zurückskalieren
 #y_pred = y_scaler.inverse_transform(y_pred_scaled)
@@ -46,8 +46,8 @@ print(f"x   = {model.coef_[0][0]:.4f}")
 print(f"\nIntercept = {model.intercept_[0]:.4f}")
 
 # Bewertung auf Originalskala
-mse = mean_squared_error(y_test_real, y_pred)
-r2 = r2_score(y_test_real, y_pred)
+mse = mean_squared_error(y_test, y_pred)
+r2 = r2_score(y_test, y_pred)
 
 print(f"\nMSE = {mse:.2f}")
 print(f"R²  = {r2:.4f}")

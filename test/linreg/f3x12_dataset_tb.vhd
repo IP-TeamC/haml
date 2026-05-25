@@ -13,6 +13,16 @@ package f3x12_dataset_tb is
     constant START_ADR : std_logic_vector(ADR_SIZE-1 downto 0) := (others => '0');
     constant END_ADR : std_logic_vector(ADR_SIZE-1 downto 0) := "111111";
 
+    type t_dataset is array (0 to 63, 0 to 1) of std_logic_vector(DATA_SIZE-1 downto 0);
+
+    procedure write_dataset_to_ram_ga_and_start (
+        signal we : out std_logic_vector(t_dataset'high(2) downto 0);
+        signal write_adr : out std_logic_vector(ADR_SIZE-1 downto 0);
+        signal write_data : out std_logic_vector(FP_SIZE-1 downto 0);
+        signal start : out std_logic;
+        clk_period : time
+    );
+
     procedure write_dataset_to_ram (
         signal we : out std_logic;
         signal write_adr : out std_logic_vector(ADR_SIZE-1 downto 0);
@@ -31,7 +41,6 @@ package f3x12_dataset_tb is
         i : natural
     );
 
-    type t_dataset is array (0 to 63, 0 to 1) of std_logic_vector(DATA_SIZE-1 downto 0);
     signal dataset : t_dataset := (
         0 => (0 => "100000000000000000", 1 => "100000000000000000"),
         1 => (0 => "100001000001000001", 1 => "100001000001000001"),
@@ -102,6 +111,30 @@ package f3x12_dataset_tb is
 end package;
 
 package body f3x12_dataset_tb is
+
+    procedure write_dataset_to_ram_ga_and_start (
+        signal we : out std_logic_vector(t_dataset'high(2) downto 0);
+        signal write_adr : out std_logic_vector(ADR_SIZE-1 downto 0);
+        signal write_data : out std_logic_vector(FP_SIZE-1 downto 0);
+        signal start : out std_logic;
+        clk_period : time
+    ) is
+    begin
+        start <= '0';
+        wait for clk_period;
+        we <= (others => '0');
+        for adr in t_dataset'range(1) loop
+            write_adr <= std_logic_vector(to_unsigned(adr, ADR_SIZE));
+            for part in t_dataset'range(2) loop
+                we(part) <= '1';
+                write_data <= dataset(adr, part);
+                wait for clk_period;
+                we(part) <= '0';
+            end loop;
+        end loop;
+        we <= (others => '0');
+        start <= '1';
+    end procedure;
 
     procedure write_dataset_to_ram (
         signal we : out std_logic;

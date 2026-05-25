@@ -1,63 +1,47 @@
 library ieee;
 use ieee.std_logic_1164.all;
+
+library ieee;
+use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.math_real.all;
 
 use work.util.all;
 use work.math.all;
-use work.lineare_regression2_dataset_tb.all;
 
 entity ga_linreg_tb is
 
-    -- Constants
-    constant clk_period : time := 1 ns;
-    constant mask_factor : natural := 3;
-    constant k_sel : natural := 3;
-    constant k_rep : natural := 3;
-    constant var_num : natural := 1;
-    constant fp_size : natural := 18;
-    constant fp_frac : natural := 17;
-    constant fit_size : natural := 2*fp_size;
-    constant dp_adr_size : natural := 8;
-    constant chr_adr_size : natural := 5;
-    constant replace_with_worse : boolean := false;
-    constant mut_arith : boolean := true;
-    constant square : boolean := false;
+    generic (
+        clk_period : time;
+        mask_factor : natural := 3;
+        k_sel : natural := 3;
+        k_rep : natural := 3;
+        var_num : natural;
+        fp_size : natural := 18;
+        fp_frac : natural := 17;
+        fit_size: natural := 36;
+        dp_adr_size : natural;
+        chr_adr_size : natural;
+        replace_with_worse : boolean := false;
+        mut_arith : boolean := true;
+        square : boolean := false
+    );
 
-    -- Inputs
-    signal clk : std_logic := '1';
-    signal rst : std_logic;
-    signal start : std_logic;
-    signal mark_end : std_logic;
-    signal dp_we : std_logic_vector(var_num downto 0);
-    signal dp_adr : std_logic_vector(dp_adr_size-1 downto 0);
-    signal dp_data : std_logic_vector(fp_size-1 downto 0);
-
-    -- Outputs
-    signal best_chr : std_logic_vector(fp_size*(var_num+1)-1 downto 0);
+    port (
+        start : std_logic;
+        dp_we : std_logic_vector(var_num downto 0);
+        dp_adr : std_logic_vector(dp_adr_size-1 downto 0);
+        dp_data : std_logic_vector(fp_size-1 downto 0)
+    );
 
 end entity;
 
 architecture rtl of ga_linreg_tb is
 
-    procedure custom_write_dataset_to_ram (
-        signal we : out std_logic_vector(var_num downto 0);
-        signal write_adr : out std_logic_vector(ADR_SIZE-1 downto 0);
-        signal write_data : out std_logic_vector(DATA_SIZE-1 downto 0)
-    ) is
-    begin
-        we <= (others => '0');
-        for adr in 0 to to_integer(unsigned(END_ADR)) loop
-            write_adr <= std_logic_vector(to_unsigned(adr, ADR_SIZE));
-            for part in t_dataset'range(2) loop
-                we(part) <= '1';
-                write_data <= dataset(adr, part);
-                wait for clk_period;
-                we(part) <= '0';
-            end loop;
-        end loop;
-        we <= (others => '0');
-    end procedure;
+    signal clk : std_logic := '1';
+    signal rst : std_logic;
+    signal mark_end : std_logic;
+    signal best_chr : std_logic_vector(fp_size*(var_num+1)-1 downto 0);
 
 begin
 
@@ -97,18 +81,14 @@ begin
         variable prev_best_chr : std_logic_vector(fp_size*(var_num+1)-1 downto 0);
     begin
         rst <= '1';
+        mark_end <= '1';
         wait for clk_period;
         rst <= '0';
-        start <= '0';
 
-        mark_end <= '1';
-        custom_write_dataset_to_ram(dp_we, dp_adr, dp_data);
+        wait until start = '1';
         mark_end <= '0';
 
-        wait for clk_period;
-        start <= '1';
-
-        while true loop
+        while start = '1' loop
             if best_chr /= prev_best_chr then
                 prev_best_chr := best_chr;
             end if;

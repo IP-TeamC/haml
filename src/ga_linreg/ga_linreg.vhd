@@ -16,12 +16,12 @@ entity ga_linreg is
         mask_factor : natural := 3;
         k_sel : natural := 3;
         k_rep : natural := 3;
-        var_num : natural := 2;
+        var_num : natural := 1;
         fp_size : natural := 18;
         fp_frac : natural := 17;
         fit_size: natural := 36;
         dp_adr_size : natural := 8;
-        chr_adr_size : natural := 8;
+        chr_adr_size : natural := 6;
         replace_with_worse : boolean := false;
         mut_arith : boolean := true;
         square : boolean := false

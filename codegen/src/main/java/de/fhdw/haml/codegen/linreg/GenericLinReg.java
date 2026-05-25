@@ -26,7 +26,16 @@ public class GenericLinReg {
         GenericLinReg salary = new GenericLinReg("salary.csv", 2);
         GenericLinReg lineareRegression1 = new GenericLinReg("lineare_regression1.csv");
         GenericLinReg lineareRegression2 = new GenericLinReg("lineare_regression2.csv");
-        salary.printFromNormalized("111111001101101100", "011101000101000000", "111011101010101011");
+
+        double[] fF3x12 = f3x12.convertDenormalizeAndPrintFunction("000000000000000000", "011111111111111111");
+        double[] fSalary = salary.convertDenormalizeAndPrintFunction("111111101100011011", "011101111111111101", "111100010001100011");
+        double[] fLineareRegression1 = lineareRegression1.convertDenormalizeAndPrintFunction("111111111111111110", "100000000000000001");
+        double[] fLineareRegression2 = lineareRegression2.convertDenormalizeAndPrintFunction("000000000000010100", "011111111111100100");
+
+        //f3x12.printFromNormalized(fF3x12);
+        //salary.printFromNormalized(fSalary);
+        //lineareRegression1.printFromNormalized(fLineareRegression1);
+        //lineareRegression2.printFromNormalized(fLineareRegression2);
     }
 
     public GenericLinReg(String fileName) {
@@ -58,22 +67,59 @@ public class GenericLinReg {
         gen.gen("linreg", false);
     }
 
-    public void printFromNormalized(String constant, String... coefs) {
+    private double[] convertDenormalizeAndPrintFunction(String constant, String... coefs) {
+        System.out.println(fileName);
+
         double[] factors = new double[coefs.length + 1];
         factors[0] = fixedPointToDouble(constant, fpFrac);
-        System.out.println("constant 0: " + factors[0]);
         for (int i = 0; i < coefs.length; i++) {
             factors[i + 1] = fixedPointToDouble(coefs[i], fpFrac);
-            System.out.println("coefficient " + (i + 1) + ": " + factors[i + 1]);
         }
+
+        denormalizeFunction(factors);
+
+        System.out.println("constant 0: " + factors[0]);
+        for (int i = 1; i < factors.length; i++) {
+            System.out.println("coefficient " + i + ": " + factors[i]);
+        }
+
+        System.out.println("------");
+        return factors;
+    }
+
+    private void denormalizeFunction(double[] normalized) {
+        double[][] inputs = new double[][]{ new double[normalized.length-1], new double[normalized.length-1] };
+        double[][] output = new double[][]{ new double[]{ -1 }, new double[]{ 1 - Math.pow(2, -fpFrac) } };
+        for (int i = 0; i < inputs[0].length; i++) {
+            inputs[0][i] = -1;
+            inputs[1][i] = 1 - Math.pow(2, -fpFrac);
+        }
+        normalizerInputs.denormalize(inputs);
+        normalizerOutputs.denormalize(output);
+        double[] inputsMin = inputs[0];
+        double[] inputsMax = inputs[1];
+        double outputMin = output[0][0];
+        double outputMax = output[1][0];
+
+        for (int i = 1; i < normalized.length; i++) {
+            normalized[i] *= (outputMax - outputMin) / (inputsMax[i-1] - inputsMin[i-1]);
+        }
+        normalized[0] = (outputMax + outputMin) / 2
+                + normalized[0] * (outputMax - outputMin) / 2;
+        for (int i = 1; i < normalized.length; i++) {
+            normalized[0] -= normalized[i] * (inputsMax[i-1] + inputsMin[i-1]) / 2;
+        }
+    }
+
+    public void printFromNormalized(double[] factors) {
+        normalizerInputs.denormalize(dataSet.inputs);
         normalizerOutputs.denormalize(dataSet.outputs);
         for (int i = 0; i < dataSet.size; i++) {
-            double[][] arr = new double[][]{new double[]{ factors[0] }};
-            for (int j = 0; j < coefs.length; j++) {
-                arr[0][0] += factors[j + 1] * dataSet.inputs[i][j];
+            double predicted = factors[0];
+            for (int j = 0; j < factors.length-1; j++) {
+                predicted += factors[j + 1] * dataSet.inputs[i][j];
             }
-            normalizerOutputs.denormalize(arr);
-            System.out.println(Math.round(dataSet.outputs[i][0]) + ", but: " + Math.round(arr[0][0]));
+            System.out.println(Math.round(dataSet.outputs[i][0]) + ", but: " + Math.round(predicted));
         }
         dataSet = null;
     }
