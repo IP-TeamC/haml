@@ -14,7 +14,7 @@ entity rse_linreg_tb is
     constant var_num : natural := 2;
     constant fp_size : natural := 8;
     constant fp_frac : natural := 6;
-    constant fit_size : natural := fp_size;
+    constant fit_size : natural := 2*fp_size;
     constant adr_size : natural := 2;
     constant square : boolean := false;
 
@@ -26,7 +26,7 @@ entity rse_linreg_tb is
     signal ram_dp_do : std_logic_vector(fp_size*(var_num+1)-1 downto 0);
 
     -- Outputs
-    signal fit : std_logic_vector(fp_size-1 downto 0);
+    signal fit : std_logic_vector(fit_size-1 downto 0);
     signal done : std_logic;
 
 end entity;
@@ -61,6 +61,8 @@ begin
     end process;
 
     process
+        variable tmp1 : std_logic_vector(fit_size-1 downto 0);
+        variable tmp2 : std_logic_vector(fit_size-1 downto 0);
     begin
         rst <= '1';
         wait for clk_period;
@@ -96,19 +98,26 @@ begin
         valid <= '0';
         assert done <= '0';
 
-        wait until done = '1' and clk = '0';
-        -- kleiner Fehler (zu ungenau, deshalb 0)
-        assert fit = "00000000";
-        wait for clk_period;
+        while done = '0' loop
+            tmp1 := tmp2;
+            tmp2 := fit;
+            wait until falling_edge(clk);
+        end loop;
         assert done = '1';
-        -- unveraenderter Fehler
-        assert fit = "00000000";
-        wait for clk_period;
-        assert done = '1';
-        -- viel groeßerer Fehler
-        assert fit = "00" & "000110";
-        wait for clk_period;
-        assert done = '0';
+
+        -- kleiner Fehler für 1. DP
+        assert tmp1 = "0000000000000111";
+        -- unveraenderter Fehler für 2. DP
+        assert tmp2 = tmp1;
+        -- viel groeßerer Fehler für 3. DP
+        assert fit = "0000000101010111";
+
+        -- stabile Ausgabe, wenn start = 0
+        for i in 0 to 30 loop
+            wait for clk_period;
+            assert done = '0';
+            assert fit = "0000000101010111";
+        end loop;
 
         report "Done";
         wait;
