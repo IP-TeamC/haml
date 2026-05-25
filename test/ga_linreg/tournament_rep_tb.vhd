@@ -76,7 +76,8 @@ begin
         tmp := chr_adr;
 
         chr_fit <= "0011";
-        chr_do <= "1111111111111111";
+        fit_do <= "1111";
+        chr_do <= "111111111111";
         start <= '1';
         wait for clk_period;
 
