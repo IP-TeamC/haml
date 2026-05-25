@@ -78,7 +78,7 @@ begin
 
         -- Nr. 1
         fit_do <= "1011";
-        chr_do <= "1011000100010001";
+        chr_do <= "000100010001";
         start <= '0';
         assert done = '0';
         assert chr_adr /= "00000000";
@@ -143,8 +143,8 @@ begin
         wait for clk_period;
 
         assert done = '1';
-        assert best_chr1 = "0101001000100010";
-        assert best_chr2 = "0010000000000010";
+        assert best_chr1 = "001000100010";
+        assert best_chr2 = "000000000010";
 
         report "Done";
         wait;
