@@ -25,7 +25,7 @@ begin
                 clk => clk,
                 rst => rst,
                 generator => GENERATOR32,
-                seed => std_logic_vector(unsigned(SEED32) + to_unsigned(i * 1234567, 32)),
+                seed => std_logic_vector(unsigned(SEED32) + to_unsigned(i * 123457, 32)),
                 rand => rand(degree*(i+1)-1 downto degree*i)
             );
     end generate;

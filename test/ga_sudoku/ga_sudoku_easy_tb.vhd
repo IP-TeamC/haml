@@ -11,20 +11,18 @@ end entity;
 architecture rtl of ga_sudoku_easy_tb is
 
     constant clk_period : time := 10 ns;
-
-    constant chr_size : natural := 324;
-    constant fp_size : natural := 8;
-
+    
     constant pop_size : natural := 128;
     constant k : natural := 4;
     constant mut_bits : natural := 3;
+    
+    constant fp_size : natural := 8;
 
     signal clk : std_logic := '1';
     signal rst : std_logic := '1';
     signal start : std_logic := '0';
 
     signal const : std_logic_vector(chr_size-1 downto 0) := (others => '0');
-    signal const_mask : std_logic_vector(chr_size-1 downto 0);
 
     signal best_chr : std_logic_vector(chr_size-1 downto 0);
     signal best_fit : std_logic_vector(fp_size-1 downto 0);
@@ -45,7 +43,6 @@ begin
             rst => rst,
             start => start,
             const => const,
-            const_mask => const_mask,
             best_chr => best_chr,
             best_fit => best_fit,
             done => done
@@ -140,23 +137,6 @@ begin
         print_sudoku(sol);
 
         wait;
-    end process;
-
-    -- Kombinatorischer Prozess für die Maske
-    process(const)
-        variable cell_val : std_logic_vector(cell_bits-1 downto 0);
-    begin
-        for i in 0 to (sudoku_size * sudoku_size) - 1 loop
-            cell_val := const(cell_bits*(i+1)-1 downto cell_bits*i);
-
-            if cell_val = std_logic_vector(to_unsigned(0, cell_bits)) then
-                -- Freies Feld -> Darf vom GA verändert werden (Maske = 0)
-                const_mask(cell_bits*(i+1)-1 downto cell_bits*i) <= (others => '0');
-            else
-                -- Fest vorgegebenes Feld -> Gesperrt für GA (Maske = 1)
-                const_mask(cell_bits*(i+1)-1 downto cell_bits*i) <= (others => '1');
-            end if;
-        end loop;
     end process;
 
 end architecture rtl;

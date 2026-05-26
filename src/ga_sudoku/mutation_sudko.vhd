@@ -7,7 +7,7 @@ use work.util.all;
 
 entity mutation_sudoku is
     generic (
-        mut_bits : natural := 7 -- Mutationswahrscheinlichkeit: P(mutation) = 0.5^mut_bits
+        mut_bits : natural := 3 -- Mutationswahrscheinlichkeit: P(mutation) = 0.5^mut_bits
     );
     port (
         clk : in std_logic;

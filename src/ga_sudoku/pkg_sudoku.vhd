@@ -70,6 +70,11 @@ package pkg_sudoku is
 
     procedure print_sudoku(sol : t_human_sudoku);
 
+    -- Erstellt die constant mask für eine Sudoku 
+    function create_const_mask(
+        const : std_logic_vector
+    ) return std_logic_vector;
+        
 end package;
 
 package body pkg_sudoku is
@@ -255,5 +260,27 @@ package body pkg_sudoku is
         end loop;
             report "+-------+-------+-------+"; -- Extra eingerückt für besseres Printing
     end procedure;
+
+    function create_const_mask(
+        const : std_logic_vector
+    ) return std_logic_vector is
+        variable mask : std_logic_vector(const'range);
+        variable cell_val : std_logic_vector(cell_bits-1 downto 0);
+    begin
+        for i in 0 to (sudoku_size * sudoku_size) - 1 loop
+            cell_val := const(cell_bits*(i+1)-1 downto cell_bits*i);
+
+            if unsigned(cell_val) = 0 then
+                -- Freies Feld -> Darf vom GA verändert werden (Maske = 0)
+                mask(cell_bits*(i+1)-1 downto cell_bits*i) := (others => '0');
+            else
+                -- Fest vorgegebenes Feld -> Gesperrt für GA (Maske = 1)
+                mask(cell_bits*(i+1)-1 downto cell_bits*i) := (others => '1');
+            end if;
+
+        end loop;
+        return mask;
+
+    end function;
 
 end package body;

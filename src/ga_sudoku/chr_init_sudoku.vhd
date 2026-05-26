@@ -7,7 +7,7 @@ use work.util.all;
 
 entity chr_init_sudoku is
     generic (
-        rnd_per_swap : natural := 4 -- Bits pro Zufallszahl (ceil(log2(9))=4)
+        rnd_per_swap : natural := cell_bits -- Bits pro Zufallszahl (ceil(log2(9))=4)
     );
     port (
         clk : in std_logic;
@@ -49,7 +49,7 @@ architecture rtl of chr_init_sudoku is
     signal free_pos : t_free_pos;
     signal free_count : integer range 0 to sudoku_size;
 
-    -- Hilfsfunktion: Bit-Offset der Zelle (ro,co) in Block (br,bc)
+    -- Bit-Offset der Zelle (ro,co) in Block (br,bc)
     function cell_lo(br, bc, ro, co : integer) return natural is
     begin
         return cell_bits * ((br*block_size + ro)*sudoku_size + bc*block_size + co);
@@ -60,9 +60,9 @@ architecture rtl of chr_init_sudoku is
         rnd_v : std_logic_vector;
         b, i : integer
     ) return unsigned is
-        variable base : integer := 4 * (b * sudoku_size + i);
+        variable base : integer := cell_bits * (b * sudoku_size + i);
     begin
-        return unsigned(rnd_v(base + 3 downto base));
+        return unsigned(rnd_v(base + cell_bits-1 downto base));
     end function;
 
 begin

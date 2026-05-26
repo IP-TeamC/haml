@@ -34,7 +34,7 @@ end entity;
 architecture rtl of tournament_sel_sudoku is
     constant idx_size : natural := natural(ceil(log2(real(pop_size))));
 
-    type t_candidates is array (0 to k*2-1) of std_logic_vector(idx_size-1 downto 0); -- k*2 Kandidatenindizes aus rnd-Bus extrahiert
+    type t_candidates is array (0 to k*2-1) of std_logic_vector(idx_size-1 downto 0); -- k*2 Kandidatenindizes
     type t_fitness is array (0 to k*2-1) of std_logic_vector(fp_size-1 downto 0); -- k*2 Fitnesswerte
 
     signal candidates : t_candidates;
