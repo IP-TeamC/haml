@@ -60,7 +60,7 @@ architecture rtl of ga_linreg is
     signal next_dp_end_adr : std_logic_vector(dp_end_adr'range);
 
     -- RAM fuer Population/Chromosome
-    signal ram_chr_we : std_logic_vector(var_num downto 0);
+    signal ram_chr_we : std_logic;
     signal ram_chr_adr : std_logic_vector(chr_adr_size-1 downto 0);
     signal ram_chr_di : t_ram_data(0 to var_num);
     signal ram_chr_do : std_logic_vector(fp_size*(var_num+1)-1 downto 0);
@@ -75,9 +75,9 @@ architecture rtl of ga_linreg is
     signal init_start : std_logic;
     signal init_done : std_logic;
     signal init_ram_fit_we : std_logic;
-    signal init_ram_chr_we : std_logic_vector(ram_chr_we'range);
+    signal init_ram_chr_we : std_logic;
     signal init_ram_chr_adr : std_logic_vector(ram_chr_adr'range);
-    signal init_ram_chr_di : std_logic_vector(fp_size-1 downto 0);
+    signal init_ram_chr_di : std_logic_vector(fp_size*(var_num+1)-1 downto 0);
     signal init_fitness_start : std_logic;
 
     -- Fitness-Funktion
@@ -90,16 +90,27 @@ architecture rtl of ga_linreg is
     -- Trainer
     signal trainer_start : std_logic;
     signal trainer_ram_fit_we : std_logic;
-    signal trainer_ram_chr_we : std_logic_vector(ram_chr_we'range);
+    signal trainer_ram_chr_we : std_logic;
     signal trainer_ram_chr_adr : std_logic_vector(ram_chr_adr'range);
     signal trainer_ram_chr_di : std_logic_vector(ram_chr_do'range);
     signal trainer_fitness_start : std_logic;
 
+    -- Kontinuierliche Bestimmung der besten Chromosome
     signal better_chr : std_logic;
+    signal next_better_chr : std_logic;
+
+    signal i_best_chr : std_logic_vector(best_chr'range);
+    signal next_best_chr : std_logic_vector(best_chr'range);
+
     signal best_chr_fit : unsigned(fitness_fit'range);
     signal next_best_chr_fit : unsigned(fitness_fit'range);
 
+    signal cache_fitness_chr : std_logic_vector(fitness_chr'range);
+    signal cache_fitness_fit : unsigned(fitness_fit'range);
+
 begin
+
+    best_chr <= i_best_chr;
 
     -- Startsignale fuer Komponenten
     init_start <= '1' when state = s_init and prev_state /= s_init else '0';
@@ -115,13 +126,13 @@ begin
     end generate;
 
     -- Chromosom-RAM-Signale
-    fitness_chr <= ram_chr_do when state = s_init
+    fitness_chr <= init_ram_chr_di when state = s_init
         else trainer_ram_chr_di;
     ram_chr_we <= init_ram_chr_we or trainer_ram_chr_we;
     ram_chr_adr <= init_ram_chr_adr when state = s_init
         else trainer_ram_chr_adr;
     gen_ram_chr_di: for i in 0 to var_num generate
-        ram_chr_di(i) <= init_ram_chr_di when state = s_init
+        ram_chr_di(i) <= flat_vec(init_ram_chr_di, fp_size, i) when state = s_init
             else flat_vec(trainer_ram_chr_di, fp_size, i);
     end generate;
 
@@ -155,7 +166,7 @@ begin
             )
             port map(
                 clk => clk,
-                we => ram_chr_we(i),
+                we => ram_chr_we,
                 adr => ram_chr_adr,
                 di => ram_chr_di(i),
                 do => ram_chr_do(flat_upper(fp_size, i) downto flat_lower(fp_size, i))
@@ -250,10 +261,13 @@ begin
     next_dp_end_adr <= dp_adr when mark_end = '1'
         else dp_end_adr;
 
-    better_chr <= '1' when fitness_done = '1' and unsigned(fitness_fit) <= best_chr_fit
+    next_better_chr <= '1' when fitness_done = '1' and unsigned(fitness_fit) <= best_chr_fit and unsigned(fitness_fit) <= cache_fitness_fit
         else '0';
     
-    next_best_chr_fit <= unsigned(fitness_fit) when better_chr = '1' or state = s_init
+    next_best_chr <= cache_fitness_chr when better_chr = '1' or state = s_init
+        else i_best_chr;
+
+    next_best_chr_fit <= cache_fitness_fit when better_chr = '1' or state = s_init
         else best_chr_fit;
 
     process (clk)
@@ -262,9 +276,13 @@ begin
             prev_state <= state;
             state <= next_state;
             dp_end_adr <= next_dp_end_adr;
+            better_chr <= next_better_chr;
+            i_best_chr <= next_best_chr;
             best_chr_fit <= next_best_chr_fit;
-            if better_chr = '1' then
-                best_chr <= fitness_chr;
+
+            if fitness_done = '1' then
+                cache_fitness_chr <= fitness_chr;
+                cache_fitness_fit <= unsigned(fitness_fit);
             end if;
 
             -- TODO Logging entfernen

@@ -31,7 +31,7 @@ entity trainer is
         ram_fit_we : out std_logic;
 
         ram_chr_do : in std_logic_vector(fp_size*(var_num+1)-1 downto 0);
-        ram_chr_we : out std_logic_vector(var_num downto 0);
+        ram_chr_we : out std_logic;
         ram_chr_adr : out std_logic_vector(chr_adr_size-1 downto 0);
         ram_chr_di : out std_logic_vector(fp_size*(var_num+1)-1 downto 0);
 
@@ -77,7 +77,7 @@ begin
     done <= '1' when state = s_ready else '0';
 
     ram_fit_we <= tr_ram_chr_we;
-    ram_chr_we <= (others => tr_ram_chr_we);
+    ram_chr_we <= tr_ram_chr_we;
     ram_chr_adr <= ts_ram_chr_adr when state = s_select
         else tr_ram_chr_adr;
     ram_chr_di <= mut_chr_mut;

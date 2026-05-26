@@ -5,7 +5,7 @@ use work.lineare_regression2_dataset_tb.all;
 
 entity lineare_regression2_tb is
 
-    constant clk_period : time := 4 ns;
+    constant clk_period : time := 3 ns;
 
 end entity;
 
