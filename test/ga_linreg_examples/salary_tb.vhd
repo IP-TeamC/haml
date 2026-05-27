@@ -5,7 +5,7 @@ use work.salary_dataset_tb.all;
 
 entity salary_tb is
 
-    constant clk_period : time := 3 ns;
+    constant clk_period : time := 2.75 ns;
 
 end entity;
 
