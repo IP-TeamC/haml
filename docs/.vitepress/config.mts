@@ -52,6 +52,8 @@ export default defineConfig({
     langMenuLabel : 'Sprachauswahl',
     skipToContentLabel: 'Zum Inhalt springen',
 
-    outline: { level: [2, 3], label: 'Auf dieser Seite' }
+    outline: { level: [2, 3], label: 'Auf dieser Seite' },
+
+    logo: { src: '/haml-icon.svg', width: 24, height: 24 }
   }
 })
