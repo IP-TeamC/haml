@@ -62,7 +62,8 @@ begin
         );
 
     ram_dp_adr <= std_logic_vector(adr);
-    mse_valid <= '1' when state = s_running else '0';
+    mse_valid <= '1' when state = s_running
+        else '0';
 
     next_adr <= (others => '0') when (state = s_ready and start = '1') or rst = '1'
         else adr + 1;
@@ -72,7 +73,8 @@ begin
         else s_running when state = s_first
         else state;
 
-    next_last_adr <= '1' when rst = '0' and std_logic_vector(adr) = dp_end_adr else '0';
+    next_last_adr <= '1' when rst = '0' and std_logic_vector(adr) = dp_end_adr
+        else '0';
 
     process (clk)
     begin

@@ -28,12 +28,10 @@ entity trainer is
         fitness_fit : in std_logic_vector(fit_size-1 downto 0);
 
         ram_fit_do : in std_logic_vector(fit_size-1 downto 0);
-        ram_fit_we : out std_logic;
-
         ram_chr_do : in std_logic_vector(fp_size*(var_num+1)-1 downto 0);
-        ram_chr_we : out std_logic;
         ram_chr_adr : out std_logic_vector(chr_adr_size-1 downto 0);
         ram_chr_di : out std_logic_vector(fp_size*(var_num+1)-1 downto 0);
+        ram_chr_fit_we : out std_logic;
 
         fitness_start : out std_logic;
         done : out std_logic
@@ -69,15 +67,14 @@ architecture rtl of trainer is
     -- Tournament Replacement
     signal tr_start : std_logic;
     signal tr_ram_chr_adr : std_logic_vector(ram_chr_adr'range);
-    signal tr_ram_chr_we : std_logic;
+    signal tr_ram_chr_fit_we : std_logic;
     signal tr_done : std_logic;
 
 begin
 
     done <= '1' when state = s_ready else '0';
 
-    ram_fit_we <= tr_ram_chr_we;
-    ram_chr_we <= tr_ram_chr_we;
+    ram_chr_fit_we <= tr_ram_chr_fit_we;
     ram_chr_adr <= ts_ram_chr_adr when state = s_select
         else tr_ram_chr_adr;
     ram_chr_di <= mut_chr_mut;
@@ -161,7 +158,7 @@ begin
             fit_do => ram_fit_do,
             chr_do => ram_chr_do,
             chr_adr => tr_ram_chr_adr,
-            chr_we => tr_ram_chr_we,
+            chr_fit_we => tr_ram_chr_fit_we,
             done => tr_done
         );
 

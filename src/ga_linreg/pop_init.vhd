@@ -18,8 +18,7 @@ entity pop_init is
         start : in std_logic;
         fitness_done : in std_logic;
 
-        ram_fit_we : out std_logic;
-        ram_chr_we : out std_logic;
+        ram_chr_fit_we : out std_logic;
         ram_chr_adr : out std_logic_vector(adr_size-1 downto 0);
         ram_chr_di : out std_logic_vector(fp_size*(var_num+1)-1 downto 0);
 
@@ -52,9 +51,7 @@ architecture rtl of pop_init is
 begin
 
     ram_chr_di <= i_ram_chr_di;
-    ram_fit_we <= '1' when state = s_write
-        else '0';
-    ram_chr_we <= '1' when state = s_write
+    ram_chr_fit_we <= '1' when state = s_write
         else '0';
     ram_chr_adr <= std_logic_vector(chr_adr);
 
@@ -88,9 +85,9 @@ begin
     next_chr_adr <= (others => '0') when rst = '1' or state = s_ready
         else chr_adr + 1 when state = s_write
         else chr_adr;
-
     next_last_chr_adr <= '1' when chr_adr = (chr_adr'range => '1') and rst = '0'
         else '0';
+
     next_fitness_start <= '1' when state = s_generate and rst = '0'
         else '0';
     next_done <= '1' when state = s_done and rst = '0'
