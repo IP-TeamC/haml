@@ -24,7 +24,7 @@ entity tournament_rep is
         fit_do : in std_logic_vector(fit_size-1 downto 0);
         chr_do : in std_logic_vector(fp_size*(var_num+1)-1 downto 0);
         chr_adr : out std_logic_vector(adr_size-1 downto 0);
-        chr_we : out std_logic;
+        chr_fit_we : out std_logic;
 
         done : out std_logic
     );
@@ -50,7 +50,7 @@ architecture rtl of tournament_rep is
     signal cnt : std_logic_vector(k-1 downto 0);
     signal next_cnt : std_logic_vector(cnt'range);
 
-    signal next_chr_we : std_logic;
+    signal next_chr_fit_we : std_logic;
     signal next_done : std_logic;
     signal is_done : std_logic;
 
@@ -61,7 +61,8 @@ architecture rtl of tournament_rep is
 begin
 
     done <= is_done;
-    chr_adr <= worst_adr when is_done = '1' else rand_adr;
+    chr_adr <= worst_adr when is_done = '1'
+        else rand_adr;
 
     lfsr: entity work.lfsr
         generic map(
@@ -96,7 +97,7 @@ begin
         else cnt(k-2 downto 0) & '0' when state = s_read
         else cnt;
 
-    next_chr_we <= '1' when rst = '0' and state = s_cmp and (unsigned(chr_fit) <= worst_fit or replace_with_worse)
+    next_chr_fit_we <= '1' when rst = '0' and state = s_cmp and (unsigned(chr_fit) <= worst_fit or replace_with_worse)
         else '0';
 
     next_done <= '1' when state = s_cmp
@@ -110,16 +111,11 @@ begin
             worst_adr <= next_worst_adr;
             worst_fit <= next_worst_fit;
             cnt <= next_cnt;
-            chr_we <= next_chr_we;
+            chr_fit_we <= next_chr_fit_we;
             is_done <= next_done;
             fit_cache <= unsigned(fit_do);
             chr_cache <= chr_do;
             adr_cache <= prev_adr;
-
-            -- TODO Logging entfernen
-            -- if state = s_cmp and (unsigned(chr_fit) <= worst_fit or replace_with_worse) then
-            --     report "Replace " & work.util.to_string(worst_fit) & " with " & work.util.to_string(chr_fit) & " at " & work.util.to_string(worst_adr);
-            -- end if;
         end if;
     end process;
 

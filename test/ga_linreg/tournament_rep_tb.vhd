@@ -27,7 +27,7 @@ entity tournament_rep_tb is
 
     -- Outputs
     signal chr_adr : std_logic_vector(adr_size-1 downto 0);
-    signal chr_we : std_logic;
+    signal chr_fit_we : std_logic;
     signal done : std_logic;
 
 end entity;
@@ -53,7 +53,7 @@ begin
             fit_do => fit_do,
             chr_do => chr_do,
             chr_adr => chr_adr,
-            chr_we => chr_we,
+            chr_fit_we => chr_fit_we,
             done => done
         );
 
@@ -71,7 +71,7 @@ begin
         wait for clk_period;
         rst <= '0';
         assert done = '0';
-        assert chr_we = '0';
+        assert chr_fit_we = '0';
         assert chr_adr /= "00000000";
         tmp := chr_adr;
 
@@ -86,7 +86,7 @@ begin
         chr_do <= "000100010001";
         start <= '0';
         assert done = '0';
-        assert chr_we = '0';
+        assert chr_fit_we = '0';
         assert chr_adr /= "00000000";
         assert chr_adr /= tmp;
         tmp := chr_adr;
@@ -95,7 +95,7 @@ begin
         fit_do <= "1101";
         chr_do <= "001000100010";
         assert done = '0';
-        assert chr_we = '0';
+        assert chr_fit_we = '0';
         assert chr_adr /= "00000000";
         assert chr_adr /= tmp;
         tmp := chr_adr;
@@ -103,7 +103,7 @@ begin
         fit_do <= "0100";
         chr_do <= "010001000100";
         assert done = '0';
-        assert chr_we = '0';
+        assert chr_fit_we = '0';
         assert chr_adr /= "00000000";
         assert chr_adr /= tmp;
         tmp := chr_adr;
@@ -113,7 +113,7 @@ begin
         fit_do <= "1111";
         chr_do <= "111111111111";
         assert done = '0';
-        assert chr_we = '0';
+        assert chr_fit_we = '0';
         assert chr_adr /= "00000000";
         assert chr_adr /= tmp;
         tmp := chr_adr;
@@ -123,14 +123,14 @@ begin
         fit_do <= "1111";
         chr_do <= "111111111111";
         assert done = '0';
-        assert chr_we = '0';
+        assert chr_fit_we = '0';
         assert chr_adr /= "00000000";
         assert chr_adr /= tmp;
         tmp := chr_adr;
         wait for clk_period;
 
         assert done = '1';
-        assert chr_we = '1';
+        assert chr_fit_we = '1';
         assert chr_adr = worst_adr;
 
         report "Done";

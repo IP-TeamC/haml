@@ -5,7 +5,7 @@ use work.f3x12_dataset_tb.all;
 
 entity f3x12_tb is
 
-    constant clk_period : time := 4 ns;
+    constant clk_period : time := 2.75 ns;
 
 end entity;
 

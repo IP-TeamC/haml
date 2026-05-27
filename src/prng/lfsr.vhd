@@ -18,28 +18,27 @@ entity lfsr is
 end entity;
 
 architecture rtl of lfsr is
+
     signal q : std_logic_vector(degree-1 downto 0);
-    signal qn : std_logic_vector(degree-1 downto 0);
+
 begin
+
+    -- Ausgabe
+    rand <= q;
 
     -- Zustandswechsel
     process(clk)
     begin
         if rising_edge(clk) then
-            case rst is
-                when '1' => q <= seed;
-                when others => q <= qn;
-            end case;
+            if rst = '1' then
+                q <= seed;
+            else
+                q(0) <= q(degree-1);
+                for i in 1 to degree-1 loop
+                    q(i) <= q(i-1) xor (generator(i) and q(degree-1));
+                end loop;
+            end if;
         end if;
     end process;
-
-    -- Ausgabe
-    rand <= q;
-
-    qn(0) <= q(degree-1);
-    shiftWithXor:
-    for i in 1 to degree-1 generate
-        qn(i) <= q(i-1) xor (generator(i) and q(degree-1));
-    end generate;
 
 end architecture;

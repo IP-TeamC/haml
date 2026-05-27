@@ -42,6 +42,7 @@ architecture rtl of ga_linreg_tb is
     signal rst : std_logic;
     signal mark_end : std_logic;
     signal best_chr : std_logic_vector(fp_size*(var_num+1)-1 downto 0);
+    signal best_chr_fit : std_logic_vector(fit_size-1 downto 0);
 
 begin
 
@@ -68,7 +69,8 @@ begin
             dp_we => dp_we,
             dp_adr => dp_adr,
             dp_data => dp_data,
-            best_chr => best_chr
+            best_chr => best_chr,
+            best_chr_fit => best_chr_fit
         );
 
     clk_process: process
@@ -92,6 +94,7 @@ begin
             if best_chr /= prev_best_chr then
                 prev_best_chr := best_chr;
             end if;
+            report "Fit: " & work.util.to_string(best_chr_fit);
             for i in 0 to var_num loop
                 report integer'image(i) & ": " & work.util.to_string(flat_vec(best_chr, fp_size, i));
             end loop;

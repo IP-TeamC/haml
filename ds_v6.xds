@@ -17,9 +17,11 @@
     <property name="Synthesize - XST:Register Balancing" value="Yes"/>
     <property name="Map:Placer Effort Level" value="High"/>
     <property name="Map:Placer Extra Effort" value="Continue on Impossible"/>
+    <property name="Map:Starting Placer Cost Table (1-100)" value="64"/>
     <property name="Map:Extra Cost Tables" value="5"/>
     <property name="Map:Combinatorial Logic Optimization" value="true"/>
     <property name="Map:Register Duplication" value="On"/>
+    <property name="Map:Register Ordering" value="8"/>
     <property name="Map:Global Optimization" value="Speed"/>
     <property name="Map:Equivalent Register Removal" value="true"/>
     <property name="Map:Trim Unconnected Signals" value="true"/>
