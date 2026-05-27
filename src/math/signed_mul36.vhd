@@ -2,7 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
--- TODO Testen
+-- Pipeline zur Multiplikation von 36-Bit-Werten (wird NICHT MEHR verwendet; wurde ursprünglich in der Fitness-Funktion verwendet)
 entity signed_mul36 is
     port (
         clk   : in std_logic;

@@ -2,6 +2,8 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+-- Pseudo-Random-Number-Generator
+-- primitiv Generator-Polynome und Beispiel-Seeds für verschiedene Grade
 package prng is
 
     constant GENERATOR32 : std_logic_vector(32 downto 0)

@@ -5,6 +5,8 @@ use ieee.math_real.all;
 
 use work.math.all;
 
+-- einzelne Stage eines Adder-Trees
+-- addierte je zwei benachbarte Werte (insg. n Werte) und liefert n/2 Summen
 entity adder_tree_stage is
     generic (
         n : natural;
@@ -48,6 +50,7 @@ begin
         end if;
     end process;
 
+    -- addiert je zwei benachbarte Werte unter zusätzlicher Beachtung des möglichen Sonderfalls einer ungeraden Anzahl
     pair_add: for i in 0 to sum_num-1 generate
 
         uneven_and_limit: if n mod 2 = 1 and i = sum_num-1 generate

@@ -5,6 +5,11 @@ use ieee.numeric_std.all;
 use work.adder_tree;
 use work.math.all;
 
+-- euklidische Distanz-Berechnung ohne Wurzel (signed/mit Vorzeichen; nur zum Vergleichen)
+-- a und b sind jeweils n-dimensionale Vektoren (Flat)
+-- berechnet jeweils a_i - b_i für jedes i (jede Dimension), quadriert diese Differenz und addiert alle quadrierten Differenzen
+-- besteht aus den Pipeline-Stufen 1. Differenz, 2. Quadrat, 3. Addition (Adder-Tree, kann je nach n zusätzlich aus mehreren Stages bestehen)
+-- mit di können Daten durch die Pipeline mitgezogen werden, die nach dem Distanz-Berechnung relevant sind (werden in di synchron mit der quadrierten Distanz dist_sq ausgegeben)
 entity signed_dist is
     generic (
         n : natural;
@@ -43,6 +48,7 @@ architecture rtl of signed_dist is
 
 begin
 
+    -- Stage 3+: Addition der quadrierten Differenzen
     adder: entity adder_tree
         generic map (
             n => n,
@@ -66,7 +72,7 @@ begin
             if rst = '1' then
                 done_diff <= '0';
                 done_diff_sq <= '0';
-            else
+            else -- Weitergabe das Start-Signals an die folgenden Pipeline-Stufen sowie Weitergabe der Daten di -> do
                 if start = '1' then
                     diff <= diff_next;
                     di_delayed_diff <= di;
@@ -83,11 +89,13 @@ begin
         end if;
     end process;
 
+    -- Stage 1: Berechnung der Differenzen
     gen_diff: for i in 0 to n-1 generate
     begin
         diff_next(flat_upper(fp_size, i) downto flat_lower(fp_size, i)) <= std_logic_vector(flat_signed(a, fp_size, i) - flat_signed(b, fp_size, i));
     end generate;
 
+    -- Stage 2: Quadrieren der Differenzen
     gen_diff_sq: for i in 0 to n-1 generate
     begin
 

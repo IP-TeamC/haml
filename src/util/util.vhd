@@ -3,6 +3,8 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use std.textio.all;
 
+-- Utility Package für (Debug-)Printing und Konvertierung zu Strings
+
 package util is
 
     constant DEBUG_ENABLE : boolean := false;

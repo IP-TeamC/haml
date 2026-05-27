@@ -2,6 +2,10 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+-- Mathematik-Bibliothek
+-- Fixed-Point-Multiplikation mit Beibehaltung des Fixed-Point-Formats/-Skalierung (Overflow und Verlust von Genauigkeit möglich)
+-- Ausschnitt von Flat-Vektoren (Arrays in Vektor übergeben, um bei Ports Generics in diesen flachen Vektoren/Arrays zu ermöglichen)
+
 package math is
 
     function fp_mul(

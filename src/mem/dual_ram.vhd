@@ -2,6 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+-- Dual-Port-RAM (Verwendung nur mit ga_sudoku)
 entity dual_ram is
     generic (
         adr_size : natural;

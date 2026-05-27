@@ -3,6 +3,9 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.math_real.all;
 
+-- Adder-Tree, viele Additionen in einer Baumstruktur pipelined
+-- jede Stage addiert je zwei benachbarte Werte (halbiert damit die Anzahl der zu addierenden Werte)
+-- mit di können Daten durch die Pipeline mitgezogen werden, die nach dem Adder-Tree relevant sind (werden in di synchron mit der sum ausgegeben)
 entity adder_tree is
     generic (
         n : natural;
@@ -26,6 +29,7 @@ end entity;
 
 architecture rtl of adder_tree is
 
+    -- Anzahl notwendiger Stages
     constant stages_num : natural := natural(ceil(log2(real(n))));
 
     type t_stage_config is record
@@ -37,6 +41,7 @@ architecture rtl of adder_tree is
     end record;
     type t_stages_config is array (0 to stages_num-1) of t_stage_config;
 
+    -- berechnet Parameter zum Aufbau einer Stage (u.a. Konstanten für Signal-Verbindungen, Anzahl zu addierender Werte, etc.)
     function f_stages_config
     return t_stages_config is
         variable cur_n : natural;
@@ -67,11 +72,11 @@ architecture rtl of adder_tree is
     end function;
 
     constant stages_config : t_stages_config := f_stages_config;
-    signal stages_values : std_logic_vector(stages_config(stages_num-1).sum_upper downto 0);
-    signal stages_start : std_logic_vector(stages_num downto 0);
+    signal stages_values : std_logic_vector(stages_config(stages_num-1).sum_upper downto 0); -- enthaelt alle zu addierenden Werte jeder Stage
+    signal stages_start : std_logic_vector(stages_num downto 0); -- Start-Signal der Pipeline
 
     type t_stages_data is array (0 to stages_num) of std_logic_vector(data_size-1 downto 0);
-    signal stages_data : t_stages_data;
+    signal stages_data : t_stages_data; -- enthaelt alle in der Pipeline mitzuziehenden Daten jeder Stage (di -> do)
 
 begin
 
@@ -83,6 +88,7 @@ begin
     done <= stages_start(stages_num);
     do <= stages_data(stages_num);
 
+    -- Strukturbeschreibung der Stages
     stages_add: for i in 0 to stages_num-1 generate
         stage: entity work.adder_tree_stage
          generic map(

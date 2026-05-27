@@ -2,6 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+-- Linear rückgekoppeltes Schieberegister (Generator-Polynome und Beispiel-Seeds siehe prng)
 entity lfsr is
     generic (
         degree : natural := 32
