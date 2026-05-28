@@ -5,6 +5,14 @@ use ieee.numeric_std.all;
 use work.ktop_stage;
 use work.math.all;
 
+-- k-Top zur laufenden Bestimmung der k-besten (geringsten) Distanzen/Werte von Klassen/Daten
+-- mit jedem Takt wird ein neues Distanz/Klassen-Paar eingelesen
+-- das Ergebnis ist ein Vektor (Flat) der k-besten Klassen sowie Distanzen
+-- die Paare durchlaufen nacheinander jede Stage
+-- ein Paar wird in der ersten Stage gespeichert, in welcher die dort gepspeicherte Distanz schlechter/groesser ist (deshalb keine sortierte Reihenfolge der Ausgabe)
+-- start = 1 signalisiert einen gültigen, eingehenden Wert
+-- done = 1 signalisiert einen ersten gültigen, ausgehenden Wert
+-- mit done = 0 (ohne rst) bleibt die Ausgabe stabil/unverändert
 entity ktop is
     generic (
         k : natural := 3;

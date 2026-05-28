@@ -2,18 +2,17 @@
 
 ## Umsetzbarkeit
 
-- ja, guter erster Kandidat
+- guter erster Kandidat für eine Umsetzung in VHDL
 - größtenteils voneinander unabhängige Berechnungen für verschiedene Datenpunkte
   - gut parallelisierbar
-  - Pipelining und Streaming wahrscheinlich auch gut möglich
+  - Pipelining und Streaming sehr gut möglich
   - finden bester Kandidaten während Berechnung
 - Arithmetik passend
   - Vergleich der Distanzen bei Fixed-Point = Subtraktion
   - Distanzberechnung (euklidisch)
-    - Wurzel: Verzicht, da nur Vergleich!
-    - Quadrat: entspricht Multiplikation mit sich selbst, möglich
+    - Wurzel: Verzicht, da nur Vergleich
+    - Quadrat: entspricht Multiplikation mit sich selbst, gut möglich
     - Addition, Subtraktion: trivial
-- agentenbasiert möglich
 
 ## Struktur
 

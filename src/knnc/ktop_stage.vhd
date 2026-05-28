@@ -2,6 +2,13 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+-- einzelne k-Top-Stage
+-- behält/speichert den eingehenden Wert und gibt den vorhandenen Wert weiter, wenn die eingehende Distanz besser/kleiner ist
+-- behält/speichert den vorhandenen Wert und gibt den eingehenden Wert weiter, wenn die eingehende Distanz nicht besser/kleiner ist
+-- new entspricht einem neuen, eingehenden Wert
+-- cur entspricht einem bestehenden, aktuell gespeicherten Wert
+-- move entspricht dem weiterzugebenden Wert
+-- keep entspricht dem zu behaltenden/zu speichernden Wert
 entity ktop_stage is
     generic (
         dist_size : natural := 36;

@@ -5,6 +5,9 @@ use ieee.math_real.all;
 
 use work.math.all;
 
+-- Top-Level-Modul für den k-Nearest-Neighbors Classifier
+-- besteht aus dem Classifier und den Block-RAMs (Features und Class)
+-- erlaubt das Beschreiben des RAMs von außen (initiales Laden des Datensatzes)
 entity knnc is
 
     generic (

@@ -5,6 +5,7 @@ use ieee.math_real.all;
 
 use work.math.all;
 
+-- k-Select wählt die häufigste Klasse aus den k besten Klassen aus
 entity kselect is
     generic (
         k : natural := 3;

@@ -7,6 +7,10 @@ use work.signed_dist;
 use work.ktop;
 use work.kselect;
 
+-- k-Nearest-Neighbors Classifier
+-- Pipeline aus Distanz-Berechnung (signed_dist) -> Komparator (ktop) -> Selektor (kselect)
+-- l‰dt den zu klassifizierenden Datenpunkt aus dem RAM und anschlieﬂend alle bekannten/klassifizierten Datenpunkt
+-- startet die Pipeline und beendet diese beim Erreichen des letzten bekannten Datenpunktes
 entity classifier is
 
     generic (
@@ -23,8 +27,7 @@ entity classifier is
         rst : in std_logic;
         start : in std_logic;
 
-        -- Option 1 (Alternative): Feature 1 (fp_size), Feature 2 (fp_size), ..., Feature n (fp_size), Class ([...] class_size) in aufeinanderfolgenden Zeilen
-        -- Option 2 (Wahl): Feature 1 (fp_size) + Feature 2 (fp_size) + ... + Feature n (fp_size) + Class (class_size) in einer Zeile
+        -- Feature 1 (fp_size) + Feature 2 (fp_size) + ... + Feature n (fp_size) + Class (class_size) in einer Zeile
         ram_adr : out std_logic_vector(adr_size-1 downto 0);
         ram_data : in std_logic_vector(feature_num*fp_size+class_size-1 downto 0);
         dp_adr : in std_logic_vector(adr_size-1 downto 0); -- Adresse des zu klassifizierenden Datenpunkts
