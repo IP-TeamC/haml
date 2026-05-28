@@ -66,34 +66,34 @@ function sidebar(): DefaultTheme.SidebarItem[] {
       text: 'Einführung',
       collapsed: false,
       items: [
-        { text: 'Getting Started', link: 'getting-started' },
-        { text: 'Konzept', link: 'konzept' },
-        { text: 'Algorithmen', link: 'algorithmen' },
+        { text: 'Getting Started', link: '/getting-started/' },
+        { text: 'Konzept', link: '/konzept/' },
+        { text: 'Algorithmen', link: '/algorithmen/' },
       ]
     },
     {
       text: 'k-Nearest-Neighbors',
       collapsed: false,
       items: [
-        { text: 'Funktionsweise', link: 'algorithmen/knnc' },
-        { text: 'Verwendung', link: 'algorithmen/knnc/use' },
+        { text: 'Funktionsweise', base: '/algorithmen/knnc/', link: '/' },
+        { text: 'Verwendung', base: '/algorithmen/knnc/', link: 'use' },
       ]
     },
     {
       text: 'lineare Regression',
       collapsed: false,
       items: [
-        { text: 'Funktionsweise', link: 'algorithmen/ga_linreg' },
-        { text: 'Verwendung', link: 'algorithmen/ga_linreg/use' },
+        { text: 'Funktionsweise', base: '/algorithmen/ga_linreg/', link: '/' },
+        { text: 'Verwendung', base: '/algorithmen/ga_linreg/', link: 'use' },
       ]
     },
     {
       text: 'Sudoku Solver',
       collapsed: false,
       items: [
-        { text: 'Funktionsweise', link: 'algorithmen/ga_sudoku' },
-        { text: 'Verwendung', link: 'algorithmen/ga_sudoku/use' },
-        { text: 'Live-Sudoku-UI', link: 'algorithmen/ga_linreg/live-sudoku-ui' },
+        { text: 'Funktionsweise', base: '/algorithmen/ga_sudoku/', link: '/' },
+        { text: 'Verwendung', base: '/algorithmen/ga_sudoku/', link: 'use' },
+        { text: 'Live-Sudoku-UI', base: '/algorithmen/ga_sudoku/', link: 'live-sudoku-ui' },
       ]
     },
 
