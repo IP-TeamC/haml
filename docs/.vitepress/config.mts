@@ -1,10 +1,12 @@
-import { defineConfig } from 'vitepress'
+import { defineConfig, type DefaultTheme } from 'vitepress'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   lang: 'de-DE',
   title: "HAML Docs",
   description: "Hardware-Accelerated Machine Learning",
+
+  head: [['link', { rel: 'icon', href: 'favicon.ico' }]],
 
   base: '/haml/',
 
@@ -15,12 +17,12 @@ export default defineConfig({
     // https://vitepress.dev/reference/default-theme-config
     nav: [
       { text: 'Startseite', link: '/' },
-      { text: 'About', link: '/about' },
+      { text: 'Team C', link: '/about' },
     ],
 
-    sidebar: [
-
-    ],
+    sidebar: {
+      '/' : { base: '/', items: sidebar() },
+    },
 
     socialLinks: [
       { icon: 'github', link: 'https://github.com/IP-TeamC/haml' }
@@ -57,3 +59,44 @@ export default defineConfig({
     logo: { src: '/haml-icon.svg', width: 24, height: 24 }
   }
 })
+
+function sidebar(): DefaultTheme.SidebarItem[] {
+  return [
+    {
+      text: 'Einführung',
+      collapsed: false,
+      items: [
+        { text: 'Getting Started', link: 'getting-started' },
+        { text: 'Konzept', link: 'konzept' },
+        { text: 'Algorithmen', link: 'algorithmen' },
+      ]
+    },
+    {
+      text: 'k-Nearest-Neighbors',
+      collapsed: false,
+      items: [
+        { text: 'Funktionsweise', link: 'algorithmen/knnc' },
+        { text: 'Verwendung', link: 'algorithmen/knnc/use' },
+      ]
+    },
+    {
+      text: 'lineare Regression',
+      collapsed: false,
+      items: [
+        { text: 'Funktionsweise', link: 'algorithmen/ga_linreg' },
+        { text: 'Verwendung', link: 'algorithmen/ga_linreg/use' },
+      ]
+    },
+    {
+      text: 'Sudoku Solver',
+      collapsed: false,
+      items: [
+        { text: 'Funktionsweise', link: 'algorithmen/ga_sudoku' },
+        { text: 'Verwendung', link: 'algorithmen/ga_sudoku/use' },
+        { text: 'Live-Sudoku-UI', link: 'algorithmen/ga_linreg/live-sudoku-ui' },
+      ]
+    },
+
+    // { text: 'Config & API Reference', base: '/reference/', link: 'site-config' }
+  ]
+}

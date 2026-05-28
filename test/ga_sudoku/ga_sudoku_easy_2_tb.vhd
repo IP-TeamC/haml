@@ -12,9 +12,9 @@ architecture rtl of ga_sudoku_easy_2_tb is
 
     constant clk_period : time := 10 ns;
     
-    constant pop_size : natural := 128;
-    constant k : natural := 4;
-    constant mut_bits : natural := 3;
+    constant pop_size : natural := 2048;
+    constant k : natural := 2;
+    constant mut_bits : natural := 1;
     
     constant fp_size : natural := 8;
 
