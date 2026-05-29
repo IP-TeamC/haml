@@ -5,6 +5,10 @@ use ieee.math_real.all;
 
 use work.math.all;
 
+-- Strukturbeschreibung der Trainingskomponenten des genetischen Algorithmus
+-- fester Ablauf: Tournament Selection -> Crossover -> Mutation -> Fitness-Berechnung -> Tournament Replacement
+-- beinhaltet alle Komponenten mit Ausnahem der Fitness-Funktion (wird von aussen eingebunden)
+-- startet nacheinander alle Komponenten (FSM)
 entity trainer is
 
     generic (

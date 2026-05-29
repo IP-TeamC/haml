@@ -6,6 +6,8 @@ use work.math.all;
 use work.prng.prim_gen;
 use work.prng.sample_seed;
 
+-- Tournament Replacement waehlt aus k zufaellig gewaehlten Chromosomen das schlechteste aus und ersetzt dieses mit einem neuen Kandidaten
+-- replace_with_worse = false verhindert das Ersetzen bei schlechteren Kandidaten (empfohlene Einstellung)
 entity tournament_rep is
     generic (
         k : natural;

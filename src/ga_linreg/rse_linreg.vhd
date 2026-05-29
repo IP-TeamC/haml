@@ -6,12 +6,21 @@ use ieee.math_real.all;
 use work.math.all;
 
 -- Rescaled Sum of Errors (Square/Absolute)
+-- 6+ stufige Pipeline zur Berechnung der Sum of Squared/Absolute Errors (nicht korrekt skaliert, daher nur zum Vergleich)
+-- 1. RAM-Daten in Register zwischenspeichern
+-- 2. Multiplikation der Koeffizienten mit Datenpunkt
+-- 3+ Addition der Multiplikationsergebnisse im Adder-Tree (je nach Anzahl Koeffizienten Multi-Stage)
+-- 4. Differenz berechnen
+-- 5. Differenz quadrieren (bzw. absoluten Wert bestimmen)
+-- 6. quadr./abs. Differenz Akkumulieren
+-- zum Erreichen einer höheren Performance wird die Genauigkeit reduziert und kann mithilfe von fit_size konfiguriert werden (noch angemessen sind z.B. 36 Bit)
+-- die Genauigkeit ist mit square = false (Absolute Error) in der Regel höher
 entity rse_linreg is
     generic (
         var_num : natural;
         fp_size : natural;
         fp_frac : natural;
-        fit_size : natural;
+        fit_size : natural; -- max. adr_size+2*fp_size-4
         adr_size : natural;
         square : boolean
     );

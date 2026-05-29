@@ -10,35 +10,42 @@ use work.tournament_sel;
 use work.mutation;
 use work.tournament_rep;
 
+-- Strukturbeschreibung des gesamten genetischen Algorithmus fuer lineare Regression
+-- beinhaltet die RAMs fuer die Datenpunkte, Chromosome und Fitness-Werte
+-- beinhaltet die Fitness-Funktion, Populations-Initialisierung und den Trainer
+-- 1. erlaubt das Beschreiben des Datenpunkt-RAMs von aussen
+-- 2. fuehrt nach dem Start die Initialisierung der Population durch
+-- 3. startet als letzter Schritt den Trainer
+-- 4. gibt kontinuierlich bei Berechnungen der Fitness-Funktion das jeweils beste Chromosom und dessen Fitness aus
 entity ga_linreg is
 
     generic (
-        mask_factor : natural := 3;
-        k_sel : natural := 3;
-        k_rep : natural := 3;
-        var_num : natural := 1;
-        fp_size : natural := 18;
-        fp_frac : natural := 17;
-        fit_size: natural := 36;
-        dp_adr_size : natural := 8;
-        chr_adr_size : natural := 6;
-        replace_with_worse : boolean := false;
-        mut_arith : boolean := true;
-        square : boolean := false
+        mask_factor : natural := 3; -- hoeherer Masken-Faktor reduziert die Mutationswahrscheinlichkeit (siehe mutation.vhd)
+        k_sel : natural := 3; -- Tournament-Groesse fuer Tournament Selection
+        k_rep : natural := 3; -- Tournament-Groesse fuer Tournament Replacement
+        var_num : natural := 1; -- Anzahl Features
+        fp_size : natural := 18; -- Fixed-Point: Groesse (insgesamt)
+        fp_frac : natural := 17; -- Fixed-Point: Fraction-Anteil
+        fit_size: natural := 36; -- Genauigkeit der Fitness-Funktion (siehe rse_linreg.vhd)
+        dp_adr_size : natural := 8; -- Adressbreite der Datenpunkt-RAMs
+        chr_adr_size : natural := 6; -- Adressbreite der Chromosom-/Fitness-RAMs (bestimmt Populations-Groesse)
+        replace_with_worse : boolean := false; -- false verhindert das Ersetzen durch schlechtere Kandidaten (empfohlene Einstellung fuer Tournament Replacement)
+        mut_arith : boolean := true; -- Mutations-Modus: Logisch (XOR) oder Arithmetisch (ADD/SUB, empfohlen)
+        square : boolean := false -- Fehler-Funktion: Sum of Squared (square = true) / Absolute (square = false) Errors
     );
 
     port (
         clk : in std_logic;
         rst : in std_logic;
-        start : in std_logic;
+        start : in std_logic; -- laeuft nach dem Start dauerhaft bis zum Reset
 
-        mark_end : in std_logic;
-        dp_we : in std_logic_vector(var_num downto 0);
-        dp_adr : in std_logic_vector(dp_adr_size-1 downto 0);
-        dp_data : in std_logic_vector(fp_size-1 downto 0);
+        mark_end : in std_logic; -- markiert den aktuellen Datenpunkt/Adresse als letzten Datenpunkt
+        dp_we : in std_logic_vector(var_num downto 0); -- Auswahl des zu schreibenden Bestandteils des Datenpunkts (0 => Expected, 1 => Feature 1, ..., var_num => Feature var_num)
+        dp_adr : in std_logic_vector(dp_adr_size-1 downto 0); -- Adresse des zu schreibenden Datenpunkts
+        dp_data : in std_logic_vector(fp_size-1 downto 0); -- Daten des zu schreibenden Bestandteils des Datenpunkts (0 => Expected, 1 => Feature 1, ..., var_num => Feature var_num)
 
-        best_chr : out std_logic_vector(fp_size*(var_num+1)-1 downto 0);
-        best_chr_fit : out std_logic_vector(fit_size-1 downto 0)
+        best_chr : out std_logic_vector(fp_size*(var_num+1)-1 downto 0); -- bisher bestes Chromosom
+        best_chr_fit : out std_logic_vector(fit_size-1 downto 0) -- Fitness des bisher besten Chromosoms
     );
 
 end entity;
@@ -143,6 +150,7 @@ begin
     ram_fit_adr <= ram_chr_adr;
     ram_fit_di <= fitness_fit;
 
+    -- RAMs fuer Datenpunkte
     -- 0 => Expected, 1 => Feature 1, ..., var_num => Feature var_num
     gen_ram_dp: for i in 0 to var_num generate
         ram_dp: entity work.ram
@@ -159,6 +167,7 @@ begin
             );
     end generate;
 
+    -- RAMs fuer Chromosome
     -- 0 => theta_0 (constant), 1 => theta_1 (linear), ..., var_num => theta_var_num (linear)
     gen_ram_chr: for i in 0 to var_num generate
         ram_chr: entity work.ram
@@ -175,6 +184,7 @@ begin
             );
     end generate;
 
+    -- RAM fuer Fitness-Werte der Chromosome (identische Adresse)
     ram_fit: entity work.ram
         generic map(
             adr_size => chr_adr_size,
@@ -188,6 +198,7 @@ begin
             do => ram_fit_do
         );
 
+    -- Fitness-Funktion (von pop_init und trainer genutzt)
     fitness_linreg: entity work.fitness_linreg
         generic map(
             var_num => var_num,
@@ -209,6 +220,7 @@ begin
             done => fitness_done
         );
 
+    -- Populations-Initialisierung
     pop_init: entity work.pop_init
         generic map (
             var_num => var_num,
@@ -227,6 +239,7 @@ begin
             done => init_done
         );
 
+    -- Trainer (Durchfuehrung des genetischen Algorithmus)
     trainer: entity work.trainer
         generic map(
             mask_factor => mask_factor,
@@ -261,6 +274,7 @@ begin
     next_dp_end_adr <= dp_adr when mark_end = '1'
         else dp_end_adr;
 
+    -- zusaetzlicher Vergleich mit Fitness in Cache/Pipeline notwendig (koennte besser sein)
     next_better_chr <= '1' when fitness_done = '1' and unsigned(fitness_fit) <= i_best_chr_fit and unsigned(fitness_fit) <= cache_fitness_fit
         else '0';
     

@@ -24,8 +24,8 @@ entity knnc is
         rst : in std_logic;
         start : in std_logic;
 
-        mark_end : in std_logic;
-        ram_we : in std_logic;
+        mark_end : in std_logic; -- markiert, ob der aktuelle Datenpunkt/Adresse die letzte Adresse des Datensatzes ist (zu klassifizierender Datenpunkt wird die folgende Adresse)
+        ram_we : in std_logic; -- Datenpunkt in den RAM schreiben
         ram_adr : in std_logic_vector(adr_size-1 downto 0);
         ram_data : in std_logic_vector(fp_size-1 downto 0);
         ram_part : in std_logic_vector(natural(ceil(log2(real(feature_num+1))))-1 downto 0); -- 0 => Class, 1 => Feature 1, ...
@@ -69,7 +69,10 @@ begin
         );
 
     gen_ram: for i in 0 to feature_num generate
-        i_ram_we(i) <= '1' when ram_we = '1' and to_integer(unsigned(ram_part)) = i else '0';
+        -- Datenpunkt in RAM nur schreiben, wenn Part (RAM-Teil) von aussen gewaehlt ist und geschrieben werden soll
+        -- RAM-Write nur von aussen
+        i_ram_we(i) <= '1' when ram_we = '1' and to_integer(unsigned(ram_part)) = i
+            else '0';
 
         gen_feature_ram: if i /= 0 generate
             ram_feature: entity work.ram
@@ -102,7 +105,9 @@ begin
         end generate;
     end generate;
 
-    i_ram_adr <= ram_adr when ram_we = '1' else i_read_adr;
+    -- Adresse von aussen waehlen beim Schreiben
+    i_ram_adr <= ram_adr when ram_we = '1'
+        else i_read_adr;
 
     process(clk)
     begin

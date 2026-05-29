@@ -6,6 +6,9 @@ use work.math.all;
 use work.prng.prim_gen;
 use work.prng.sample_seed;
 
+-- Populations-Initialisierung
+-- generiert ein Chromosom, berechnet dessen Fitness und schreibt das Chromosom sowie die Fitness in die RAMs
+-- wiederholt die Chromosom-Generierung, Fitness-Berechnung und das Schreiben fuer jede RAM-Adresse der Chromosome/Fitness
 entity pop_init is
     generic (
         var_num : natural;

@@ -2,6 +2,9 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+-- Fitness-Berechnung
+-- Controller fuer rse_linreg
+-- liest Datenpunkte aus dem RAM und stellt diese der tatsaechlichen Fitness-Berechnung (rse_linreg) nacheinander zur Verfügung (inkl. Start-/Stopp-Signale)
 entity fitness_linreg is
     generic (
         var_num : natural;

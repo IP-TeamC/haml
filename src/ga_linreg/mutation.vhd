@@ -6,6 +6,13 @@ use work.math.all;
 use work.prng.prim_gen;
 use work.prng.sample_seed;
 
+-- Mutation erzeugt aus einem Chromosom (Kind nach dem Crossover) ein mutiertes Chromosom
+-- zur Beeinflussung der Mutationswahrscheinlichkeit werden die zufaelligen Bit-Vektoren des LFSR verundet (Anzahl ANDs entsprechend mask_factor)
+-- jedes Chromosom/Mutations-Maske wird zusaetzlich in 4 Bloecke unterteil
+-- alle weiteren Bloecke aufsteigend vom LSB werden jeweils mit einem zusaetzlichen zufaelligen Bit-Vektor verundet
+-- die Mutationswahrscheinlich ist also bei den geringeren Bloecken (LSBs) geringer als bei den hoeheren Bloecken (MSBs)
+-- es werden 2 Mutations-Modi unterstuetzt: Logisch (XOR) und Arithmetisch (ADD/SUB), wobei bei Arithmetisch zufaellig zwischen ADD/SUB gewaehlt wird
+-- LFSR-Seed wird konstant aus dem PRNG-Sample-Seed gewaehlt
 entity mutation is
     generic (
         mask_factor : natural;
@@ -92,7 +99,7 @@ begin
     end process;
 
     full_mask: for i in 0 to var_num generate
-        -- untere Blöcke mit nach oben abnehmender Mutationswahrscheinlichkeit
+        -- untere Bloecke mit nach oben abnehmender Mutationswahrscheinlichkeit
         full_mask_loop: for blk in 0 to masks'high-1 generate
             mask(flat_lower(fp_size, i)+mask_block_size*(blk+1)-1 downto flat_lower(fp_size, i)+mask_block_size*blk)
                 <= masks(blk)(flat_lower(fp_size, i)+mask_block_size*(blk+1)-1 downto flat_lower(fp_size, i)+mask_block_size*blk);

@@ -6,6 +6,7 @@ use work.math.all;
 use work.prng.prim_gen;
 use work.prng.sample_seed;
 
+-- Tournament Selection waehlt zweimal (zwei Runden: best_chr1/2) jeweils den besten Kandidaten aus k zufaelligen Chromosomen
 entity tournament_sel is
     generic (
         k : natural;

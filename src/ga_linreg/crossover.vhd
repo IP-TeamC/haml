@@ -6,6 +6,9 @@ use work.math.all;
 use work.prng.prim_gen;
 use work.prng.sample_seed;
 
+-- Crossover erzeugt ein Kind-Chromosom aus 2 Eltern-Chromosomen
+-- waehlt zufällig jeweils ein ganzes Gen (Koeffizient) eines Elternteils aus
+-- LFSR-Seed wird konstant aus dem PRNG-Sample-Seed gewaehlt
 entity crossover is
     generic (
         var_num : natural;

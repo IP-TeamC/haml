@@ -120,7 +120,8 @@ begin
             done => selector_done_next
         );
 
-    ram_adr <= cur_adr when started = '1' else dp_adr;
+    ram_adr <= cur_adr when started = '1'
+        else dp_adr;
     cur_features <= ram_data(feature_num*fp_size+class_size-1 downto class_size);
     cur_class <= ram_data(class_size-1 downto 0);
     next_adr <= std_logic_vector(unsigned(cur_adr)+1);
@@ -140,14 +141,18 @@ begin
                 cache_read_cmp <= '0';
             elsif started = '1' then
                 if read_cmp = '0' then
+                    -- zu klassifierenden Datenpunkt aus dem RAM im Register speichern
                     cmp_features <= cur_features;
                     read_cmp <= '1';
                 elsif cur_adr = dp_adr then
+                    -- Lesen/Verarbeitung beenden (Pipeline laeuft anschliessend nur noch bis zum Ende)
                     started <= '0';
                     read_cmp <= '0';
                 end if;
+                -- nächste Adresse anlegen
                 cur_adr <= next_adr;
             elsif start = '1' then
+                -- Classifier starten und Adresse 0 anlegen (aktuell noch die Adresse des zu klassifizierenden Datenpunkts)
                 cur_adr <= (others => '0');
                 started <= '1';
             end if;
