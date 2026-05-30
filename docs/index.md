@@ -8,17 +8,20 @@ hero:
   tagline: "Entwickelt im Rahmen eines Integrationsprojekt an der Fachhochschule für die Wirtschaft Hannover."
   actions:
     - theme: brand
+      text: Getting Started
+      link: /getting-started
+    - theme: alt
       text: Voraussetzungen
       link: /konzepte/basis-ideen
     - theme: alt
-      text: Algorithmen
+      text: Algorithmen-Auswahl
       link: /konzepte/auswahl
   image:
     src: /haml-icon.svg
 
 features:
   - icon: 🏷️
-    title: K-Nearest Neighbors Classifier
+    title: K-Nearest-Neighbors Classifier
     #  details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
     link: /algorithmen/knnc
     linkText: Mehr erfahren

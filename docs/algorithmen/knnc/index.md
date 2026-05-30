@@ -99,3 +99,7 @@ Der Selektor wählt aus der Liste der k besten Distanzen/Klassen des Komparators
 Dafür wird jede Klasse gezählt und anschließend der größte Wert bestimmt.
 Die Wahl bei gleich häufig auftretenden Klassen ist nicht explizit definiert.
 In der Implementierung wird hierbei jedoch die Klasse mit der geringsten binären Kodierung gewählt.
+
+### Testbenches
+
+Alle Komponenten wurden mithilfe von Testbenches erfolgreich validiert (siehe Ordner `test/knnc` bzw. allgemeine Komponenten in anderen Unterordnern).
