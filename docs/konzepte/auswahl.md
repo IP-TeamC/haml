@@ -1,6 +1,7 @@
-[Basis-Ideen/Voraussetzungen](basis-ideen.md) - <strong><i>[Auswahl Algorithmen](auswahl.md)</i></strong>
+# Auswahl der Algorithmen
 
-# Auswahl Algorithmen
+Im folgenden wird die Eignung der Algorithmen für eine Hardware-Implementierung untersucht.
+Dies basiert auf der groben Funktionsweise der Algorithmen sowie den Vorüberlegungen (Basis-Ideen) zu Beginn des Projekts.
 
 ## Supervised
 
@@ -75,11 +76,11 @@
 ### Polynomielle Regression
 
 - ja, aber später
-- entspricht größtenteilos Linearer Regression
+- entspricht größtenteils Linearer Regression
 - aber: Potenzen mit hohen Exponenten evtl. problematisch, Lösungen:
   - Pipelining (Multiplikation je Stage), sonst evtl. langsam
   - Beschränkung der Eingaben und Grad des Polynoms (Maximum bei Fixed-Point)
-    - alternativ Beschränkung der Berechnung (Overflow = Maximum)?
+    - alternativ Beschränkung der Berechnung (Overflow = Maximum)
 - agentenbasiert begrenzt möglich, eher nein
   - Aufteilung/Teil-Problem zu klein: z.B. Berechnung für einen Datenpunkt (oder Batch)
 
@@ -95,8 +96,8 @@
 - Einschränkungen: nur mit Batching für Pipelining
 - evtl. hoher Speicherbedarf
 - Arithmetik bis auf bestimmte Funktionen (Aktivierung, Loss) ausreichend
-  - spezielle Funktionen effizient abbilden?
-- gutes Potenziel für Parallelisierung, Pipelining, Stream
+  - offen: spezielle Funktionen effizient abbilden?
+- gutes Potenzial für Parallelisierung, Pipelining, Streaming
 - erster Schritt: Implementierung eines konkreten Anwendungsfalls wie binäre Klassifikation mit BCE + ReLU/Sigmoid
 - noch genauer zu untersuchen
 - agentenbasiert begrenzt möglich, eher nein
@@ -107,10 +108,9 @@
 ### Simulated Annealing
 
 - eher ja, aber später mit Eischränkungen: Verbesserung evtl. eher gering
-- Problem: Zufallszahlen für Nachbar-Lösungen und Bewertung von Verschlechterungen
-  - z.B. LFSR? -> implementiert, funktioniert
+- Problem: Zufallszahlen (Lösung LFSR)
 - schlechte Parallelisierbarkeit
-  - mehrere Prozesse parallel und besten wählen (fraglich, ob sinnvolle Art der Parallelisierung: Ziel?)
+  - mehrere Prozesse parallel und besten wählen (möglich, aber fraglich, ob sinnvolle Art der Parallelisierung: Ziel?)
   - evtl. Parallelisierung der Evaluations-Berechnung (nur sinnvoll, wenn komplex und parallelisierbar)
   - parallel mehrere Nachbarn berechnen
     - bei Wahl von bestem: Einschränkung der Idee von Simulated Annealing: Verschlechterung wird unwahrscheinlicher -> eher lokales Maximum statt globales finden
@@ -122,7 +122,7 @@
 
 - ja, aber später mit Einschärnkungen
 - Probleme:
-  - Zufallszahlen (wieder LFSR?)
+  - Zufallszahlen (Lösung LFSR)
   - evtl. hoher Speicherbedarf
   - Auswahl bester Individuen aufwändig (vereinfachte Auswahl, verschiedene Möglichkeiten)
 - sehr gute Parallelisierung
@@ -155,3 +155,9 @@
 
 - Entscheidungsbäume
 - Support Vector Machines
+
+## Tatsächliche Implementierungen
+
+1. k-Nearest-Neighbor
+2. Genetischer Algorithmus für lineare Regression
+3. Genetischer Algorithmus zum Lösen von Sudokus

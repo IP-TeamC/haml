@@ -1,6 +1,9 @@
-<strong><i>[Basis-Ideen/Voraussetzungen](basis-ideen.md)</i></strong> - [Auswahl Algorithmen](auswahl.md)
-
 # Basis-Ideen/Voraussetzungen
+
+Die Basis-Ideen beschreiben grundlegende Voraussetzungen sowie Festlegungen,
+um eine Implementierung von Machine-Learning-Algorithmen auf einem FPGA effizient/sinnvoll gestalten zu können.
+Inhaltlich entsprechen diese Ideen größtenteils den Vorüberlegungen zu Beginn des Projekts und wurden nur minimal überarbeitet.
+Die hier kurz beschriebenen Überlegungen zu Parallelität, Pipelining, Streaming und Arithmetik wurden tatsächlich sehr ähnlich umgesetzt.
 
 ## Parallelität
 
@@ -11,13 +14,14 @@
 ## Pipelining
 
 - mehrschrittige Berechnung für mehrere Datenpunkte in verschiedenen Phasen
-- Pipelining auch von Operationen innerhalb Phase
+- Pipelining auch von Operationen innerhalb einer Phase
 
 ## Streaming
 
 - kontinuierliche Verarbeitung von Daten, möglichst ohne Speicherzugriffe
 - -> in Pipeline weiter-/durchschieben
 - -> kontinuierlicher Stream
+- -> möglichst keine Verzweigungen
 
 ## Arithmetik
 
@@ -26,85 +30,44 @@ Ausschlüsse:
 - kein Floating-Point
 - keine Division
 - keine Wurzeln
-- möglichst keine Potenzen (oder nur feste)?
-- negative Zahlen/2er-Komplement bei Multiplikation?
+- möglichst keine Potenzen
 
 Festlegungen:
 
-- Fixed-Point (Format? Q16.8, Q32.16, Q20.12, Generic je nach Problem)
+- Fixed-Point
 - 2er-Komplement/Signed
 - 3 Operationen: Addition, Subtraktion, Multiplikation
-- komplexe Funktionen mit Lookup-Table (evtl. auch für Wurzeln, falls notwendig)?
+- komplexe Funktionen mit Lookup-Table (nicht notwendig, daher nicht umgesetzt)
 
-Addition/Subtraktion:
+Addition/Subtraktion mit Fixed-Point:
 
-- Overflow/Carry!
-- sonst unproblematisch mit Fixed-Point und 2er-Komplement
+- unproblematisch mit Fixed-Point und 2er-Komplement
 - unverändert zu Integer-Addition
-- CLA?
 
-Multiplikation:
+Multiplikation mit Fixed-Point:
 
-- Overflow!
-- über Integer-Multiplikation mit Shift und Cut
-- Bsp. für Q5.3: 11011,011 \* 10101,101 = 10 0100 1111,1111 11
-  - wird zu <ins>10 010</ins>0 1111,111~~1 11~~ (Overflow und Verlust von Genauigkeit)
-  - Verlust von Genauigkeit akzeptabel
-  - Overflow problematisch wie Carry/Overflow bei Addition/Subtraktion
-  - einfach ignorieren oder Meldung: Berechnung fehlerhaft?
-    - Meldung parallel und weiter rechnen?
-    - sonst einfach ignorieren
-- Umgang mit 2er-Komplement/Signed
+- Multiplikation von Fixed-Point identisch zu Integer
+  - lediglich Verschiebung des Kommas (nur Interpretation)
+  - optional Verlust von Genauigkeit mit Abschneiden der Ergebnis-LSBs
+- Umgang mit 2er-Komplement/Signed unproblematisch
   - von IEEE Library in VHDL unterstützt
-  - Problem: Erkennung Overflow (Unterschied positiv/negativ)
-    - TODO
 
 Fixed-Point:
 
 - ca. 0,3 Nachkommastellen Genauigkeit je Fraction-Bit
-- vermutlich 25x18 oder 18x18 Multiplier
-  - 18 Bit nicht ausreichend
-  - 2x18 Bit, also 36 Bit gesamt
-- 36 Bit gesamt:
-  - Q26.10 mit 134 217 727 + 3,0
-  - Q24.12 mit 8 388 607 + 3,6
-- besser: Generic je nach Problem bzw. Fraction-Size als Parameter
-- Notiz: implementiert (nur Multiplikation anders), funktioniert
-
-| Fraction-Bits | Genauigkeit (Nachkommastellen) [`Bits * log10(2)`] |
-| ------------- | -------------------------------------------------- |
-| 8             | 2,4                                                |
-| 10            | 3,0                                                |
-| 12            | 3,6                                                |
-| 14            | 4,2                                                |
-| 16            | 4,8                                                |
-| 18            | 5,4                                                |
-| 20            | 6,0                                                |
-| 22            | 6,6                                                |
-| 24            | 7,2                                                |
-| 26            | 7,8                                                |
-| 28            | 8,4                                                |
-| 30            | 9,0                                                |
-| 32            | 9,6                                                |
-
-| Integer-Bits | Maximum [`2^(Bits-1) - 1`] |
-| ------------ | -------------------------- |
-| 16           | 32 767                     |
-| 20           | 524 287                    |
-| 22           | 2 097 151                  |
-| 24           | 8 388 607                  |
-| 26           | 33 554 431                 |
-| 28           | 134 217 727                |
-| 32           | 2 147 483 647              |
+- vermutlich 25x18 bzw. 18x18 Multiplier
+  - 18 Bit meist ausreichend als Operanden
+  - 36 Bit Ergebnisse nach der Multiplikation:
+- Generic je nach Problem
+  - Fraction-Size als konfigurierbarer Parameter
 
 PRNG:
 
 - LFSR
   - primitives Polynomen für maximale Periodenlänge
-  - LFSR kombinieren: unterschiedliche Polynome/Seeds, Bit-Mixing
-  - Whitening
-  - Notiz: LFSR implementiert, funktioniert
-- Xorshift
+  - optional LFSR kombinieren: unterschiedliche Polynome/Seeds, Bit-Mixing (nicht umgesetzt)
+  - optional Whitening (nicht umgesetzt)
+- optional Xorshift (nicht umgesetzt)
 
 ## Agentenbasiert
 
@@ -112,3 +75,6 @@ PRNG:
 - Verteilung von Teil-Problemen an Agenten (einzelne FPGAs)
   - z.B. Teil-Population zur Evolution
   - Cluster
+  - möglichst unabhängige Berechnungen der Agenten
+  - Kommunikation minimieren
+  - Planetensystem
