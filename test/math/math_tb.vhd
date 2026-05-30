@@ -64,6 +64,7 @@ BEGIN
         res := fp_mul(a, b, 10);
         assert res = "11101001010111001111110000" & "0000000000";
 
+        report "Done";
         wait;
     end process;
 

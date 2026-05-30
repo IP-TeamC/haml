@@ -70,6 +70,7 @@ begin
             assert do = d_vec;
         end loop;
 
+        report "Done";
         wait;
     end process;
 

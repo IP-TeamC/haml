@@ -62,6 +62,7 @@ begin
         wait for clk_period;
         assert class = "01";
 
+        report "Done";
         wait;
     end process;
 

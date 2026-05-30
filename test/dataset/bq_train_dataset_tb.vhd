@@ -10,9 +10,18 @@ package bq_train_dataset_tb is
     constant PART_SIZE : natural := 3;
     constant DATA_SIZE : natural := 18;
 
-
     constant START_ADR : std_logic_vector(ADR_SIZE-1 downto 0) := (others => '0');
     constant END_ADR : std_logic_vector(ADR_SIZE-1 downto 0) := "11111110111";
+
+    type t_dataset is array (0 to 2039, 0 to 7) of std_logic_vector(DATA_SIZE-1 downto 0);
+
+    procedure write_dataset_to_ram_ga_and_start (
+        signal we : out std_logic_vector(t_dataset'high(2) downto 0);
+        signal write_adr : out std_logic_vector(ADR_SIZE-1 downto 0);
+        signal write_data : out std_logic_vector(FP_SIZE-1 downto 0);
+        signal start : out std_logic;
+        clk_period : time
+    );
 
     procedure write_dataset_to_ram (
         signal we : out std_logic;
@@ -32,7 +41,6 @@ package bq_train_dataset_tb is
         i : natural
     );
 
-    type t_dataset is array (0 to 2039, 0 to 7) of std_logic_vector(DATA_SIZE-1 downto 0);
     signal dataset : t_dataset := (
         0 => (0 => "000000000000000001", 1 => "111101001101110011", 2 => "000010000000000010", 3 => "000011000011010011", 4 => "111111100100110100", 5 => "111101111000001111", 6 => "000000101101110100", 7 => "000010111110001000"),
         1 => (0 => "000000000000000001", 1 => "111100000000001111", 2 => "000001011011100011", 3 => "111111011010011010", 4 => "111101110110101010", 5 => "111101110111100001", 6 => "000011011011100110", 7 => "000001111101100010"),
@@ -2079,6 +2087,30 @@ package bq_train_dataset_tb is
 end package;
 
 package body bq_train_dataset_tb is
+
+    procedure write_dataset_to_ram_ga_and_start (
+        signal we : out std_logic_vector(t_dataset'high(2) downto 0);
+        signal write_adr : out std_logic_vector(ADR_SIZE-1 downto 0);
+        signal write_data : out std_logic_vector(FP_SIZE-1 downto 0);
+        signal start : out std_logic;
+        clk_period : time
+    ) is
+    begin
+        start <= '0';
+        wait for clk_period;
+        we <= (others => '0');
+        for adr in t_dataset'range(1) loop
+            write_adr <= std_logic_vector(to_unsigned(adr, ADR_SIZE));
+            for part in t_dataset'range(2) loop
+                we(part) <= '1';
+                write_data <= dataset(adr, part);
+                wait for clk_period;
+                we(part) <= '0';
+            end loop;
+        end loop;
+        we <= (others => '0');
+        start <= '1';
+    end procedure;
 
     procedure write_dataset_to_ram (
         signal we : out std_logic;

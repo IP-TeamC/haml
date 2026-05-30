@@ -207,6 +207,7 @@ begin
         assert done8 = '0';
         assert sum8 = "01110010";
 
+        report "Done";
         wait;
     end process;
 

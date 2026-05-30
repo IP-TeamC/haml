@@ -64,7 +64,7 @@ public class GenericLinReg {
         gen.fpFrac = fpFrac;
         gen.dataSet = dataSet;
         gen.name = fileName.split("\\.")[0];
-        gen.gen("linreg", false);
+        gen.gen(false);
     }
 
     private double[] convertDenormalizeAndPrintFunction(String constant, String... coefs) {
@@ -119,7 +119,7 @@ public class GenericLinReg {
             for (int j = 0; j < factors.length-1; j++) {
                 predicted += factors[j + 1] * dataSet.inputs[i][j];
             }
-            System.out.println(Math.round(dataSet.outputs[i][0]) + ", but: " + Math.round(predicted));
+            System.out.println(Math.round(dataSet.outputs[i][0]) + ", but predicted: " + Math.round(predicted));
         }
         dataSet = null;
     }

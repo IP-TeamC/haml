@@ -203,6 +203,7 @@ begin
         wait for clk_period;
         assert done = '0';
 
+        report "Done";
         wait;
     end process;
 

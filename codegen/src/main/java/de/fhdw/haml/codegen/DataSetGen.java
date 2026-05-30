@@ -141,7 +141,7 @@ public class DataSetGen {
     public int fpFrac = 12;
 
     @SneakyThrows
-    public void gen(String subDir, boolean classification) {
+    public void gen(boolean classification) {
         int adrSize = (int) Math.ceil(Math.log(dataSet.size)/Math.log(2));
         int partSize = (int) Math.ceil(Math.log(dataSet.inputSize)/Math.log(2));
 
@@ -181,7 +181,7 @@ public class DataSetGen {
                 entries,
                 name
         );
-        Files.writeString(Path.of("../test/" + subDir + "/" + name + "_dataset_tb.vhd"), file, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE);
+        Files.writeString(Path.of("../test/dataset/" + name + "_dataset_tb.vhd"), file, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE);
     }
 
 }

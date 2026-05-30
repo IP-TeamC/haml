@@ -71,6 +71,7 @@ begin
         wait for clk_period;
         assert rand = "00101101";
 
+        report "Done";
         wait;
 
     end process;

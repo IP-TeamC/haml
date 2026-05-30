@@ -134,6 +134,7 @@ begin
         assert done6 = '1';
         assert sum6 = "00011010" & "00011111" & "00101101";
 
+        report "Done";
         wait;
     end process;
 

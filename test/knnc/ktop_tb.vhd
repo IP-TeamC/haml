@@ -133,6 +133,7 @@ begin
         assert top_dist = "00001010" & "00000000" & "00000000";
         assert top_data = "10" & "00" & "00";
 
+        report "Done";
         wait;
     end process;
 
