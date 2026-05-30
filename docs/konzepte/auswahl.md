@@ -120,16 +120,95 @@ Dies basiert auf der groben Funktionsweise der Algorithmen sowie den Vorüberleg
 
 ### Genetische Algorithmen
 
-- ja, aber später mit Einschärnkungen
+- ja, aber mit Einschärnkungen
 - Probleme:
-  - Zufallszahlen (Lösung LFSR)
+  - Zufallszahlen: LFSR
   - evtl. hoher Speicherbedarf
   - Auswahl bester Individuen aufwändig (vereinfachte Auswahl, verschiedene Möglichkeiten)
 - sehr gute Parallelisierung
   - parallele Anpassung der Population (Mutation, Crossover)
   - parallele Berechnung der Fitness-Funktion
-- agentenbasiert sehr gut möglich
-  - z.B. Teil-Populationen
+  - Einschränkung: RAM
+    - parallele Berechnung mehrerer Kinder/Fitness nicht umgesetzt (aber agentenbasiert möglich)
+- agentenbasiert sehr gut möglich (nicht umgesetzt)
+  - z.B. Teil-Populationen, Planetensystem
+
+Darüber hinaus haben wir explizit für genetische Algorithmen weiterführende Ideen gesammelt.
+Da natürlich nur ein Teil dieser Ideen umgesetzt und nur dieser Teil für die beiden Implementierungen dokumentiert ist,
+werden im Folgenden die ursprünglichen Ideen kurz aufgelistet:
+
+- Population = Array von Individuen
+  - Individuum = Chromosom
+    - Aufteilung in Blöcke/Gene
+    - Bitvektor (Aufteilung je nach Variante bei Fitness/Crossover/Mutation)
+    - einheitliche Entity, mehrere Architectures (vgl. Interface)
+
+- Ablauf:
+  - Fitness berechnen
+  - Selektion der besten
+  - Crossover von ausgewählten
+  - Mutation der Kinder
+  - Austausch der Population
+
+- Fitness:
+  - Funktion individuell je Problem: liefert Fixed-Point
+  - Fitness mit Individuum speichern
+    - parallele Berechnung
+
+- Selektion:
+  - k-Top (Elite)
+  - Tournament: zufällige Teilnehmer, besten auswählen
+  - Kombination aus k-Top und Tournament
+
+- Crossover: parallelisierbar
+  - generell (ohne Beachtung von Einschränkungen der Chromosome)
+    - 1-/n-Punkt-Crossover:
+      - n=1: 1. Hälfte von Parent 1, 2. Hälfte von Parent 2
+      - n=2: Ausschnitt von Parent 1 übernehmen, den anderen von Parent 2
+    - Uniform Crossover
+      - je Gen/Bit zufällig Parent bestimmen (Maske)
+    - mehrere Parents
+  - Permutationen
+    - Position-based Crossover
+    - Order Crossover
+
+- Mutation: parallelisierbar
+  - generell (ohne Beachtung von Einschränkungen der Chromosome)
+    - Toggle/Bit-Flip
+    - zufällig bestimmte Bereiche ersetzen
+    - Addition/Subtraktion
+  - Permutationen
+    - Swap (innerhalb Chromosom, z.B. Travelling Salesman)
+    - Inversion (innerhalb Chromosom, z.B. Travelling Salesman)
+    - zufällig bestimmte Bereiche tauschen
+
+- Austausch der Population:
+  - Ping-Pong-RAM: A lesen, B schreiben -> danach B lesen, A schreiben -> ...
+    - setzt ausreichend RAM voraus
+  - kompletter Austausch durch Kinder
+    - Variante: k-Top bleiben, Rest austauschen
+  - nur einige austauschen:
+    - schlechteste, zufällige, Tournament
+    - extreme Variante hiervon ist der umgesetzte Steady State Genetic Algorithm für die lineare Regression
+  - Teil-Populationen: Planeten/Inseln
+    - Migration der besten
+
+- Parallelisierung
+  - Population auf mehrere RAM-Blöcke aufteilen
+  - je RAM ein "Agent"
+
+- verschiedene Probleme:
+  - unterschiedliche Fitnessfunktionen (gleiche Entity, andere Architektur)
+    - sehr problem-spezifisch
+    - Idee: "Interface"
+  - unterschiedliche Crossover-/Mutations-Methoden (gleiche Entity, andere Architektur)
+    - Problem-Kategorien: Permutation, "unabhängige" Features
+    - Berücksichtigung von Constraints
+    - Idee: "Interface"
+  - TSP: jede Stadt ein Gen (enthält Position) oder jede Position ein Gen (enthält Stadt)
+  - Knapsack: jedes Item ein Gen (enthält Anzahl)
+  - Sudoku: jedes Feld ein Gen (enthält Zahl)
+  - math. Funktion: jeder Koeffizient ein Gen (enthält FP)
 
 ### Swarm Optimization
 

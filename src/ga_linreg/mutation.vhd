@@ -7,8 +7,8 @@ use work.prng.prim_gen;
 use work.prng.sample_seed;
 
 -- Mutation erzeugt aus einem Chromosom (Kind nach dem Crossover) ein mutiertes Chromosom
--- zur Beeinflussung der Mutationswahrscheinlichkeit werden die zufaelligen Bit-Vektoren des LFSR verundet (Anzahl ANDs entsprechend mask_factor)
--- jedes Chromosom/Mutations-Maske wird zusaetzlich in 4 Bloecke unterteil
+-- zur Beeinflussung der Mutationswahrscheinlichkeit werden die zufaelligen Bit-Vektoren des LFSR verundet (Anzahl verundeter Bit-Vektoren entsprechend mask_factor)
+-- jedes Chromosom/Mutations-Maske wird zusaetzlich in 4 Bloecke unterteilt
 -- alle weiteren Bloecke aufsteigend vom LSB werden jeweils mit einem zusaetzlichen zufaelligen Bit-Vektor verundet
 -- die Mutationswahrscheinlich ist also bei den geringeren Bloecken (LSBs) geringer als bei den hoeheren Bloecken (MSBs)
 -- es werden 2 Mutations-Modi unterstuetzt: Logisch (XOR) und Arithmetisch (ADD/SUB), wobei bei Arithmetisch zufaellig zwischen ADD/SUB gewaehlt wird
