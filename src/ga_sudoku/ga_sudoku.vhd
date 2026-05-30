@@ -158,7 +158,7 @@ architecture rtl of ga_sudoku is
 
 begin
     -- -----------------------------------------------------------------------
-    -- Zufallsgenerator
+    -- Zufallsgenerator (rng_bank)
     -- -----------------------------------------------------------------------
     rng: entity work.rng_bank
         generic map(degree => 32, n => lfsr_n)
@@ -436,7 +436,6 @@ begin
                             state <= S_EVAL_READ;
                         end if;
                         
-
                     -- --------------------------------------------------------
                     -- CHECK
                     -- --------------------------------------------------------
