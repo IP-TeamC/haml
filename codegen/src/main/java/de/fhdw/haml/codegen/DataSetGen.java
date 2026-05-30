@@ -137,8 +137,8 @@ public class DataSetGen {
 
     public String name;
     public DataSet dataSet;
-    public int fpSize = 18;
-    public int fpFrac = 12;
+    public int fpSize;
+    public int fpFrac;
 
     @SneakyThrows
     public void gen(boolean classification) {

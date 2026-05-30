@@ -13,7 +13,7 @@ use work.bq_test_dataset_tb;
 entity bq_knnc_tb is
 
     -- Constants
-    constant clk_period : time := 7 ns;
+    constant clk_period : time := 2.8 ns;
     constant k : natural := 3;
     constant fp_size : natural := bq_train_dataset_tb.FP_SIZE;
     constant fp_frac : natural := bq_train_dataset_tb.FP_FRAC;
@@ -108,22 +108,24 @@ begin
         variable correct : natural := 0;
         variable wrong : natural := 0;
     begin
+        -- blockieren/warten, bis Initialisierung abgeschlossen
         if not init_done then
+            rst <= '1';
+            start <= '0';
+            wait for clk_period;
+            rst <= '0';
             wait until init_done = true;
         end if;
 
+        -- neuen Datenpunkt an END_ADR+1 schreiben und Klassifikation starten
         bq_test_dataset_tb.write_datapoint_to_ram(ram_we_sim, ram_adr_sim, ram_part_sim, ram_data_sim, bq_train_dataset_tb.END_ADR, clk_period, i);
-
-        start <= '0';
-        rst <= '1';
         wait for clk_period;
-        rst <= '0';
         start <= '1';
         wait for clk_period;
         start <= '0';
-
         wait until done = '1';
 
+        -- Ausgabe Korrektheit
         if class(0) = bq_test_dataset_tb.dataset(i, 0)(0) then
             report "correct (pred/exp): " & std_logic'image(class(0)) & " " & std_logic'image(bq_test_dataset_tb.dataset(i, 0)(0));
             correct := correct + 1;
@@ -132,12 +134,14 @@ begin
             wrong := wrong + 1;
         end if;
 
+        -- kumulierte Werte ausgeben
         if i = end_dp or i mod 10 = 9 then
             report "Total: " & integer'image(correct + wrong);
             report "Correct: " & integer'image(correct);
             report "Wrong: " & integer'image(wrong);
             if i = end_dp then
-                assert false report "End";
+                report "Done";
+                wait;
             end if;
         end if;
         i := i + 1;

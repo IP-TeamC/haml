@@ -16,11 +16,15 @@ public class BananaQuality {
         DataSetGen train = new DataSetGen();
         train.dataSet = split.train;
         train.name = "bq_train";
+        train.fpSize = 18;
+        train.fpFrac = 12;
         train.gen(true);
 
         DataSetGen test = new DataSetGen();
         test.dataSet = split.test;
         test.name = "bq_test";
+        test.fpSize = 18;
+        test.fpFrac = 12;
         test.gen(true);
     }
 

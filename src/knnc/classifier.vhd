@@ -69,7 +69,11 @@ architecture rtl of classifier is
     signal cache_class : t_class;
     signal cache_read_cmp : std_logic;
 
+    signal is_done : std_logic;
+
 begin
+
+    done <= is_done;
 
     distance: entity signed_dist
         generic map (
@@ -125,8 +129,8 @@ begin
     cur_features <= ram_data(feature_num*fp_size+class_size-1 downto class_size);
     cur_class <= ram_data(class_size-1 downto 0);
     next_adr <= std_logic_vector(unsigned(cur_adr)+1);
-    done <= not selector_done_next and selector_done_prev;
-    component_rst <= rst or (start and not started);
+    is_done <= not selector_done_next and selector_done_prev;
+    component_rst <= rst or is_done;
 
     process (clk)
     begin
