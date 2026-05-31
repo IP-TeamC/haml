@@ -31,7 +31,8 @@ Folgende Testbenches existieren (ausgenommen reine Testbenches zur Validierung d
 | lineare_regression1_tb | `./run.sh lineare_regression1_tb 1ms`    |
 | lineare_regression2_tb | `./run.sh lineare_regression2_tb 1ms`    |
 
-Wichtig! Dabei ist zu beachten, dass die `run.sh` sowie `run-wave.sh` immer im Haupt-Projektverzeichnis (in dem sich auch die beiden Skripte befinden; nicht in einem anderen Ordner/Unterordner) ausgeführt werden müssen!
+> [!IMPORTANT] WICHTIG!
+> Dabei ist zu beachten, dass die `run.sh` sowie `run-wave.sh` immer im Haupt-Projektverzeichnis (in dem sich auch die beiden Skripte befinden; nicht in einem anderen Ordner/Unterordner) ausgeführt werden müssen!
 
 Die Implementierung auf dem Virtex-6 fand in Xilinx ISE statt.
 Die Projektdatei `haml.xise` sowie die Timing Constraints `haml.ucf` und Design Strategy `ds_v6.xds` sind ebenfalls enthalten.
