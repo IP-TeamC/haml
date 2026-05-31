@@ -47,18 +47,21 @@ end entity;
 
 Alle Ports sind high-aktiv (aktive Flanke, Reset, Start und Done bei `1` aktiv).
 
-| Port     | Beschreibung                                                                                                                                                             |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| clk      | Taktsignal                                                                                                                                                               |
-| rst      | synchroner Reset                                                                                                                                                         |
-| start    | Start-Signal (Impuls für 1 Takt ausreichend; Idle-Takt zu RAM-Write notwendig) zum Beginn der Klassifizierung des zu klassifizierenden Datenpunktes (siehe `mark_end`)   |
-| mark_end | markiert den aktuellen Datenpunkt/Adresse als letzte Adresse des Datensatzes (an die darauf folgende Adresse muss der zu klassifizierende Datenpunkt geschrieben werden) |
-| ram_we   | Write-Enable-Signal zum Schreiben der Klasse/des Features eines Datenpunktes in den RAM (Idle-Takt zu Start notwendig)                                                   |
-| ram_adr  | RAM-Adresse zum Schreiben der Klasse/des Features eines Datenpunktes in den RAM                                                                                          |
-| ram_data | Klasse/Features eines Datenpunktes zum Schreiben in den RAM (Features/Klassen werden sequentiell geschrieben, siehe `ram_part`)                                          |
-| ram_part | Auswahl des zu beschreibenden RAMs (binäre Kodierung: 0 => Klasse, 1 => Feature 1, 2 => Feature 2, ..., feature_num => Feature feature_num)                              |
-| done     | signalisiert das Ende der Klassifikation und die Gültigkeit der ausgegebenen Klasse (wird für 1 Takt auf `1` gesetzt)                                                    |
-| class    | ermittelte Klasse des zu klassifizierenden Datensatz (gültig erst mit done = `1`, danach stabil bis zum nächsten Start)                                                  |
+| Input-Port | Beschreibung                                                                                                                                                             |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| clk        | Taktsignal                                                                                                                                                               |
+| rst        | synchroner Reset                                                                                                                                                         |
+| start      | Start-Signal (Impuls für 1 Takt ausreichend; Idle-Takt zu RAM-Write notwendig) zum Beginn der Klassifizierung des zu klassifizierenden Datenpunktes (siehe `mark_end`)   |
+| mark_end   | markiert den aktuellen Datenpunkt/Adresse als letzte Adresse des Datensatzes (an die darauf folgende Adresse muss der zu klassifizierende Datenpunkt geschrieben werden) |
+| ram_we     | Write-Enable-Signal zum Schreiben der Klasse/des Features eines Datenpunktes in den RAM (Idle-Takt zu Start notwendig)                                                   |
+| ram_adr    | RAM-Adresse zum Schreiben der Klasse/des Features eines Datenpunktes in den RAM                                                                                          |
+| ram_data   | Klasse/Features eines Datenpunktes zum Schreiben in den RAM (Features/Klassen werden sequentiell geschrieben, siehe `ram_part`)                                          |
+| ram_part   | Auswahl des zu beschreibenden RAMs (binäre Kodierung: 0 => Klasse, 1 => Feature 1, 2 => Feature 2, ..., feature_num => Feature feature_num)                              |
+
+| Output-Port | Beschreibung                                                                                                            |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------- |
+| done        | signalisiert das Ende der Klassifikation und die Gültigkeit der ausgegebenen Klasse (wird für 1 Takt auf `1` gesetzt)   |
+| class       | ermittelte Klasse des zu klassifizierenden Datensatz (gültig erst mit done = `1`, danach stabil bis zum nächsten Start) |
 
 ## Verhalten
 
@@ -95,16 +98,16 @@ Für jede weitere Klassifikation muss der zu klassifizierende Datenpunkt an `End
 
 ## Beispiel
 
-Die konkrete Verwendung der k-Nearest-Neighbors Implementierung ist am Beispiel des Datensatzes der Bananen-Qualität demonstriert werden.
+Die konkrete Verwendung der k-Nearest-Neighbors Implementierung kann am Beispiel des Datensatzes der Bananen-Qualität demonstriert werden (siehe Ordner `codegen`).
 Diese beispielhafte Implementierung befindet sich unter `test/knnc/bq_knnc_tb.vhd` und liest zunächst den Trainingsdatensatz ein,
-welcher mithilfe des Code-Generators (siehe `codegen`) als VHDL-Code generiert wurde.
+welcher mithilfe des Code-Generators (siehe `codegen` und `test/dataset`) als VHDL-Code generiert wurde.
 Dieser Datensatz wird nun, wie für die Vorbereitung beschrieben, zunächst in den RAM geschrieben.
 Anschließend wird für jeden Datenpunkt des Testdatensatzes dieser an `End-Adresse + 1` geschrieben (inkl. Idle-Takt) und die Klassifikation gestartet.
 Nach Abschluss der Klassifikation wird überprüft, ob die ausgegeben Klasse der erwarteten Klasse entspricht.
 Insgesamt benötigt diese Hardware-Implementierung zur Klassifizierung des gesamten Testdatensatzes inkl. Einlesen des Trainingsdatensatzes ca. 34,42 ms (deterministisch; mit einer Taktfrequenz von `357 MHz` auf dem Virtex-6).
 Dabei sind 5803 der 5960 Vorhersagen (ca. 97,4 %) korrekt (der Testdatensatz ist mit 74,5 % wesentlich größer als der Trainingsdatensatz)
 
-Eine funktionell größtenteils identische Python-Implementierung (scikit-learn) existiert unter `codegen/bq_knnc.py` und dient als Vergleich,
+Eine funktionell größtenteils identische Python-Implementierung (scikit-learn) existiert unter `codegen/python_regression/bq_knnc.py` und dient als Vergleich,
 wobei der unterschiedlich Shuffle des Splits nur in einer anderen Accuracy resultiert, aber keinen Einfluss auf die betrachtete Performance hat.
 Die Software-Implementierung benötigt zur Klassifizierung des gesamten Testdatensatzes meist etwas mehr als 160 ms (nicht deterministisch).
 Dabei sind mit 5818 der 5960 Vorhersagen (ca. 97,6 %) ähnlich viele Vorhersagen korrekt wie bei der Hardware-Implementierung.

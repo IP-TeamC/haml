@@ -196,3 +196,7 @@ Optional könnte dieser Seed z.B. als Generic nach außen zur Konfiguration frei
 Eine Anpassung des Seeds war jedoch bisher noch nie notwendig,
 da auch bei Tests mit verschiedenen Seeds stets eine Lösung in ähnlicher Zeit gefunden wurde,
 weshalb auf die Konfigurierbarkeit hier verzichtet wurde (insbesondere aufgrund der großen Anzahl von notwendigen Seeds).
+
+### Testbenches
+
+Alle Teil-Komponenten wurden mithilfe von Testbenches erfolgreich validiert (siehe Ordner `test/ga_linreg` bzw. allgemeine Komponenten in anderen Unterordnern).

@@ -28,12 +28,12 @@ public class GenericLinReg {
         GenericLinReg lineareRegression2 = new GenericLinReg("lineare_regression2.csv");
 
         double[] fF3x12 = f3x12.convertDenormalizeAndPrintFunction("000000000000000000", "011111111111111111");
-        double[] fSalary = salary.convertDenormalizeAndPrintFunction("111111101100011011", "011101111111111101", "111100010001100011");
-        double[] fLineareRegression1 = lineareRegression1.convertDenormalizeAndPrintFunction("111111111111111110", "100000000000000001");
-        double[] fLineareRegression2 = lineareRegression2.convertDenormalizeAndPrintFunction("000000000000010100", "011111111111100100");
+        double[] fSalary = salary.convertDenormalizeAndPrintFunction("111111101011111111", "011101111101011100", "111100010000001010");
+        double[] fLineareRegression1 = lineareRegression1.convertDenormalizeAndPrintFunction("000000010110111100", "100000000110101010");
+        double[] fLineareRegression2 = lineareRegression2.convertDenormalizeAndPrintFunction("000000101010010011", "011111110111000100");
 
         //f3x12.printFromNormalized(fF3x12);
-        //salary.printFromNormalized(fSalary);
+        salary.printFromNormalized(fSalary);
         //lineareRegression1.printFromNormalized(fLineareRegression1);
         //lineareRegression2.printFromNormalized(fLineareRegression2);
     }
