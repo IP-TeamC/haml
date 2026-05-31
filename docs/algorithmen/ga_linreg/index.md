@@ -196,6 +196,9 @@ Optional könnte dieser Seed z.B. als Generic nach außen zur Konfiguration frei
 Eine Anpassung des Seeds war jedoch bisher noch nie notwendig,
 da auch bei Tests mit verschiedenen Seeds stets eine Lösung in ähnlicher Zeit gefunden wurde,
 weshalb auf die Konfigurierbarkeit hier verzichtet wurde (insbesondere aufgrund der großen Anzahl von notwendigen Seeds).
+Sollte eine Anpassung des Seeds dennoch notwendig sein,
+führt das Warten eines oder mehrerer zusätzlicher Takte praktisch zur Verwendung eines anderen Seeds,
+ohne dass weitere Anpassungen am VHDL-Code notwendig sind.
 
 ### Testbenches
 
