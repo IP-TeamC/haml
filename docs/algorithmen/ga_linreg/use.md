@@ -131,7 +131,7 @@ Erst der nächste Start würde diese Ausgabe-Signale überschreiben.
 ## Beispiel
 
 Die konkrete Verwendung der Implementierung des genetischen Algorithmus für lineare Regression kann am Beispiel der Datensätze für
-eine Gehaltstabelle (Salary mit YOE/Grade), der Funktionen y=3x+12 oder den beiden Datensätzen `lineare_regression{1,2}.csv` demonstriert werden (siehe Ordner `codegen`).
+eine Gehaltstabelle (Salary mit YOE/Grade), der Funktionen y=3x+12 oder den beiden Datensätzen `lineare_regression{1,2}.csv` demonstriert werden (siehe Ordner `data`).
 
 Diese beispielhaften Implementierungen befinden sich unter `test/ga_linreg_examples/{salary,f3x12,lineare_regression1,lineare_regression2}_tb.vhd`
 und lesen zunächst den Datensatz ein, welcher mithilfe des Code-Generators (siehe `codegen` und `test/dataset`) als VHDL-Code generiert wurde.

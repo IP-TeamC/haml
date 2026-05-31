@@ -27,13 +27,14 @@ public class GenericLinReg {
         GenericLinReg lineareRegression1 = new GenericLinReg("lineare_regression1.csv");
         GenericLinReg lineareRegression2 = new GenericLinReg("lineare_regression2.csv");
 
+        // von ga_linreg ermittelte Koeffizienten
         double[] fF3x12 = f3x12.convertDenormalizeAndPrintFunction("000000000000000000", "011111111111111111");
-        double[] fSalary = salary.convertDenormalizeAndPrintFunction("111111101011111111", "011101111101011100", "111100010000001010");
-        double[] fLineareRegression1 = lineareRegression1.convertDenormalizeAndPrintFunction("000000010110111100", "100000000110101010");
-        double[] fLineareRegression2 = lineareRegression2.convertDenormalizeAndPrintFunction("000000101010010011", "011111110111000100");
+        double[] fSalary = salary.convertDenormalizeAndPrintFunction("111111101101010001", "011110000000110000", "111100010011101110");
+        double[] fLineareRegression1 = lineareRegression1.convertDenormalizeAndPrintFunction("111111111111111111", "100000000000000001");
+        double[] fLineareRegression2 = lineareRegression2.convertDenormalizeAndPrintFunction("000000000000010100", "011111111111100100");
 
         //f3x12.printFromNormalized(fF3x12);
-        salary.printFromNormalized(fSalary);
+        //salary.printFromNormalized(fSalary);
         //lineareRegression1.printFromNormalized(fLineareRegression1);
         //lineareRegression2.printFromNormalized(fLineareRegression2);
     }
@@ -50,7 +51,7 @@ public class GenericLinReg {
 
     @SneakyThrows
     public void loadAndNormalizeDataSet() {
-        dataSet = CsvReader.readFile(fileName, 0, inputSize, inputSize, 1, 1);
+        dataSet = CsvReader.readFile("../data/" + fileName, 0, inputSize, inputSize, 1, 1);
         normalizerInputs = new MinMaxNormalizer(-1, 1 - Math.pow(2, -fpFrac));
         normalizerOutputs = new MinMaxNormalizer(-1, 1 - Math.pow(2, -fpFrac));
         dataSet.normalizeInputs(normalizerInputs);

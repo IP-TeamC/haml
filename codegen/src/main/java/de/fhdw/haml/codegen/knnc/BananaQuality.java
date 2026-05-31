@@ -10,7 +10,7 @@ import java.io.IOException;
 public class BananaQuality {
 
     public static void main(String[] args) throws IOException {
-        DataSet dataSet = CsvReader.readFile("banana_quality.csv", 0, 7, 7, 1);
+        DataSet dataSet = CsvReader.readFile("../data/banana_quality.csv", 0, 7, 7, 1);
         TrainTestSplit split = dataSet.shuffleAndSplit(42, 0.745);
 
         DataSetGen train = new DataSetGen();

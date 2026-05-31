@@ -1,7 +1,5 @@
 # haml
+
 Hardware-Accelerated Machine Learning
 
-## Konzepte
-
-- [Basis-Ideen/Voraussetzungen](./konzepte/basis-ideen.md)
-- [Auswahl Algorithmen](./konzepte/auswahl.md)
+Dokumentation siehe [docs](docs/index.md) bzw. [GitHub](https://ip-teamc.github.io/haml/).

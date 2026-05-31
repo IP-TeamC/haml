@@ -107,7 +107,7 @@ Nach Abschluss der Klassifikation wird überprüft, ob die ausgegeben Klasse der
 Insgesamt benötigt diese Hardware-Implementierung zur Klassifizierung des gesamten Testdatensatzes inkl. Einlesen des Trainingsdatensatzes ca. 34,42 ms (deterministisch; mit einer Taktfrequenz von `357 MHz` auf dem Virtex-6).
 Dabei sind 5803 der 5960 Vorhersagen (ca. 97,4 %) korrekt (der Testdatensatz ist mit 74,5 % wesentlich größer als der Trainingsdatensatz)
 
-Eine funktionell größtenteils identische Python-Implementierung (scikit-learn) existiert unter `codegen/python_regression/bq_knnc.py` und dient als Vergleich,
+Eine funktionell größtenteils identische Python-Implementierung (scikit-learn) existiert unter `software/bq_knnc.py` und dient als Vergleich,
 wobei der unterschiedlich Shuffle des Splits nur in einer anderen Accuracy resultiert, aber keinen Einfluss auf die betrachtete Performance hat.
 Die Software-Implementierung benötigt zur Klassifizierung des gesamten Testdatensatzes meist etwas mehr als 160 ms (nicht deterministisch).
 Dabei sind mit 5818 der 5960 Vorhersagen (ca. 97,6 %) ähnlich viele Vorhersagen korrekt wie bei der Hardware-Implementierung.
