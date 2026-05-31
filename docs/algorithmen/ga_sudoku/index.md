@@ -1,4 +1,20 @@
-# Sudoku Solver
+# Genetischer Algorithmus für ein Sudoku Solver
+
+## Umsetzbarkeit
+
+TODO
+
+
+::: danger PROBLEM: LOKALE OPTIMA
+Auch wenn die Umsetzung zunächst einigermaßen vielversprechend klingt, hat sich schnell gezeigt, dass ein genetischer Algorithmus zum lösen eines Sudokus keinesfalls optimal ist.
+
+Im Zuge der Entwicklung wurden zunächst eine nicht unbedingt problemspezifischen Lösung verfolgt, mit der Hoffnung, etwaige Komponenten wie bspw. Mutations- oder Tournament-Module in anderen genetischen Algorithmen wiederverwenden zu können. Dies führte jedoch dazu, dass selbst nach stundenlangen Simulationen nur ein geringer Erfolg erkennbar war und selbst leichte Sudokus nicht gelöst werden konnten, da der Algorithmus in einer Vielzahl lokaler Optima gefangen blieb.
+Erst durch eine Änderung der Mutations- und Crossover-Strategie von reinem Zufall hin zu einer blockweisen Operation konnte der erhoffte Erfolg erzielt werden. 
+:::
+
+::: warning HINWEIS: OPTIMIERUNGSPOTENTIAL
+Der folgend beschriebene Algorithmus unterliegt an einigen Stellen Optimierungspotential; wir haben uns allerdings entschieden, unsere Zeit in andere Algorithmen zu stecken.
+:::
 
 ## Struktur
 
@@ -81,8 +97,10 @@ Die zentrale Speichereinheit verwaltet die gesamte Population. Sie kombiniert da
 ### chr_init_sudoku
 
 Diese Komponente übernimmt die Generierung eines initialen Individuums bzw. der Start-Population. Das unvollständige Sudoku (`const` & `const_mask`) wird zunächst blockweise gescannt und existierende Ziffern werden aus der Liste der verfügbaren Block-Ziffern herausgefiltert. Leere Zellen werden anschließend mit den verbleibenden Ziffern in zufälliger Reihenfolge aufgefüllt, indem Zufallsbits der `rng_bank` als Auswahl-Index dienen.
-> [!NOTE]
-> Dies garantiert, dass bereits bei der Initialisierung jeder 3×3-Block eine gültige Permutation der Zahlen 1 bis 9 enthält. Zusammen mit der Mutationsstrategie werden dadurch lokale Optima signifikant verringert.
+
+::: info
+Dies garantiert, dass bereits bei der Initialisierung jeder 3×3-Block eine gültige Permutation der Zahlen 1 bis 9 enthält. Zusammen mit der Mutationsstrategie werden dadurch lokale Optima signifikant verringert.
+:::
 
 ### fitness_sudoku
 
@@ -96,15 +114,17 @@ Dieses Modul ermittelt zwei Elternteile für die Reproduktion über das Verfahre
 
 Diese Einheit kombiniert das Erbgut zweier selektierter Elternteile (`parent_a`, `parent_b`), um gleichzeitig zwei neue Kinder zu zeugen. Die Kreuzung erfolgt rein blockbasiert in einem einzigen Taktzyklus: Ein Zufallsvektor (`rnd_blk`) liefert für jeden der 9 Sudoku-Blöcke ein Bit. Ist das Bit `1`, werden die gesamten 3×3-Blöcke zwischen den Eltern getauscht (Kind A erhält den Block von Eltern B, Kind B den von Eltern A). Ist das Bit `0`, bleiben die Blöcke unverändert.
 
-> [!NOTE]
-> Die fest vorgegebenen Zellen des Sudokus werden durch diese Crossover-Strategie beibehalten. Ebenfalls beleibt die fundamentale Eigenschaft (Zahlen 1–9 pro Block) fehlerfrei erhalten.
+::: info
+Die fest vorgegebenen Zellen des Sudokus werden durch diese Crossover-Strategie beibehalten. Ebenfalls beleibt die fundamentale Eigenschaft (Zahlen 1–9 pro Block) fehlerfrei erhalten.
+:::
 
 ### mutation_sudoku
 
 Dieses Modul ist für die Gen-Mutation eines Kindes verantwortlich. Zuerst prüft das Modul, ob die Mutationswahrscheinlichkeit (`mut_bits`) für diesen Durchlauf überhaupt zutrifft. Wenn ja, wird über `rnd_blk` ein zufälliger 3×3-Block ausgewählt. Innerhalb dieses Blocks bestimmt das Modul mithilfe von `rnd_pos_a` und `rnd_pos_b` zwei Zellen. Sofern beide Zellen laut Maske frei veränderbar sind, werden ihre Werte vertauscht.
 
-> [!NOTE]
-> Da dieser "Swap" innerhalb desselben Blocks stattfindet, bleibt auch hier die Block-Integrität (keine doppelten Zahlen im Block) gewährleistet.
+::: info
+Da dieser "Swap" innerhalb desselben Blocks stattfindet, bleibt auch hier die Block-Integrität (keine doppelten Zahlen im Block) gewährleistet.
+:::
 
 ### pkg_sudoku
 
