@@ -8,7 +8,7 @@ end entity;
 
 architecture sim of tournament_sel_sudoku_tb is
 
-    constant fp_size : natural := 8;
+    constant fit_size : natural := 8;
     constant pop_size : natural := 64;
     constant k : natural := 4;
     
@@ -23,7 +23,7 @@ architecture sim of tournament_sel_sudoku_tb is
     signal cand_in : std_logic_vector(cand_in_size-1 downto 0) := (others => '0');
     signal fit_we : std_logic := '0';
     signal fit_idx : std_logic_vector(natural(ceil(log2(real(K*2))))-1 downto 0) := (others => '0');
-    signal fit_in : std_logic_vector(fp_size-1 downto 0) := (others => '0');
+    signal fit_in : std_logic_vector(fit_size-1 downto 0) := (others => '0');
 
     signal idx_a : std_logic_vector(idx_size-1 downto 0);
     signal idx_b : std_logic_vector(idx_size-1 downto 0);
@@ -44,7 +44,7 @@ begin
 
     uut: entity work.tournament_sel_sudoku
         generic map (
-            fp_size => fp_size,
+            fit_size => fit_size,
             pop_size => pop_size,
             k => k
         )
@@ -98,15 +98,15 @@ begin
 
         fit_we <= '1';
         
-        fit_idx <= "000"; fit_in <= std_logic_vector(to_unsigned(45, fp_size)); wait for CLK_PERIOD;
-        fit_idx <= "001"; fit_in <= std_logic_vector(to_unsigned(12, fp_size)); wait for CLK_PERIOD;
-        fit_idx <= "010"; fit_in <= std_logic_vector(to_unsigned(89, fp_size)); wait for CLK_PERIOD;
-        fit_idx <= "011"; fit_in <= std_logic_vector(to_unsigned(23, fp_size)); wait for CLK_PERIOD;
+        fit_idx <= "000"; fit_in <= std_logic_vector(to_unsigned(45, fit_size)); wait for CLK_PERIOD;
+        fit_idx <= "001"; fit_in <= std_logic_vector(to_unsigned(12, fit_size)); wait for CLK_PERIOD;
+        fit_idx <= "010"; fit_in <= std_logic_vector(to_unsigned(89, fit_size)); wait for CLK_PERIOD;
+        fit_idx <= "011"; fit_in <= std_logic_vector(to_unsigned(23, fit_size)); wait for CLK_PERIOD;
         
-        fit_idx <= "100"; fit_in <= std_logic_vector(to_unsigned(70, fp_size)); wait for CLK_PERIOD;
-        fit_idx <= "101"; fit_in <= std_logic_vector(to_unsigned(55, fp_size)); wait for CLK_PERIOD;
-        fit_idx <= "110"; fit_in <= std_logic_vector(to_unsigned(19, fp_size)); wait for CLK_PERIOD;
-        fit_idx <= "111"; fit_in <= std_logic_vector(to_unsigned(99, fp_size)); wait for CLK_PERIOD;
+        fit_idx <= "100"; fit_in <= std_logic_vector(to_unsigned(70, fit_size)); wait for CLK_PERIOD;
+        fit_idx <= "101"; fit_in <= std_logic_vector(to_unsigned(55, fit_size)); wait for CLK_PERIOD;
+        fit_idx <= "110"; fit_in <= std_logic_vector(to_unsigned(19, fit_size)); wait for CLK_PERIOD;
+        fit_idx <= "111"; fit_in <= std_logic_vector(to_unsigned(99, fit_size)); wait for CLK_PERIOD;
         
         fit_we <= '0';
         wait for CLK_PERIOD;

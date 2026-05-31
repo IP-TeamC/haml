@@ -7,7 +7,7 @@ use work.util.all;
 
 entity tournament_sel_sudoku is
     generic (
-        fp_size : natural := 8; -- Fitnessbreite
+        fit_size : natural := 8; -- Fitnessbreite
         pop_size : natural := 64; -- Anzahl der Individuen
         k : natural := 4 -- Tournament Size
     );
@@ -22,7 +22,7 @@ entity tournament_sel_sudoku is
         -- Fitnesswerte
         fit_we : in std_logic;
         fit_idx : in std_logic_vector(natural(ceil(log2(real(k*2))))-1 downto 0);
-        fit_in : in std_logic_vector(fp_size-1 downto 0);
+        fit_in : in std_logic_vector(fit_size-1 downto 0);
 
         -- Ergebnis (Indizes der beiden Gewinner)
         idx_a : out std_logic_vector(natural(ceil(log2(real(pop_size))))-1 downto 0);
@@ -35,7 +35,7 @@ architecture rtl of tournament_sel_sudoku is
     constant idx_size : natural := natural(ceil(log2(real(pop_size))));
 
     type t_candidates is array (0 to k*2-1) of std_logic_vector(idx_size-1 downto 0); -- k*2 Kandidatenindizes
-    type t_fitness is array (0 to k*2-1) of std_logic_vector(fp_size-1 downto 0); -- k*2 Fitnesswerte
+    type t_fitness is array (0 to k*2-1) of std_logic_vector(fit_size-1 downto 0); -- k*2 Fitnesswerte
 
     signal candidates : t_candidates;
     signal candidates_reg : t_candidates;
@@ -46,8 +46,8 @@ architecture rtl of tournament_sel_sudoku is
 
     signal winner_a : std_logic_vector(idx_size-1 downto 0);
     signal winner_b : std_logic_vector(idx_size-1 downto 0);
-    signal best_fit_a : std_logic_vector(fp_size-1 downto 0);
-    signal best_fit_b : std_logic_vector(fp_size-1 downto 0);
+    signal best_fit_a : std_logic_vector(fit_size-1 downto 0);
+    signal best_fit_b : std_logic_vector(fit_size-1 downto 0);
     signal ctr : natural range 0 to k-1;
 begin
 

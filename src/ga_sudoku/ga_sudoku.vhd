@@ -11,8 +11,7 @@ entity ga_sudoku is
         pop_size : natural := 64;
         k : natural := 4;
         mut_bits : natural := 4;
-        max_gen : natural := 1000;
-        fp_size : natural := 8
+        max_gen : natural := 1000
     );
     port (
         clk : in std_logic;
@@ -22,7 +21,7 @@ entity ga_sudoku is
         const : in std_logic_vector(chr_size-1 downto 0);
 
         best_chr : out std_logic_vector(chr_size-1 downto 0);
-        best_fit : out std_logic_vector(fp_size-1 downto 0);
+        best_fit : out std_logic_vector(fit_size-1 downto 0);
         done : out std_logic
     );
 end entity;
@@ -63,11 +62,11 @@ architecture rtl of ga_sudoku is
     -- -----------------------------------------------------------------------
     signal pm_rd_idx : std_logic_vector(idx_w downto 0);
     signal pm_rd_chr : std_logic_vector(chr_size-1 downto 0);
-    signal pm_rd_fit : std_logic_vector(fp_size-1 downto 0);
+    signal pm_rd_fit : std_logic_vector(fit_size-1 downto 0);
     signal pm_wr_en : std_logic;
     signal pm_wr_idx : std_logic_vector(idx_w downto 0);
     signal pm_wr_chr : std_logic_vector(chr_size-1 downto 0);
-    signal pm_wr_fit : std_logic_vector(fp_size-1 downto 0);
+    signal pm_wr_fit : std_logic_vector(fit_size-1 downto 0);
     signal ping_pong : std_logic := '0';
 
     -- -----------------------------------------------------------------------
@@ -82,7 +81,7 @@ architecture rtl of ga_sudoku is
     -- -----------------------------------------------------------------------
     signal fit_start : std_logic;
     signal fit_chr : std_logic_vector(chr_size-1 downto 0);
-    signal fit_val : std_logic_vector(fp_size-1 downto 0);
+    signal fit_val : std_logic_vector(fit_size-1 downto 0);
     signal fit_done : std_logic;
 
     -- -----------------------------------------------------------------------
@@ -91,7 +90,7 @@ architecture rtl of ga_sudoku is
     signal sel_start : std_logic;
     signal sel_fit_we : std_logic;
     signal sel_fit_idx : std_logic_vector(k_idx_w-1 downto 0);
-    signal sel_fit_in : std_logic_vector(fp_size-1 downto 0);
+    signal sel_fit_in : std_logic_vector(fit_size-1 downto 0);
     signal sel_idx_a : std_logic_vector(idx_w-1 downto 0);
     signal sel_idx_b : std_logic_vector(idx_w-1 downto 0);
     signal sel_done : std_logic;
@@ -151,9 +150,9 @@ architecture rtl of ga_sudoku is
     signal idx_a_buf : std_logic_vector(idx_w-1 downto 0);
     signal idx_b_buf : std_logic_vector(idx_w-1 downto 0);
     signal last_chr : std_logic_vector(chr_size-1 downto 0);
-    signal last_fit : std_logic_vector(fp_size-1 downto 0);
+    signal last_fit : std_logic_vector(fit_size-1 downto 0);
 
-    signal best_fit_r : std_logic_vector(fp_size-1 downto 0);
+    signal best_fit_r : std_logic_vector(fit_size-1 downto 0);
     signal best_chr_r : std_logic_vector(chr_size-1 downto 0);
 
 begin
@@ -186,7 +185,7 @@ begin
     -- pop_mem
     -- -----------------------------------------------------------------------
     pop_mem: entity work.pop_mem_sudoku
-        generic map(chr_size => chr_size, fp_size => fp_size, pop_size => pop_size)
+        generic map(chr_size => chr_size, fit_size => fit_size, pop_size => pop_size)
         port map(
             clk => clk,
             rd_idx => pm_rd_idx,
@@ -218,7 +217,7 @@ begin
     -- fitness
     -- -----------------------------------------------------------------------
     fit_u: entity work.fitness_sudoku
-        generic map(chr_size => chr_size, fp_size => fp_size)
+        generic map(chr_size => chr_size, fit_size => fit_size)
         port map(
             clk => clk,
             rst => rst,
@@ -235,7 +234,7 @@ begin
     -- tournament_sel
     -- -----------------------------------------------------------------------
     sel_u: entity work.tournament_sel_sudoku
-        generic map(fp_size => fp_size, pop_size => pop_size, k => k)
+        generic map(fit_size => fit_size, pop_size => pop_size, k => k)
         port map(
             clk => clk,
             rst => rst,

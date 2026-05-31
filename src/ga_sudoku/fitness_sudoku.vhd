@@ -9,7 +9,7 @@ use work.util.all;
 entity fitness_sudoku is
     generic (
         chr_size : natural := 324;
-        fp_size : natural := 8;
+        fit_size : natural := 8;
         data_size : natural := 0
     );
     port (
@@ -23,7 +23,7 @@ entity fitness_sudoku is
         di : in std_logic_vector(data_size-1 downto 0);
         do : out std_logic_vector(data_size-1 downto 0);
 
-        fit : out std_logic_vector(fp_size-1 downto 0);
+        fit : out std_logic_vector(fit_size-1 downto 0);
         done : out std_logic
     );
 end entity;

@@ -10,7 +10,7 @@ entity fitness_sudoku_tb is
     constant clk_period : time := 10 ns;
     constant chr_size : natural := 324;
     constant const_size : natural := 324;
-    constant fp_size : natural := 8;
+    constant fit_size : natural := 8;
     constant data_size : natural := 2;
 
     -- Inputs
@@ -23,7 +23,7 @@ entity fitness_sudoku_tb is
 
     -- Outputs
     signal do : std_logic_vector(data_size-1 downto 0);
-    signal fit : std_logic_vector(fp_size-1 downto 0);
+    signal fit : std_logic_vector(fit_size-1 downto 0);
     signal done : std_logic;
 
 end entity;
@@ -35,7 +35,7 @@ begin
     uut: entity work.fitness_sudoku
         generic map (
             chr_size => chr_size,
-            fp_size => fp_size,
+            fit_size => fit_size,
             data_size => data_size
         )
         port map (

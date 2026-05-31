@@ -11,6 +11,7 @@ package pkg_sudoku is
     constant sudoku_size : natural := 9; -- Sudoku-Seitenlänge
     constant cell_bits : natural := 4; -- Bits pro Zelle zum Darstellen der Zahlen (ceil(log2(9+1))=4)
     constant chr_size : natural := sudoku_size * sudoku_size * cell_bits; -- Chromosomenlänge (324 Bit)
+    constant fit_size: natural := 8; -- Fitness-Breite: Maximale Fitness =255.
     constant block_size : natural := 3; -- 3x3-Blöcke
     constant blocks_per_side : natural := sudoku_size / block_size; -- Anzahl der Blöcke nebeneinander (3)
 

@@ -16,8 +16,6 @@ architecture rtl of ga_sudoku_mid_tb is
     constant k : natural := 8;
     constant mut_bits : natural := 1;
     
-    constant fp_size : natural := 8;
-
     signal clk : std_logic := '1';
     signal rst : std_logic := '1';
     signal start : std_logic := '0';
@@ -25,14 +23,13 @@ architecture rtl of ga_sudoku_mid_tb is
     signal const : std_logic_vector(chr_size-1 downto 0) := (others => '0');
 
     signal best_chr : std_logic_vector(chr_size-1 downto 0);
-    signal best_fit : std_logic_vector(fp_size-1 downto 0);
+    signal best_fit : std_logic_vector(fit_size-1 downto 0);
     signal done : std_logic;
 
 begin
 
     uut: entity work.ga_sudoku
         generic map(
-            fp_size => fp_size,
             pop_size => pop_size,
             k => k,
             mut_bits => mut_bits,
