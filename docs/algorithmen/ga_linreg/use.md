@@ -119,7 +119,7 @@ Nach der einmaligen und nicht veränderbaren Vorbereitung durch das Laden des Da
 Hierfür wird nun lediglich `start = 1` gesetzt, wobei die anderen Kontrollsignale (`rst`, `mark_end` und `dp_we`) natürlich vollständig auf `0` gesetzt sein müssen.
 Der Zustand der Signale `dp_adr` sowie `dp_data` ist nicht relevant und kann beim Start auf beliebigen Werten gesetzt bleiben.
 
-Der genetische Algorithmus beginnt nun mit der Initialisierung der Population.
+Der genetische Algorithmus beginnt nun mit der Initialisierung der Population (hierbei schwankt `best_chr_fit` noch und konvergiert erst ab Beginn des Trainings).
 Daraufhin startet das Training, welches als Steady State Genetic Algorithm nicht auf Generationen basiert.
 Deshalb ist kein sinnvolles Abbruchkriterium definierbar.
 Stattdessen wird kontinuierlich das beste Chromosom ermittelt und dieses mit dessen Fitness ausgegeben.
@@ -161,8 +161,8 @@ Diese Konfiguration mit einer Populationsgröße von 32 (`2^5`) und sonst dem Da
 | ----------------------- | ---------------------- | --------------- | ------------------ |
 | salary.csv              | ca. 0,4 ms             | 1,19 ms         | nicht getestet     |
 | f3x12.csv               | ca. 0,1 ms             | 0,26 ms         | nicht getestet     |
-| lineare_regression1.csv | ca. 0,2 ms             | 0,55 ms         | ca. 270 ms         |
-| lineare_regression2.csv | ca. 0,2 ms             | 0,53 ms         | ca. 270 ms         |
+| lineare_regression1.csv | ca. 0,2 ms             | 0,55 ms         | ca. 280 ms         |
+| lineare_regression2.csv | ca. 0,2 ms             | 0,53 ms         | ca. 277 ms         |
 
 Die Hardware-Implementierung verwendet den Virtex-6 mit einer Taktfrequenz von `364 MHz` und die Software-Implementierung verwendet Python mit PyGAD.
 Damit ist die Hardware-Implementierung bei diesen Beispieln etwa um den Faktor 500 schneller als die Software-Implementierung.

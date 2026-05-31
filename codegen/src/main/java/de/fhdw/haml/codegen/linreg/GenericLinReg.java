@@ -26,17 +26,23 @@ public class GenericLinReg {
         GenericLinReg salary = new GenericLinReg("salary.csv", 2);
         GenericLinReg lineareRegression1 = new GenericLinReg("lineare_regression1.csv");
         GenericLinReg lineareRegression2 = new GenericLinReg("lineare_regression2.csv");
+        GenericLinReg wineQuality = new GenericLinReg("wine_quality.csv", 11);
 
         // von ga_linreg ermittelte Koeffizienten
         double[] fF3x12 = f3x12.convertDenormalizeAndPrintFunction("000000000000000000", "011111111111111111");
         double[] fSalary = salary.convertDenormalizeAndPrintFunction("111111101101010001", "011110000000110000", "111100010011101110");
         double[] fLineareRegression1 = lineareRegression1.convertDenormalizeAndPrintFunction("111111111111111111", "100000000000000001");
         double[] fLineareRegression2 = lineareRegression2.convertDenormalizeAndPrintFunction("000000000000010100", "011111111111100100");
+        double[] fWineQuality = wineQuality.convertDenormalizeAndPrintFunction(
+                "000110110011100100", "001000110010101010", "110111011011001101", "001101000101100011",
+               "010110001101011110", "110010000110011101", "000111001001001111", "100011011111111101",
+                "101010001101001001", "001110100000100000", "010010100110100001", "110111001011101101");
 
-        //f3x12.printFromNormalized(fF3x12);
-        //salary.printFromNormalized(fSalary);
-        //lineareRegression1.printFromNormalized(fLineareRegression1);
-        //lineareRegression2.printFromNormalized(fLineareRegression2);
+        //f3x12.printFromNormalized(fF3x12, 0);
+        //salary.printFromNormalized(fSalary, 0);
+        //lineareRegression1.printFromNormalized(fLineareRegression1, 0);
+        //lineareRegression2.printFromNormalized(fLineareRegression2, 0);
+        //wineQuality.printFromNormalized(fWineQuality, 1);
     }
 
     public GenericLinReg(String fileName) {
@@ -112,7 +118,8 @@ public class GenericLinReg {
         }
     }
 
-    public void printFromNormalized(double[] factors) {
+    public void printFromNormalized(double[] factors, int round) {
+        double roundFactor = Math.pow(10, round);
         normalizerInputs.denormalize(dataSet.inputs);
         normalizerOutputs.denormalize(dataSet.outputs);
         for (int i = 0; i < dataSet.size; i++) {
@@ -120,7 +127,10 @@ public class GenericLinReg {
             for (int j = 0; j < factors.length-1; j++) {
                 predicted += factors[j + 1] * dataSet.inputs[i][j];
             }
-            System.out.println(Math.round(dataSet.outputs[i][0]) + ", but predicted: " + Math.round(predicted));
+            System.out.println(
+                    ((double) Math.round(dataSet.outputs[i][0] * roundFactor)) / roundFactor
+                            + ", but predicted: "
+                            + ((double) Math.round(predicted * roundFactor)) / roundFactor);
         }
         dataSet = null;
     }
