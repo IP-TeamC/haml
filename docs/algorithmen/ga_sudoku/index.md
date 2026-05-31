@@ -1,19 +1,15 @@
-# Genetischer Algorithmus für ein Sudoku Solver
+# Genetischer Sudoku Solver
 
 ## Umsetzbarkeit
 
 TODO
 
-
-::: danger PROBLEM: LOKALE OPTIMA
 Auch wenn die Umsetzung zunächst einigermaßen vielversprechend klingt, hat sich schnell gezeigt, dass ein genetischer Algorithmus zum lösen eines Sudokus keinesfalls optimal ist.
 
-Im Zuge der Entwicklung wurden zunächst eine nicht unbedingt problemspezifischen Lösung verfolgt, mit der Hoffnung, etwaige Komponenten wie bspw. Mutations- oder Tournament-Module in anderen genetischen Algorithmen wiederverwenden zu können. Dies führte jedoch dazu, dass selbst nach stundenlangen Simulationen nur ein geringer Erfolg erkennbar war und selbst leichte Sudokus nicht gelöst werden konnten, da der Algorithmus in einer Vielzahl lokaler Optima gefangen blieb.
-Erst durch eine Änderung der Mutations- und Crossover-Strategie von reinem Zufall hin zu einer blockweisen Operation konnte der erhoffte Erfolg erzielt werden. 
-:::
+Im Zuge der Entwicklung wurden zunächst eine nicht unbedingt problemspezifischen Lösung verfolgt, mit der Hoffnung, etwaige Komponenten wie bspw. Mutations- oder Tournament-Module in anderen genetischen Algorithmen wiederverwenden zu können. Dies führte jedoch dazu, dass selbst nach stundenlangen Simulationen nur ein geringer Erfolg erkennbar war und selbst leichte Sudokus nicht gelöst werden konnten, da der Algorithmus in einer Vielzahl lokaler Optima gefangen blieb. Erst durch eine Änderung der Mutations- und Crossover-Strategie von reinem Zufall hin zu einer blockweisen Operation konnte der erhoffte Erfolg erzielt werden. Das Problem lokaler Optima bleibt jedoch.
 
 ::: warning HINWEIS: OPTIMIERUNGSPOTENTIAL
-Der folgend beschriebene Algorithmus unterliegt an einigen Stellen Optimierungspotential; wir haben uns allerdings entschieden, unsere Zeit in andere Algorithmen zu stecken.
+Der folgend beschriebene Algorithmus unterliegt an einigen Stellen noch Optimierungspotential; wir haben uns entschieden, unsere Zeit sinnvoll in andere Algorithmen zu stecken.
 :::
 
 ## Struktur
