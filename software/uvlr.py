@@ -6,7 +6,7 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, r2_score
 
-df = pd.read_csv("lineare_regression2.csv")
+df = pd.read_csv("../data/lineare_regression2.csv")
 
 X = df[["x"]]
 y = df[["y"]]
