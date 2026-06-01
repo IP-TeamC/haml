@@ -166,4 +166,3 @@ Damit ist die Hardware-Implementierung bei dem einfachen Sudoku-Beispiel um eine
 Auch beim genetischen Algorithmus für Sudoku Solver lässt sich somit eine sehr deutliche Beschleunigung bei der Hardware-Implementierung gegenüber einer Software-Implementierung feststellen.
 
 Ergänzend sei noch zu erwähnen, dass das Optimierungspotential des Sudoku-Solvers immer noch nicht komplett ausgenutzt ist und es weiterhin Stellen und Möglichkeiten gibt, an denen noch etwas mehr Geschwindigkeit rausgeholt werden kann.
-

@@ -37,6 +37,11 @@ ga_sudoku: Top-Level-Modul für genetischen Sudoku-Solver (FSM)
 └─ pkg_sudoku: Zentrales Sudoku-Package für generelle Funktionen und Konstanten
 ```
 
+### Blockschaltbild
+
+Die Struktur ist stark vereinfacht und nur unter Betrachtung der reinen Datenflüsse im folgenden Blockschaltbild dargestellt:
+![Blockschaltbild ga_sudoku](./ga_sudoku.svg)
+
 ## Funktionsweise
 
 Das Modul [`ga_sudoku`](./#ga_sudoku) bildet die zentrale Steuereinheit. Es koordiniert als Finite State Machine den gesamten evolutionären Ablauf. Die Verwaltung der der Individuen (Chromosomen) erfolgt über ein Ping-Pong-Dual-RAM-Verfahren, bei dem die aktuelle Generation gelesen und die neu erzeugte Generation parallel an anderer Stelle geschrieben wird. Der allgemeine Ablauf lässt sich zyklisch in vier+1 zentrale Phasen unterteilen:
