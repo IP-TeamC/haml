@@ -26,6 +26,8 @@
       - **ktop_stage**: Pipeline-Stage und Listen-Eintrag des Komparators
     - **kselect**: Selektor der häufigsten Klasse
 
+### Blockschaltbild
+
 Diese Struktur ist stark vereinfacht nur unter Betrachtung der reinen Datenflüsse im folgenden Blockschaltbild dargestellt:
 
 ![Blockschaltbild knnc](./knnc.svg)
