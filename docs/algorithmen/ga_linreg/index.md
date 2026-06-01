@@ -35,6 +35,12 @@
     - **tournament_rep**: Tournament Replacement wählt im Tournament ein schlechtestes Inviduum aus und ersetzt dieses
       - **lfsr**: Linear-rückgekoppeltes Schieberegister zur Generierung von Pseudozufallszahlen (zufällige Wahl der RAM-Adresse der Chromosome im Tournament)
 
+Diese Struktur ist stark vereinfacht nur unter Betrachtung der reinen Datenflüsse im folgenden Blockschaltbild dargestellt:
+
+![Blockschaltbild ga_linreg](./ga_linreg.svg)
+
+Hinweis: Die Datenflüsse innerhalb von `fitness_linreg` und zu/von einem `lfsr` sind zur Vereinfachung ebenfalls nicht dargestellt.
+
 ## Steady State Genetic Algorithm
 
 Zur besseren Umsetzung unter den ermittelten Voraussetzungen (insb. Pipelining und Streaming) wird auf die klassische Funktionsweise eines genetischen Algorithmus verzichtet.

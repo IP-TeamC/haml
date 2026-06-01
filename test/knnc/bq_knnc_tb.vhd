@@ -107,6 +107,10 @@ begin
         variable i : integer := start_dp;
         variable correct : natural := 0;
         variable wrong : natural := 0;
+        variable tp : natural := 0;
+        variable tn : natural := 0;
+        variable fp : natural := 0;
+        variable fn : natural := 0;
     begin
         -- blockieren/warten, bis Initialisierung abgeschlossen
         if not init_done then
@@ -134,12 +138,34 @@ begin
             wrong := wrong + 1;
         end if;
 
+        if class(0) = '1' then
+            if bq_test_dataset_tb.dataset(i, 0)(0) = '1' then
+                tp := tp + 1;
+            else
+                fp := fp + 1;
+            end if;
+        else
+            if bq_test_dataset_tb.dataset(i, 0)(0) = '0' then
+                tn := tn + 1;
+            else
+                fn := fn + 1;
+            end if;
+        end if;
+
         -- kumulierte Werte ausgeben
         if i = end_dp or i mod 10 = 9 then
             report "Total: " & integer'image(correct + wrong);
             report "Correct: " & integer'image(correct);
             report "Wrong: " & integer'image(wrong);
+            report "True Positives: " & integer'image(tp);
+            report "True Negatives: " & integer'image(tn);
+            report "False Positives: " & integer'image(fp);
+            report "False Negatives: " & integer'image(fn);
             if i = end_dp then
+                report "Accuracy: " & real'image(real(tp + tn)/real(tp + tn + fp + fn));
+                report "Error: " & real'image(real(fp + fn)/real(tp + tn + fp + fn));
+                report "Precision: " & real'image(real(tp)/real(tp + fp));
+                report "Recall: " & real'image(real(tp)/real(tp + fn));
                 report "Done";
                 wait;
             end if;

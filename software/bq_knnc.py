@@ -3,7 +3,7 @@ import time
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+from sklearn.metrics import accuracy_score, precision_score, recall_score, classification_report, confusion_matrix
 
 df = pd.read_csv("../data/banana_quality.csv")
 
@@ -32,6 +32,12 @@ print(f"Zeit: {(end - start) * 1000:.2f} ms")
 
 accuracy = accuracy_score(y_test, y_pred)
 print(f"\nAccuracy: {accuracy:.4f}")
+
+precision = precision_score(y_test, y_pred)
+print(f"\Precision: {precision:.4f}")
+
+recall = recall_score(y_test, y_pred)
+print(f"\Recall: {recall:.4f}")
 
 print("\nConfusion Matrix:")
 print(confusion_matrix(y_test, y_pred))
