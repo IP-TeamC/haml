@@ -2,13 +2,13 @@
 
 ## Umsetzbarkeit
 
-TODO
+Die Umsetzbarkeit kann analog zu den Überlegung der linearen Regression betrachtet werden: [Lineare Regression: Umsetzbarkeit](/algorithmen/ga_linreg/#umsetzbarkeit)
 
 Auch wenn die Umsetzung zunächst einigermaßen vielversprechend klingt, hat sich schnell gezeigt, dass ein genetischer Algorithmus zum lösen eines Sudokus keinesfalls optimal ist.
 
-Im Zuge der Entwicklung wurden zunächst eine nicht unbedingt problemspezifischen Lösung verfolgt, mit der Hoffnung, etwaige Komponenten wie bspw. Mutations- oder Tournament-Module in anderen genetischen Algorithmen wiederverwenden zu können. Dies führte jedoch dazu, dass selbst nach stundenlangen Simulationen nur ein geringer Erfolg erkennbar war und selbst leichte Sudokus nicht gelöst werden konnten, da der Algorithmus in einer Vielzahl lokaler Optima gefangen blieb. Erst durch eine Änderung der Mutations- und Crossover-Strategie von reinem Zufall hin zu einer blockweisen Operation konnte der erhoffte Erfolg erzielt werden. Das Problem lokaler Optima bleibt jedoch.
+Im Zuge der Entwicklung wurden zunächst eine nicht unbedingt problemspezifischen Lösung verfolgt, mit der Hoffnung, etwaige Komponenten wie bspw. Mutations- oder Tournament-Module in anderen genetischen Algorithmen wiederverwenden zu können. Dies führte jedoch dazu, dass selbst nach stundenlanger Simulation nur ein geringer Erfolg erkennbar war und selbst leichte Sudokus nicht gelöst werden konnten, da der Algorithmus in einer Vielzahl lokaler Optima gefangen blieb. Erst durch eine Änderung der Mutations- und Crossover-Strategie von reinem Zufall hin zu einer blockweisen Operation konnten erste Erfolge erzielt werden.
 
-Häufig erreicht das System zügig ein Individuum mit nur noch sehr wenigen verbleibenden Konflikten (z. B. 2 oder 3 verbleibende Fehler). Um diese letzten Fehler aufzulösen, wäre mathematisch jedoch eine temporäre, drastische Verschlechterung der Fitness notwendig, da bestehende Teil-Lösungen wieder aufgebrochen werden müssten. Da die Selektionsstrategie des Genetischen Algorithmus primär auf die Erhaltung der besten Fitnesswerte ausgerichtet ist, werden solche temporären Verschlechterungen systematisch unterdrückt. Die Population fluktuiert in der Folge nur noch minimal um diesen Zustand herum und der Algorithmus stagniert vollständig in einem lokalen Optimum.
+Häufig erreicht das System zügig ein Individuum mit nur noch sehr wenigen verbleibenden Konflikten (z. B. 2 oder 3 verbleibende Fehler). Um diese letzten Fehler aufzulösen, wäre mathematisch jedoch eine temporäre, drastische Verschlechterung der Fitness notwendig, da bestehende Teil-Lösungen wieder aufgebrochen werden müssten. Da die Selektionsstrategie des Genetischen Algorithmus primär auf die Erhaltung der besten Fitnesswerte ausgerichtet ist, werden solche temporären Verschlechterungen systematisch unterdrückt. Die Population fluktuiert in der Folge nur noch minimal um diesen Zustand herum und der Algorithmus stagniert vollständig in einem lokalen Optimum. Leichte Sudokus sind davon weniger betroffen, als schwerere.
 
 ## Struktur
 
