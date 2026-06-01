@@ -10,10 +10,6 @@ Im Zuge der Entwicklung wurden zunächst eine nicht unbedingt problemspezifische
 
 Häufig erreicht das System zügig ein Individuum mit nur noch sehr wenigen verbleibenden Konflikten (z. B. 2 oder 3 verbleibende Fehler). Um diese letzten Fehler aufzulösen, wäre mathematisch jedoch eine temporäre, drastische Verschlechterung der Fitness notwendig, da bestehende Teil-Lösungen wieder aufgebrochen werden müssten. Da die Selektionsstrategie des Genetischen Algorithmus primär auf die Erhaltung der besten Fitnesswerte ausgerichtet ist, werden solche temporären Verschlechterungen systematisch unterdrückt. Die Population fluktuiert in der Folge nur noch minimal um diesen Zustand herum und der Algorithmus stagniert vollständig in einem lokalen Optimum.
 
-::: warning HINWEIS: OPTIMIERUNGSPOTENTIAL
-Der folgend beschriebene Algorithmus unterliegt an einigen Stellen noch Optimierungspotential; wir haben uns entschieden, unsere Zeit sinnvoll in andere Algorithmen zu stecken.
-:::
-
 ## Struktur
 
 ```

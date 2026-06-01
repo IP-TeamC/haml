@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Sudoku Validator</title>
+        <title>Sudoku UI</title>
         <link rel="icon" type="image/x-icon" href="../../docs/public/haml-icon.svg">
 
         <style>
@@ -293,7 +293,7 @@
             ws.send(JSON.stringify({ type: "watch_file", file: file }));
         }
         else {
-            startScreenMessage.textContent = "Keine aktive Verbindung zum Websocket!";
+            startScreenMessage.textContent = "Keine aktive Verbindung zum WebSocket!";
             startScreenMessage.style.display = "block";
             logInputGroup.style.display = "none"
         }
@@ -304,7 +304,7 @@
         toastText.textContent = "Connected";
         switchBtn.style.display = "none";
 
-        document.title = "Sudoku Validator";
+        document.title = "Sudoku UI";
 
         startScreen.style.display = "flex";
         startScreenMessage.textContent = "";
@@ -335,7 +335,7 @@
         ws = new WebSocket("ws://localhost:8080");
 
         ws.onopen = () => {
-            console.log("Websocket connected")
+            console.log("WebSocket connected")
 
             startScreenMessage.textContent = "";
             startScreenMessage.style.display = "none";
@@ -356,9 +356,9 @@
         };
 
         ws.onclose = () => {
-            console.log("Websocket disconnected")
+            console.log("WebSocket disconnected")
 
-            startScreenMessage.textContent = "Websocket nicht verbunden!";
+            startScreenMessage.textContent = "WebSocket nicht verbunden!";
             startScreenMessage.style.display = "block";
             logInputGroup.style.display = "none"
 

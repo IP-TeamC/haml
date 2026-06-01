@@ -46,7 +46,7 @@ Alle Ports sind high-aktiv (aktive Flanke, Reset und Start bei `1` aktiv).
 | ---------- | ----------------------------------------------------------------------------------------------------------------------------------- |
 | clk        | Taktsignal                                                                                                                          |
 | rst        | synchroner Reset                                                                                                                    |
-| start      | Start-Signal (Impuls für 1 Takt ausreichend). Startet den evolutionären Prozess, nachdem das Starträtsel an `const` angelegt wurde. |
+| start      | Start-Signal (Impuls für 1 Takt ausreichend). Startet den evolutionären Prozess, nachdem das Startsudoku an `const` angelegt wurde. |
 | const      | Das ungelöste Sudoku-Starträtsel als flacher Vektor der Breite `chr_size` (324 Bit). Bleibt während des gesamten Laufs konstant.    |
 
 | Output-Port  | Beschreibung                                                                                                             |
@@ -59,9 +59,9 @@ Alle Ports sind high-aktiv (aktive Flanke, Reset und Start bei `1` aktiv).
 
 ### Datenvorverarbeitung & Schutzmaske
 
-Ein Sudoku wird im System als flacher Vektor von 324 Bits abgebildet, bei dem jede der 81 Zellen exakt 4 Bits belegt (Zahlenwert 0 für leer, 1 bis 9 für besetzte Felder). Das ungelöste Starträtsel wird fest an den Eingang `const` angelegt. Intern erzeugt das Modul daraus eine unantastbare Schutzschablone (Maske). Jede Zelle des Starträtsels, die ungleich 0 ist, wird blockiert. Dies stellt sicher, dass die genetischen Operatoren (Crossover und Mutation) ausschließlich freie Felder verändern und die logischen Vorgaben des Rätsels zu jedem Zeitpunkt gewahrt bleiben.
+Ein Sudoku wird im System als flacher Vektor von 324 Bits abgebildet, bei dem jede der 81 Zellen exakt 4 Bits belegt (Zahlenwert 0 für leer, 1 bis 9 für besetzte Felder). Das ungelöste Startsudoku wird fest an den Eingang `const` angelegt. Intern erzeugt das Modul daraus eine unantastbare Schutzschablone (Maske). Jede Zelle des Startsudokus, die ungleich 0 ist, wird blockiert. Dies stellt sicher, dass die genetischen Operatoren (Crossover und Mutation) ausschließlich freie Felder verändern und die logischen Vorgaben des Sudokus zu jedem Zeitpunkt gewahrt bleiben.
 
-Im Sudoku-Package befinden sich Funktionen zum `Serialisieren` und `Deserialisieren` von Sudoku-Feldern:
+Im Sudoku-Package befinden sich Funktionen zum **Serialisieren** und **Deserialisieren** von Sudoku-Feldern:
 
 - `serialize_sudoku` konvertiert ein menschenlesbares Ganzzahl-Array (`t_human_sudoku`) in den flachen 324-Bit-Vektor (`std_logic_vector`), den der genetische Algorithmus für die Verarbeitung benötigt. Dieser Vektor kann direkt an `const` weitergegeben werden.
 
@@ -88,13 +88,13 @@ const <= chr_const;
 
 ### Vorbereitung & Start
 
-Zu Beginn wird ein System-Reset durchgeführt (`rst = '1'`) und `start = '0'` gesetzt. Das zu lösende Rätsel muss stabil am Port `const` anliegen.
+Zu Beginn wird ein System-Reset durchgeführt (`rst = '1'`) und `start = '0'` gesetzt. Das zu lösende Sudoku muss stabil am Port `const` anliegen.
 
-Der Algorithmus wird durch einen Taktimpuls auf `start = '1'` initiiert. Da das Rätsel direkt über den Port `const` eingelesen wird, ist kein vorheriges sequentielles Beschreiben eines RAMs von außen notwendig. Sobald der Algorithmus läuft, beginnt die FSM mit der Initialisierung der Population und startet anschließend die evolutionäre Schleife über maximal `max_gen` Epochen.
+Der Algorithmus wird durch einen Taktimpuls auf `start = '1'` initiiert. Da das Sudoku direkt über den Port `const` eingelesen wird, ist kein vorheriges sequentielles Beschreiben eines RAMs von außen notwendig. Sobald der Algorithmus läuft, beginnt die FSM mit der Initialisierung der Population und startet anschließend die evolutionäre Schleife über maximal `max_gen` Epochen.
 
 > [!WARNING] HARDWARE-HINWEIS
-> Uns ist bewusst, dass das Anlegen des Rätsels über den Port `const` auf echter Hardware so nicht möglich ist, da die verfügbaren Pins wahrscheinlich stark überschritten werden.
-> Im Zuge der Simulation ist dies allerdings kein Problem und auch ein sequentielles Laden des Rätsels in den RAM, was eine Lösung darstellen würde, hätte keinen signifikanten Einfluss auf die Laufzeit. Eine spätere Optimierung blieb an dieser Stelle aus.
+> Uns ist bewusst, dass das Anlegen des Sudokus über den Port `const` auf echter Hardware so nicht möglich ist, da die verfügbaren Pins wahrscheinlich stark überschritten werden.
+> Im Zuge der Simulation ist dies allerdings kein Problem und auch ein sequentielles Laden des Sudokus in den RAM, was eine Lösung darstellen würde, hätte keinen signifikanten Einfluss auf die Laufzeit. Eine spätere Optimierung blieb an dieser Stelle aus.
 
 ### Evolutionärer Zyklus
 
@@ -122,6 +122,12 @@ Nach jeder Generation wird über eine Konsolenausgabe das aktuell beste Individu
 Optional kann sich zudem visuell aufbereitet der aktuelle und historische Entwicklungsstand der Generationen im Browser angezeigt werden.
 Die genaue Bedienung kann hier entnommen werden: [Live-Sudoku-UI](./live-sudoku-ui.md).
 
+::: tip DEBUG-TIPP
+Im Package `/src/util/util.vhd` gibt es Konstante `DEBUG_ENABLE`, über welche ein ausführliches Konsolen-Reporting aktiviert werden kann; die Simulation wird dadurch allerdings verlangsamt.
+:::
+
+### Performance
+
 ::: danger PROBLEM: LOKALE OPTIMA
 An dieser Stelle sei erneut darauf hinzuweisen, dass Sudokus sehr komplexe Probleme mit vielen Abhängigkeiten und Unbekannten sind.
 Nach unseren Erkenntnissen neigt der evolutionäre Prozess vor allem bei schweren Sudokus mit vielen leeren Feldern zu einer kompletten Stagnation, sobald eine *"fast perfekte"* Lösung gefunden wurde.
@@ -129,10 +135,6 @@ Nach unseren Erkenntnissen neigt der evolutionäre Prozess vor allem bei schwere
 Das Sudoku in `/test/ga_sudoku_easy_tb.vhd` wir mit Standardkonfiguration allerdings **gelöst**.
 :::
 
-::: tip DEBUG-TIPP
-Im Package `/src/util/util.vhd` gibt es Konstante `DEBUG_ENABLE`, über welche ein ausführliches Konsolen-Reporting aktiviert werden kann; die Simulation wird dadurch allerdings verlangsamt.
-:::
-
-### Performance
-
 TODO
+
+Nicht komplett optimiert.
