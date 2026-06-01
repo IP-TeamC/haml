@@ -10,7 +10,7 @@ end entity;
 
 architecture rtl of ga_sudoku_easy_2_tb is
 
-    constant clk_period : time := 10 ns;
+    constant clk_period : time := 15 ns;
     
     constant pop_size : natural := 1024;
     constant k : natural := 4;

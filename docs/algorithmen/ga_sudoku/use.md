@@ -128,13 +128,42 @@ Im Package `/src/util/util.vhd` gibt es Konstante `DEBUG_ENABLE`, über welche e
 
 ### Performance
 
-::: danger PROBLEM: LOKALE OPTIMA
-An dieser Stelle sei erneut darauf hinzuweisen, dass Sudokus sehr komplexe Probleme mit vielen Abhängigkeiten und Unbekannten sind.
-Nach unseren Erkenntnissen neigt der evolutionäre Prozess vor allem bei schweren Sudokus mit vielen leeren Feldern zu einer kompletten Stagnation, sobald eine *"fast perfekte"* Lösung gefunden wurde.
+Um die Performance zu evaluieren, wurde die Ausführungszeit (Simulation) der Hardware mit einer Software-Implementierung verglichen. Als Basis für die Software diente ein angepasster Fork des Repositories von [chinyan/Genetic-Algorithm-based-Sudoku-Solver](https://github.com/chinyan/Genetic-Algorithm-based-Sudoku-Solver). An diesem wurden gezielt Änderungen vorgenommen, um ein möglichst ähnliches genetisches Verhalten zu erzeugen und so eine faire Vergleichbarkeit zu gewährleisten.
 
-Das Sudoku in `/test/ga_sudoku_easy_tb.vhd` wir mit Standardkonfiguration allerdings **gelöst**.
+#### Leistungsvergleich
+ 
+##### Sudoku-Easy `ga_sudoku_easy_tb`
+
+| Implementierung       | Populationsgröße | Generationen bis zur Lösung | Benötigte Zeit |
+| :-------------------- | :--------------: | :-------------------------: | -------------: |
+| **Software** (Python) | 128              | 12                          | 3.080,00 ms    |
+| **Hardware** (VHDL)   | 128              | 10                          | 0,73 ms        |
+
+##### Sudoku-Medium `ga_sudoku_mid_tb`
+
+| Implementierung       | Populationsgröße | Generationen bis zur Lösung   | Benötigte Zeit |
+| :-------------------- | :--------------: | :---------------------------: | -------------: |
+| **Software** (Python) | 1024             | 188                           | 49.340,00 ms   |
+| **Hardware** (VHDL)   | 1024             | nach 27 stagniert; best_fit=3 | 16 ms          |
+
+##### Sudoku-Hard `ga_sudoku_hard_tb`
+
+| Implementierung       | Populationsgröße | Generationen bis zur Lösung   | Benötigte Zeit |
+| :-------------------- | :--------------: | :---------------------------: | -------------: |
+| **Software** (Python) | 2048             | 138                           | 534.080,00 ms  |
+| **Hardware** (VHDL)   | 2048             | nach 47 stagniert; best_fit=2 | 43 ms          |
+
+::: danger PROBLEM: STAGNATION & LOKALE OPTIMA
+An dieser Stelle sei erneut darauf hinzuweisen, dass Sudokus sehr komplexe Probleme mit vielen Abhängigkeiten und Unbekannten sind.
+Nach unseren Erkenntnissen neigt der evolutionäre Prozess vor allem bei schweren Sudokus mit vielen leeren Feldern zu einer kompletten Stagnation, sobald eine *"fast perfekte"* Lösung gefunden wurde. Beim Python-Fork ist dieses Problem teilweise durch intelligentes Backtracking gelöst.
+
+Dennoch ist der immense Durchsatz-Vorteil des FPGAs beachtlich: Während die Software für das harte Sudoku fast 9 Minuten rechnet, hat die Hardware die evolutionäre Suche bis zum Stagnationspunkt bereits nach nur 43 ms komplett durchlaufen.
 :::
 
-TODO
+Die Hardware-Implementierung erzielt auf dem Kintex-7 eine kritische Pfadlänge bzw. Taktperiode von `14.626 ns` (was einer Taktfrequenz von ca. `68.37 MHz` entspricht).
+Damit ist die Hardware-Implementierung bei dem einfachen Sudoku-Beispiel um einen Faktor von über **4200** schneller als die Software. Ein modernerer FPGA mit höherer nativer Taktfrequenz und kürzeren Signallaufzeiten würde diesen Vorsprung rein rechnerisch noch einmal deutlich vergrößern können.
 
-Nicht komplett optimiert.
+Auch beim genetischen Algorithmus für Sudoku Solver lässt sich somit eine sehr deutliche Beschleunigung bei der Hardware-Implementierung gegenüber einer Software-Implementierung feststellen.
+
+Ergänzend sei noch zu erwähnen, dass das Optimierungspotential des Sudoku-Solvers immer noch nicht komplett ausgenutzt ist und es weiterhin Stellen und Möglichkeiten gibt, an denen noch etwas mehr Geschwindigkeit rausgeholt werden kann.
+

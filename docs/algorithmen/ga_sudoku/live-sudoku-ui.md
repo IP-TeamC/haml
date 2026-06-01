@@ -90,7 +90,7 @@ node test/ga_sudoku/sudoku_bridge.js [Pfad_zum_Log_Ordner]
 Nun kann der eigentliche genetischen Algorithmus gestartet und die Konsolenausgabe direkt in die Ziel-Logdatei umgeleitet werden:
 
 ```bash
-run.sh ga_sudoku_easy_tb 1000ms | tee test/ga_sudoku/easy.log
+./run.sh ga_sudoku_easy_tb 1000ms | tee test/ga_sudoku/easy.log
 ```
 
 Sobald die Simulation läuft und die Bridge mit dem UI verbunden ist, aktualisiert sich die Anzeige im Browser bei jedem Generationswechsel automatisch.

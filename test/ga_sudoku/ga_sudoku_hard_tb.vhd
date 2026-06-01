@@ -10,11 +10,11 @@ end entity;
 
 architecture rtl of ga_sudoku_hard_tb is
 
-    constant clk_period : time := 10 ns;
+    constant clk_period : time := 15 ns;
 
     constant pop_size : natural := 2048;
-    constant k : natural := 3;
-    constant mut_bits : natural := 2;
+    constant k : natural := 2;
+    constant mut_bits : natural := 1;
     
     signal clk : std_logic := '1';
     signal rst : std_logic := '1';
