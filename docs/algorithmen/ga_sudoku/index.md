@@ -8,6 +8,8 @@ Auch wenn die Umsetzung zunächst einigermaßen vielversprechend klingt, hat sic
 
 Im Zuge der Entwicklung wurden zunächst eine nicht unbedingt problemspezifischen Lösung verfolgt, mit der Hoffnung, etwaige Komponenten wie bspw. Mutations- oder Tournament-Module in anderen genetischen Algorithmen wiederverwenden zu können. Dies führte jedoch dazu, dass selbst nach stundenlangen Simulationen nur ein geringer Erfolg erkennbar war und selbst leichte Sudokus nicht gelöst werden konnten, da der Algorithmus in einer Vielzahl lokaler Optima gefangen blieb. Erst durch eine Änderung der Mutations- und Crossover-Strategie von reinem Zufall hin zu einer blockweisen Operation konnte der erhoffte Erfolg erzielt werden. Das Problem lokaler Optima bleibt jedoch.
 
+Häufig erreicht das System zügig ein Individuum mit nur noch sehr wenigen verbleibenden Konflikten (z. B. 2 oder 3 verbleibende Fehler). Um diese letzten Fehler aufzulösen, wäre mathematisch jedoch eine temporäre, drastische Verschlechterung der Fitness notwendig, da bestehende Teil-Lösungen wieder aufgebrochen werden müssten. Da die Selektionsstrategie des Genetischen Algorithmus primär auf die Erhaltung der besten Fitnesswerte ausgerichtet ist, werden solche temporären Verschlechterungen systematisch unterdrückt. Die Population fluktuiert in der Folge nur noch minimal um diesen Zustand herum und der Algorithmus stagniert vollständig in einem lokalen Optimum.
+
 ::: warning HINWEIS: OPTIMIERUNGSPOTENTIAL
 Der folgend beschriebene Algorithmus unterliegt an einigen Stellen noch Optimierungspotential; wir haben uns entschieden, unsere Zeit sinnvoll in andere Algorithmen zu stecken.
 :::

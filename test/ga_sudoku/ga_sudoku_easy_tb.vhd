@@ -61,7 +61,7 @@ begin
         -- ==============================================================
         -- Hinweis: Das gelöste Sudoku wird ausschließlich zur visuellen
         -- Darstellung in der Browser-Darstellung verwendet und hat für 
-        -- den eigentlichen Algorithmus keinen weiten Nutzen.
+        -- den eigentlichen Algorithmus keinen Nutzen.
         -- ==============================================================
 
         -- **************************************************************
