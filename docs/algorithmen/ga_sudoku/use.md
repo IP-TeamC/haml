@@ -59,7 +59,7 @@ Alle Ports sind high-aktiv (aktive Flanke, Reset und Start bei `1` aktiv).
 
 ### Datenvorverarbeitung & Schutzmaske
 
-Ein Sudoku wird im System als flacher Vektor von 324 Bits abgebildet, bei dem jede der 81 Zellen exakt 4 Bits belegt (Zahlenwert 0 für leer, 1 bis 9 für besetzte Felder). Das ungelöste Startsudoku wird fest an den Eingang `const` angelegt. Intern erzeugt das Modul daraus eine unantastbare Schutzschablone (Maske). Jede Zelle des Startsudokus, die ungleich 0 ist, wird blockiert. Dies stellt sicher, dass die genetischen Operatoren (Crossover und Mutation) ausschließlich freie Felder verändern und die logischen Vorgaben des Sudokus zu jedem Zeitpunkt gewahrt bleiben.
+Ein Sudoku wird im System als flacher Vektor von 324 Bits abgebildet, bei dem jede der 81 Zellen exakt 4 Bits belegt (Zahlenwert 0 für leer, 1 bis 9 für besetzte Felder). Das ungelöste Startsudoku wird fest an den Eingang `const` angelegt. Intern erzeugt das Modul daraus eine unantastbare Schutzmaske `const_mask`. Jede Zelle des Startsudokus, die ungleich 0 ist, wird blockiert. Dies stellt sicher, dass die genetischen Operatoren (Crossover und Mutation) ausschließlich freie Felder verändern und die logischen Vorgaben des Sudokus zu jedem Zeitpunkt gewahrt bleiben.
 
 Im Sudoku-Package befinden sich Funktionen zum **Serialisieren** und **Deserialisieren** von Sudoku-Feldern:
 

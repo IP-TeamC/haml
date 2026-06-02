@@ -4,7 +4,7 @@
 
 Die Umsetzbarkeit kann analog zu den Überlegung der linearen Regression betrachtet werden: [Lineare Regression: Umsetzbarkeit](/algorithmen/ga_linreg/#umsetzbarkeit)
 
-Auch wenn die Umsetzung zunächst einigermaßen vielversprechend klingt, hat sich schnell gezeigt, dass ein genetischer Algorithmus zum lösen eines Sudokus keinesfalls optimal ist.
+Auch wenn die Umsetzung zunächst einigermaßen vielversprechend klingt, hat sich schnell gezeigt, dass ein Genetischer Algorithmus zum lösen eines Sudokus keinesfalls optimal ist.
 
 Im Zuge der Entwicklung wurden zunächst eine nicht unbedingt problemspezifischen Lösung verfolgt, mit der Hoffnung, etwaige Komponenten wie bspw. Mutations- oder Tournament-Module in anderen genetischen Algorithmen wiederverwenden zu können. Dies führte jedoch dazu, dass selbst nach stundenlanger Simulation nur ein geringer Erfolg erkennbar war und selbst leichte Sudokus nicht gelöst werden konnten, da der Algorithmus in einer Vielzahl lokaler Optima gefangen blieb. Erst durch eine Änderung der Mutations- und Crossover-Strategie von reinem Zufall hin zu einer blockweisen Operation konnten erste Erfolge erzielt werden.
 
@@ -44,12 +44,12 @@ Die Struktur ist stark vereinfacht und nur unter Betrachtung der reinen Datenfl�
 
 ## Funktionsweise
 
-Das Modul [`ga_sudoku`](./#ga_sudoku) bildet die zentrale Steuereinheit. Es koordiniert als Finite State Machine den gesamten evolutionären Ablauf. Die Verwaltung der der Individuen (Chromosomen) erfolgt über ein Ping-Pong-Dual-RAM-Verfahren, bei dem die aktuelle Generation gelesen und die neu erzeugte Generation parallel an anderer Stelle geschrieben wird. Der allgemeine Ablauf lässt sich zyklisch in vier+1 zentrale Phasen unterteilen:
+Das Modul [`ga_sudoku`](./#ga_sudoku) bildet die zentrale Steuereinheit. Es koordiniert als Finite State Machine den gesamten evolutionären Ablauf. Die Verwaltung der Individuen (Chromosomen) erfolgt über ein Ping-Pong-Dual-RAM-Verfahren, bei dem die aktuelle Generation gelesen und die neu erzeugte Generation parallel an anderer Stelle geschrieben wird. Der allgemeine Ablauf lässt sich zyklisch in vier+1 zentrale Phasen unterteilen:
 
 ### 0. Initialisierungsphase (`S_INIT_...`)
 
 Nach dem Anlegen des `start`-Signals wird das vorgegebene, unvollständige Sudoku (`const`) eingelesen. Das Modul [`chr_init_sudoku`](./#chr_init_sudoku) generiert bis zur vorgegebenen Populationsgröße (`pop_size`) zufällige initiale Individuen und legt diese im [`pop_mem_sudoku`](./#pop_mem_sudoku) ab.
-Feste, vom Rätsel vorgegebene Zellen werden dabei über eine Konstanten-Maske (`const_mask`) fixiert. Alle anderen leeren Zellen werden blockweise mit zufälligen Werten initialisiert.
+Feste, vom Rätsel vorgegebene Zellen (`const_mask`) werden dabei fixiert und nicht geändert. Alle anderen leeren Zellen werden blockweise mit zufälligen Werten initialisiert.
 
 ### 1. Evaluationsphase (`S_EVAL_...`)
 
@@ -71,9 +71,9 @@ Um einen evolutionären Fortschritt zu sichern, wird zunächst das absolut beste
 
 Die ausgewählten Elternteile werden aus dem Speicher geladen, um genetisch variierte Nachkommen zu zeugen.
 
-- **Crossover ([`crossover_sudoku`](./#crossover_sudoku)):** Die Gitter der beiden Eltern werden blockweise miteinander kombiniert. Ein Zufallsvektor (`rnd_cx`) entscheidet pro Block, ob die Daten getauscht werden. Hierbei entstehen gleichzeitig zwei Kinder (Kind A und Kind B).
+- **Crossover ([`crossover_sudoku`](./#crossover_sudoku)):** Die Gitter der beiden Eltern werden blockweise miteinander kombiniert. Ein Zufallsvektor entscheidet pro Block, ob die Daten getauscht werden. Hierbei entstehen gleichzeitig zwei Kinder (Kind A und Kind B).
 
-- **Mutation ([`mutation_sudoku`](./#mutation_sudoku)):** Unter Berücksichtigung der unantastbaren Startmaske werden zufällige Werte innerhalb der Blöcke vertauscht.
+- **Mutation ([`mutation_sudoku`](./#mutation_sudoku)):** Unter Berücksichtigung der festen Felder werden zufällige Werte innerhalb der Blöcke vertauscht.
 
 - **Schreiben:** Die beiden modifizierten Kinder werden im Anschluss auf die Plätze `repr_ctr` und `repr_ctr + 1` der neuen Generation geschrieben.
 
@@ -87,7 +87,7 @@ Nach dem Schreiben der neuen Kinder ins RAM wird geprüft, ob die neue Generatio
 
 ### ga_sudoku
 
-Dies ist das Top-Level-Steuermodul, welches den gesamten Evolutionsprozess koordiniert. Es verwaltet den Zugriff auf das Populations-RAM und steuert den Datenfluss zwischen der Fitness-Evaluierung, der Selektion und des Crossovers sowie der Mutation. Das Modul iteriert über Generationen hinweg, überwacht den Abbruch des Algorithmus bei Erreichen einer fehlerfreien Lösung.
+Dies ist das Top-Level-Steuermodul, welches den gesamten Evolutionsprozess koordiniert. Es verwaltet den Zugriff auf das Populations-RAM und steuert den Datenfluss zwischen der Fitness-Evaluierung, der Selektion und des Crossovers sowie der Mutation. Das Modul iteriert über Generationen hinweg und überwacht den Abbruch des Algorithmus bei Erreichen einer fehlerfreien Lösung.
 
 ### pop_mem_sudoku
 
@@ -95,7 +95,7 @@ Die zentrale Speichereinheit verwaltet die gesamte Population. Sie kombiniert da
 
 ### chr_init_sudoku
 
-Diese Komponente übernimmt die Generierung eines initialen Individuums bzw. der Start-Population. Das unvollständige Sudoku (`const` & `const_mask`) wird zunächst blockweise gescannt und existierende Ziffern werden aus der Liste der verfügbaren Block-Ziffern herausgefiltert. Leere Zellen werden anschließend mit den verbleibenden Ziffern in zufälliger Reihenfolge aufgefüllt, indem Zufallsbits der `rng_bank` als Auswahl-Index dienen.
+Diese Komponente übernimmt die Generierung eines initialen Individuums bzw. der Start-Population. Das unvollständige Sudoku (`const` & `const_mask`) wird zunächst blockweise gescannt und existierende Ziffern werden aus der Liste der verfügbaren Block-Ziffern herausgefiltert. Leere Zellen werden anschließend mit den verbleibenden Ziffern in zufälliger Reihenfolge aufgefüllt.
 
 ::: info
 Dies garantiert, dass bereits bei der Initialisierung jeder 3×3-Block eine gültige Permutation der Zahlen 1 bis 9 enthält. Zusammen mit der Mutationsstrategie werden dadurch lokale Optima signifikant verringert.
@@ -111,7 +111,7 @@ Dieses Modul ermittelt zwei Elternteile für die Reproduktion über das Verfahre
 
 ### crossover_sudoku
 
-Diese Einheit kombiniert das Erbgut zweier selektierter Elternteile (`parent_a`, `parent_b`), um gleichzeitig zwei neue Kinder zu zeugen. Die Kreuzung erfolgt rein blockbasiert in einem einzigen Taktzyklus: Ein Zufallsvektor (`rnd_blk`) liefert für jeden der 9 Sudoku-Blöcke ein Bit. Ist das Bit `1`, werden die gesamten 3×3-Blöcke zwischen den Eltern getauscht (Kind A erhält den Block von Eltern B, Kind B den von Eltern A). Ist das Bit `0`, bleiben die Blöcke unverändert.
+Diese Einheit kombiniert das Erbgut zweier selektierter Elternteile (`parent_a`, `parent_b`), um gleichzeitig zwei neue Kinder zu zeugen. Die Kreuzung erfolgt rein blockbasiert in einem einzigen Taktzyklus: Ein Zufallsvektor liefert für jeden der 9 Sudoku-Blöcke ein Bit. Ist das Bit `1`, werden die gesamten 3×3-Blöcke zwischen den Eltern getauscht (Kind A erhält den Block von Eltern B, Kind B den von Eltern A). Ist das Bit `0`, bleiben die Blöcke unverändert.
 
 ::: info
 Die fest vorgegebenen Zellen des Sudokus werden durch diese Crossover-Strategie beibehalten. Ebenfalls beleibt die fundamentale Eigenschaft (Zahlen 1–9 pro Block) fehlerfrei erhalten.
@@ -119,7 +119,7 @@ Die fest vorgegebenen Zellen des Sudokus werden durch diese Crossover-Strategie 
 
 ### mutation_sudoku
 
-Dieses Modul ist für die Gen-Mutation eines Kindes verantwortlich. Zuerst prüft das Modul, ob die Mutationswahrscheinlichkeit (`mut_bits`) für diesen Durchlauf überhaupt zutrifft. Wenn ja, wird über `rnd_blk` ein zufälliger 3×3-Block ausgewählt. Innerhalb dieses Blocks bestimmt das Modul mithilfe von `rnd_pos_a` und `rnd_pos_b` zwei Zellen. Sofern beide Zellen laut Maske frei veränderbar sind, werden ihre Werte vertauscht.
+Dieses Modul ist für die Gen-Mutation eines Kindes verantwortlich. Zuerst prüft das Modul, ob die Mutationswahrscheinlichkeit (`mut_bits`) für diesen Durchlauf überhaupt zutrifft. Wenn ja, wird ein zufälliger 3×3-Block ausgewählt. Innerhalb dieses Blocks bestimmt das Modul mithilfe von `rnd_pos_a` und `rnd_pos_b` zwei Zellen. Sofern beide Zellen laut Maske frei veränderbar sind, werden ihre Werte vertauscht.
 
 ::: info
 Da dieser "Swap" innerhalb desselben Blocks stattfindet, bleibt auch hier die Block-Integrität (keine doppelten Zahlen im Block) gewährleistet.
