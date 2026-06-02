@@ -79,6 +79,15 @@ node test/ga_sudoku/sudoku_bridge.js [Pfad_zum_Log_Ordner]
 
 :::
 
+::: details Fix: Cannot find module 'ws'
+Sollte die Ausführung fehlschlagen, müssen unter Umständen noch fehlende node-Packages installiert werden:
+
+```bash
+npm install
+```
+
+:::
+
 ### 2. Öffnen der Benutzeroberfläche: `sudoku_ui.html`
 
 - Öffne die Datei `sudoku_ui.html` in einem beliebigen Webbrowser.
