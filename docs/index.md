@@ -21,18 +21,15 @@ hero:
 
 features:
   - icon: 🏷️
-    title: K-Nearest-Neighbors Classifier
-    #  details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
+    title: k-Nearest-Neighbors Classifier
     link: /algorithmen/knnc
     linkText: Mehr erfahren
   - icon: 🧬
     title: Genetische lineare Regression
-    #  details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
     link: /algorithmen/ga_linreg
     linkText: Mehr erfahren
   - icon: 🧩
     title: Genetischer Sudoku-Solver
-    #  details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
     link: /algorithmen/ga_sudoku
     linkText: Mehr erfahren
 ---
